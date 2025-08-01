@@ -2,12 +2,36 @@
 
 ## 目录 / Table of Contents
 
-1. [7.6.1 电路分析模型](#761-电路分析模型)
-2. [7.6.2 电磁场模型](#762-电磁场模型)
-3. [7.6.3 信号处理模型](#763-信号处理模型)
-4. [7.6.4 通信系统模型](#764-通信系统模型)
-5. [7.6.5 电力系统模型](#765-电力系统模型)
-6. [7.6.6 实现与应用](#766-实现与应用)
+- [7.6 电子工程模型 / Electrical Engineering Models](#76-电子工程模型--electrical-engineering-models)
+  - [目录 / Table of Contents](#目录--table-of-contents)
+  - [7.6.1 电路分析模型 / Circuit Analysis Models](#761-电路分析模型--circuit-analysis-models)
+    - [基尔霍夫定律 / Kirchhoff's Laws](#基尔霍夫定律--kirchhoffs-laws)
+    - [线性电路分析 / Linear Circuit Analysis](#线性电路分析--linear-circuit-analysis)
+    - [动态电路分析 / Dynamic Circuit Analysis](#动态电路分析--dynamic-circuit-analysis)
+  - [7.6.2 电磁场模型 / Electromagnetic Field Models](#762-电磁场模型--electromagnetic-field-models)
+    - [麦克斯韦方程 / Maxwell's Equations](#麦克斯韦方程--maxwells-equations)
+    - [电磁波传播 / Electromagnetic Wave Propagation](#电磁波传播--electromagnetic-wave-propagation)
+    - [天线理论 / Antenna Theory](#天线理论--antenna-theory)
+  - [7.6.3 信号处理模型 / Signal Processing Models](#763-信号处理模型--signal-processing-models)
+    - [模拟信号处理 / Analog Signal Processing](#模拟信号处理--analog-signal-processing)
+    - [数字信号处理 / Digital Signal Processing](#数字信号处理--digital-signal-processing)
+    - [调制解调 / Modulation and Demodulation](#调制解调--modulation-and-demodulation)
+  - [7.6.4 通信系统模型 / Communication System Models](#764-通信系统模型--communication-system-models)
+    - [信息论 / Information Theory](#信息论--information-theory)
+    - [数字通信 / Digital Communication](#数字通信--digital-communication)
+    - [多路复用 / Multiplexing](#多路复用--multiplexing)
+  - [7.6.5 电力系统模型 / Power System Models](#765-电力系统模型--power-system-models)
+    - [三相系统 / Three-Phase Systems](#三相系统--three-phase-systems)
+    - [电力传输 / Power Transmission](#电力传输--power-transmission)
+    - [电力电子 / Power Electronics](#电力电子--power-electronics)
+  - [7.6.6 实现与应用 / Implementation and Applications](#766-实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [应用领域 / Application Domains](#应用领域--application-domains)
+      - [电子设计 / Electronic Design](#电子设计--electronic-design)
+      - [通信系统 / Communication Systems](#通信系统--communication-systems)
+      - [电力系统 / Power Systems](#电力系统--power-systems)
+  - [参考文献 / References](#参考文献--references)
 
 ---
 
@@ -840,16 +864,19 @@ example = do
 ### 应用领域 / Application Domains
 
 #### 电子设计 / Electronic Design
+
 - **模拟电路**: 放大器、滤波器、振荡器
 - **数字电路**: 逻辑门、时序电路、微处理器
 - **混合信号**: ADC/DAC、PLL、数据转换
 
 #### 通信系统 / Communication Systems
+
 - **无线通信**: 移动通信、卫星通信
 - **有线通信**: 光纤通信、电缆通信
 - **网络协议**: TCP/IP、以太网、WiFi
 
 #### 电力系统 / Power Systems
+
 - **发电系统**: 火力、水力、核能发电
 - **输电系统**: 高压输电、配电网络
 - **电力电子**: 变频器、整流器、逆变器
@@ -866,4 +893,4 @@ example = do
 ---
 
 *最后更新: 2025-08-01*
-*版本: 1.0.0* 
+*版本: 1.0.0*

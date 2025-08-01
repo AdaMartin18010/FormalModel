@@ -42,7 +42,7 @@
 
 **闵可夫斯基时空**: 四维时空 $(ct, x, y, z)$
 
-**时空间隔**: 
+**时空间隔**:
 $$ds^2 = -c^2dt^2 + dx^2 + dy^2 + dz^2$$
 
 **光锥**: 未来光锥和过去光锥的边界。
@@ -50,12 +50,14 @@ $$ds^2 = -c^2dt^2 + dx^2 + dy^2 + dz^2$$
 ### 洛伦兹变换 / Lorentz Transformations
 
 **坐标变换**:
-$$\begin{cases}
+$$
+\begin{cases}
 t' = \gamma(t - \frac{vx}{c^2}) \\
 x' = \gamma(x - vt) \\
 y' = y \\
 z' = z
-\end{cases}$$
+\end{cases}
+$$
 
 其中 $\gamma = \frac{1}{\sqrt{1-\frac{v^2}{c^2}}}$ 是洛伦兹因子。
 
@@ -99,6 +101,7 @@ $$E_0 = mc^2$$
 $$R_{\mu\nu} - \frac{1}{2}Rg_{\mu\nu} + \Lambda g_{\mu\nu} = \frac{8\pi G}{c^4}T_{\mu\nu}$$
 
 其中：
+
 - $R_{\mu\nu}$: 里奇张量
 - $R$: 标量曲率
 - $g_{\mu\nu}$: 度规张量
@@ -149,12 +152,14 @@ $$\vec{P}_{CM} = \sum \vec{p}_i = 0$$
 ### 电磁场张量 / Electromagnetic Field Tensor
 
 **场张量**:
-$$F_{\mu\nu} = \begin{pmatrix}
+$$
+F_{\mu\nu} = \begin{pmatrix}
 0 & E_x/c & E_y/c & E_z/c \\
 -E_x/c & 0 & B_z & -B_y \\
 -E_y/c & -B_z & 0 & B_x \\
 -E_z/c & B_y & -B_x & 0
-\end{pmatrix}$$
+\end{pmatrix}
+$$
 
 **对偶张量**:
 $$F^{*\mu\nu} = \frac{1}{2}\epsilon^{\mu\nu\rho\sigma}F_{\rho\sigma}$$
@@ -192,6 +197,7 @@ $$\left(\frac{\dot{a}}{a}\right)^2 = \frac{8\pi G}{3}\rho - \frac{kc^2}{a^2} + \
 $$\frac{\ddot{a}}{a} = -\frac{4\pi G}{3}\left(\rho + \frac{3p}{c^2}\right) + \frac{\Lambda c^2}{3}$$
 
 其中：
+
 - $a(t)$: 尺度因子
 - $\rho$: 能量密度
 - $p$: 压力
@@ -234,6 +240,7 @@ $$r_s = \frac{2GM}{c^2}$$
 $$ds^2 = -\left(1-\frac{2GMr}{\rho^2}\right)dt^2 + \frac{\rho^2}{\Delta}dr^2 + \rho^2d\theta^2 + \left(r^2+a^2+\frac{2GMa^2r\sin^2\theta}{\rho^2}\right)\sin^2\theta d\phi^2$$
 
 其中：
+
 - $\rho^2 = r^2 + a^2\cos^2\theta$
 - $\Delta = r^2 - 2GMr + a^2$
 
@@ -291,4 +298,4 @@ $$h_{\mu\nu} = A_{\mu\nu} \cos(k_\alpha x^\alpha)$$
 ---
 
 *最后更新: 2025-08-01*
-*版本: 1.0.0* 
+*版本: 1.0.0*

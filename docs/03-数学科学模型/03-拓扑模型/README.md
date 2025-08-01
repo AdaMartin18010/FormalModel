@@ -41,10 +41,12 @@
 ### 拓扑空间 / Topological Spaces
 
 **定义**: 拓扑空间 $(X, \tau)$ 包含：
+
 - 集合 $X$
 - 拓扑 $\tau$ (开集族)
 
 **开集公理**:
+
 1. $\emptyset, X \in \tau$
 2. 有限交: $U_1, U_2 \in \tau \Rightarrow U_1 \cap U_2 \in \tau$
 3. 任意并: $\{U_i\} \subset \tau \Rightarrow \bigcup U_i \in \tau$
@@ -66,6 +68,7 @@
 **海涅-博雷尔定理**: $\mathbb{R}^n$ 的子集紧致当且仅当它是有界闭集。
 
 **紧致性性质**:
+
 - 紧致空间的连续像是紧致的
 - 紧致空间在豪斯多夫空间中的像是闭的
 
@@ -139,6 +142,7 @@ $$\cdots \to H_n(A) \to H_n(X) \to H_n(X,A) \to H_{n-1}(A) \to \cdots$$
 ### 主丛 / Principal Bundles
 
 **定义**: 主 $G$-丛 $(P, M, \pi, G)$ 包含：
+
 - 全空间 $P$
 - 底空间 $M$
 - 投影 $\pi: P \to M$
@@ -195,6 +199,7 @@ $$\cdots \to H_n(A) \to H_n(X) \to H_n(X,A) \to H_{n-1}(A) \to \cdots$$
 ### 曲面 / Surfaces
 
 **分类定理**: 紧致连通曲面同胚于：
+
 - 球面 $S^2$
 - 环面 $T^2$
 - 连通和 $\#_g T^2$
@@ -260,4 +265,4 @@ $$\cdots \to H_n(A) \to H_n(X) \to H_n(X,A) \to H_{n-1}(A) \to \cdots$$
 ---
 
 *最后更新: 2025-08-01*
-*版本: 1.0.0* 
+*版本: 1.0.0*

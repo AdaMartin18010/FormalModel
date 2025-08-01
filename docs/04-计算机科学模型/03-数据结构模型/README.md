@@ -43,6 +43,7 @@
 **定义**: 连续内存空间存储的相同类型元素集合。
 
 **操作复杂度**:
+
 - 访问: $O(1)$
 - 插入/删除: $O(n)$
 - 搜索: $O(n)$
@@ -77,6 +78,7 @@ class DynamicArray:
 **双链表**: 每个节点包含指向前后节点的指针。
 
 **操作复杂度**:
+
 - 插入/删除: $O(1)$ (给定位置)
 - 搜索: $O(n)$
 - 访问: $O(n)$
@@ -112,6 +114,7 @@ class LinkedList:
 ### 栈和队列 / Stacks and Queues
 
 **栈 (LIFO)**:
+
 ```python
 class Stack:
     def __init__(self):
@@ -132,6 +135,7 @@ class Stack:
 ```
 
 **队列 (FIFO)**:
+
 ```python
 from collections import deque
 
@@ -158,6 +162,7 @@ class Queue:
 **定义**: 每个节点最多有两个子节点的树。
 
 **遍历方式**:
+
 - 前序遍历: 根-左-右
 - 中序遍历: 左-根-右
 - 后序遍历: 左-右-根
@@ -273,6 +278,7 @@ class Graph:
 ### 图的遍历 / Graph Traversal
 
 **深度优先搜索 (DFS)**:
+
 ```python
 def dfs(self, start, visited=None):
     if visited is None:
@@ -287,6 +293,7 @@ def dfs(self, start, visited=None):
 ```
 
 **广度优先搜索 (BFS)**:
+
 ```python
 from collections import deque
 
@@ -320,6 +327,7 @@ def bfs(self, start):
 **理想散列函数**: 均匀分布，最小化冲突。
 
 **常见散列函数**:
+
 - 除留余数法: $h(k) = k \bmod m$
 - 乘法散列: $h(k) = \lfloor m(kA \bmod 1) \rfloor$
 - 全域散列: 随机选择散列函数
@@ -338,6 +346,7 @@ def hash_string(s, size):
 ### 冲突解决 / Collision Resolution
 
 **开放寻址法**:
+
 - 线性探测: $h_i(k) = (h(k) + i) \bmod m$
 - 二次探测: $h_i(k) = (h(k) + i^2) \bmod m$
 - 双重散列: $h_i(k) = (h_1(k) + ih_2(k)) \bmod m$
@@ -383,6 +392,7 @@ class HashTable:
 **最小堆**: 父节点值小于等于子节点值。
 
 **操作复杂度**:
+
 - 插入: $O(\log n)$
 - 删除: $O(\log n)$
 - 查找最大/最小: $O(1)$
@@ -522,4 +532,4 @@ class QuadTreeNode:
 ---
 
 *最后更新: 2025-08-01*
-*版本: 1.0.0* 
+*版本: 1.0.0*

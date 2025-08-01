@@ -48,10 +48,11 @@
 
 ### 热力学第一定律 / First Law
 
-**能量守恒**: 
+**能量守恒**:
 $$\Delta U = Q - W$$
 
 其中：
+
 - $\Delta U$: 内能变化
 - $Q$: 吸收的热量
 - $W$: 对外做功
@@ -128,6 +129,7 @@ $$dG = -SdT + Vdp + \mu dN$$
 $$P(E_i) = \frac{e^{-\beta E_i}}{Z}$$
 
 其中：
+
 - $\beta = \frac{1}{k_B T}$
 - $Z$: 配分函数
 
@@ -143,6 +145,7 @@ $$Z = \sum_i e^{-\beta E_i}$$
 $$\mathcal{Z} = \sum_{N,i} e^{-\beta(E_i - \mu N)}$$
 
 **热力学量**:
+
 - 内能: $U = -\frac{\partial \ln Z}{\partial \beta}$
 - 熵: $S = k_B(\ln Z + \beta U)$
 - 自由能: $F = -k_B T \ln Z$
@@ -173,6 +176,7 @@ $$\frac{dp}{dT} = \frac{\Delta S}{\Delta V}$$
 **特征**: 比热容发散
 
 **临界指数**:
+
 - $\alpha$: 比热容指数
 - $\beta$: 序参量指数
 - $\gamma$: 磁化率指数
@@ -197,6 +201,7 @@ $$\xi \sim |T - T_c|^{-\nu}$$
 $$\frac{\partial s}{\partial t} + \nabla \cdot \vec{J}_s = \sigma$$
 
 其中：
+
 - $s$: 熵密度
 - $\vec{J}_s$: 熵流
 - $\sigma$: 熵产生率
@@ -287,4 +292,4 @@ $$\frac{d\ln K}{dT} = \frac{\Delta H^\circ}{RT^2}$$
 ---
 
 *最后更新: 2025-08-01*
-*版本: 1.0.0* 
+*版本: 1.0.0*

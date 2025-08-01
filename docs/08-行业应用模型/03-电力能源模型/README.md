@@ -5,262 +5,168 @@
 - [8.3 电力能源模型 / Power \& Energy Models](#83-电力能源模型--power--energy-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
   - [8.3.1 电力系统模型 / Power System Models](#831-电力系统模型--power-system-models)
-    - [电力系统基本方程 / Basic Power System Equations](#电力系统基本方程--basic-power-system-equations)
-    - [传输线模型 / Transmission Line Model](#传输线模型--transmission-line-model)
-    - [发电机模型 / Generator Model](#发电机模型--generator-model)
-  - [8.3.2 潮流计算模型 / Power Flow Models](#832-潮流计算模型--power-flow-models)
-    - [牛顿-拉夫森法 / Newton-Raphson Method](#牛顿-拉夫森法--newton-raphson-method)
-    - [高斯-赛德尔法 / Gauss-Seidel Method](#高斯-赛德尔法--gauss-seidel-method)
-    - [快速分解法 / Fast Decoupled Method](#快速分解法--fast-decoupled-method)
-  - [8.3.3 电力市场模型 / Electricity Market Models](#833-电力市场模型--electricity-market-models)
-    - [经济调度 / Economic Dispatch](#经济调度--economic-dispatch)
-    - [机组组合 / Unit Commitment](#机组组合--unit-commitment)
-    - [电力拍卖模型 / Electricity Auction Model](#电力拍卖模型--electricity-auction-model)
-  - [8.3.4 可再生能源模型 / Renewable Energy Models](#834-可再生能源模型--renewable-energy-models)
-    - [风电模型 / Wind Power Model](#风电模型--wind-power-model)
-    - [光伏模型 / Solar PV Model](#光伏模型--solar-pv-model)
-    - [水能模型 / Hydropower Model](#水能模型--hydropower-model)
-  - [8.3.5 智能电网模型 / Smart Grid Models](#835-智能电网模型--smart-grid-models)
-    - [需求响应 / Demand Response](#需求响应--demand-response)
-    - [微电网模型 / Microgrid Model](#微电网模型--microgrid-model)
-    - [分布式能源 / Distributed Energy Resources](#分布式能源--distributed-energy-resources)
-  - [8.3.6 能源优化模型 / Energy Optimization Models](#836-能源优化模型--energy-optimization-models)
-    - [能源规划 / Energy Planning](#能源规划--energy-planning)
-    - [多目标优化 / Multi-objective Optimization](#多目标优化--multi-objective-optimization)
-    - [能源效率 / Energy Efficiency](#能源效率--energy-efficiency)
-  - [8.3.7 储能系统模型 / Energy Storage Models](#837-储能系统模型--energy-storage-models)
-    - [电池储能 / Battery Storage](#电池储能--battery-storage)
-    - [抽水蓄能 / Pumped Hydro Storage](#抽水蓄能--pumped-hydro-storage)
-    - [压缩空气储能 / Compressed Air Energy Storage](#压缩空气储能--compressed-air-energy-storage)
-  - [8.3.8 实现与应用 / Implementation and Applications](#838-实现与应用--implementation-and-applications)
+    - [潮流计算 / Power Flow Analysis](#潮流计算--power-flow-analysis)
+    - [稳定性分析 / Stability Analysis](#稳定性分析--stability-analysis)
+    - [故障分析 / Fault Analysis](#故障分析--fault-analysis)
+  - [8.3.2 发电模型 / Generation Models](#832-发电模型--generation-models)
+    - [火电模型 / Thermal Power Models](#火电模型--thermal-power-models)
+    - [水电模型 / Hydroelectric Models](#水电模型--hydroelectric-models)
+    - [新能源模型 / Renewable Energy Models](#新能源模型--renewable-energy-models)
+  - [8.3.3 输电网络模型 / Transmission Network Models](#833-输电网络模型--transmission-network-models)
+    - [线路模型 / Line Models](#线路模型--line-models)
+    - [变压器模型 / Transformer Models](#变压器模型--transformer-models)
+    - [网络拓扑 / Network Topology](#网络拓扑--network-topology)
+  - [8.3.4 配电系统模型 / Distribution System Models](#834-配电系统模型--distribution-system-models)
+    - [配电网潮流 / Distribution Power Flow](#配电网潮流--distribution-power-flow)
+    - [负荷建模 / Load Modeling](#负荷建模--load-modeling)
+    - [电压控制 / Voltage Control](#电压控制--voltage-control)
+  - [8.3.5 能源经济模型 / Energy Economics Models](#835-能源经济模型--energy-economics-models)
+    - [电价模型 / Electricity Price Models](#电价模型--electricity-price-models)
+    - [投资决策 / Investment Decision](#投资决策--investment-decision)
+    - [市场机制 / Market Mechanisms](#市场机制--market-mechanisms)
+  - [8.3.6 实现与应用 / Implementation and Applications](#836-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
-      - [电力系统运行 / Power System Operation](#电力系统运行--power-system-operation)
-      - [电力市场 / Electricity Markets](#电力市场--electricity-markets)
-      - [智能电网 / Smart Grid](#智能电网--smart-grid)
+      - [电网规划 / Grid Planning](#电网规划--grid-planning)
+      - [运行调度 / Operation Dispatch](#运行调度--operation-dispatch)
+      - [市场交易 / Market Trading](#市场交易--market-trading)
   - [参考文献 / References](#参考文献--references)
 
 ---
 
 ## 8.3.1 电力系统模型 / Power System Models
 
-### 电力系统基本方程 / Basic Power System Equations
+### 潮流计算 / Power Flow Analysis
 
-**节点电压方程**: $V_i = |V_i| \angle \theta_i$
+**节点功率方程**: $P_i = \sum_{j=1}^n V_i V_j (G_{ij} \cos \theta_{ij} + B_{ij} \sin \theta_{ij})$
 
-**复功率**: $S_i = P_i + jQ_i = V_i I_i^*$
+**节点无功功率**: $Q_i = \sum_{j=1}^n V_i V_j (G_{ij} \sin \theta_{ij} - B_{ij} \cos \theta_{ij})$
 
-**功率平衡**: $\sum_{i=1}^n P_i = 0$, $\sum_{i=1}^n Q_i = 0$
+**牛顿-拉夫森法**: $\begin{bmatrix} \Delta P \\ \Delta Q \end{bmatrix} = \begin{bmatrix} J_{11} & J_{12} \\ J_{21} & J_{22} \end{bmatrix} \begin{bmatrix} \Delta \theta \\ \Delta V \end{bmatrix}$
 
-### 传输线模型 / Transmission Line Model
+### 稳定性分析 / Stability Analysis
 
-**π型等效电路**:
+**小信号稳定性**: $\dot{x} = Ax + Bu$
 
-```text
-     Y/2
-A ────┴──── B
-     Z      Y/2
-```
+**特征值分析**: $\det(\lambda I - A) = 0$
 
-**阻抗**: $Z = R + jX$
+**阻尼比**: $\zeta = \frac{-\sigma}{\sqrt{\sigma^2 + \omega^2}}$
 
-**导纳**: $Y = G + jB$
+### 故障分析 / Fault Analysis
 
-**传输线方程**:
-$$\begin{pmatrix} V_A \\ I_A \end{pmatrix} = \begin{pmatrix} A & B \\ C & D \end{pmatrix} \begin{pmatrix} V_B \\ I_B \end{pmatrix}$$
+**三相短路**: $I_f = \frac{V_f}{Z_f}$
 
-### 发电机模型 / Generator Model
-
-**同步发电机**: $E_g = V_t + jX_d I_a$
-
-**功率角方程**: $P = \frac{E_g V_t}{X_d} \sin \delta$
-
-**转子运动方程**: $\frac{2H}{\omega_0} \frac{d^2\delta}{dt^2} = P_m - P_e$
+**不对称故障**: $I_f^{(1)} = \frac{V_f^{(1)}}{Z_1 + Z_2 + Z_0}$
 
 ---
 
-## 8.3.2 潮流计算模型 / Power Flow Models
+## 8.3.2 发电模型 / Generation Models
 
-### 牛顿-拉夫森法 / Newton-Raphson Method
+### 火电模型 / Thermal Power Models
 
-**雅可比矩阵**: $J = \begin{pmatrix} \frac{\partial P}{\partial \theta} & \frac{\partial P}{\partial V} \\ \frac{\partial Q}{\partial \theta} & \frac{\partial Q}{\partial V} \end{pmatrix}$
+**热效率**: $\eta = \frac{P_{output}}{Q_{input}}$
 
-**迭代方程**: $\begin{pmatrix} \Delta \theta \\ \Delta V \end{pmatrix} = J^{-1} \begin{pmatrix} \Delta P \\ \Delta Q \end{pmatrix}$
+**燃料消耗**: $F = \frac{P}{\eta \cdot LHV}$
 
-**收敛条件**: $|\Delta P_i| < \epsilon$, $|\Delta Q_i| < \epsilon$
+**启动成本**: $C_{start} = C_{cold} + C_{hot} \cdot (1 - e^{-t/\tau})$
 
-### 高斯-赛德尔法 / Gauss-Seidel Method
-
-**电压更新**: $V_i^{(k+1)} = \frac{1}{Y_{ii}} \left( \frac{P_i - jQ_i}{V_i^{(k)*}} - \sum_{j \neq i} Y_{ij} V_j^{(k)} \right)$
-
-**收敛判据**: $\max |V_i^{(k+1)} - V_i^{(k)}| < \epsilon$
-
-### 快速分解法 / Fast Decoupled Method
-
-**P-θ分解**: $\Delta P = B' \Delta \theta$
-
-**Q-V分解**: $\Delta Q = B'' \Delta V$
-
-**简化雅可比矩阵**: $B'_{ij} = -B_{ij}$, $B''_{ij} = -B_{ij}$
-
----
-
-## 8.3.3 电力市场模型 / Electricity Market Models
-
-### 经济调度 / Economic Dispatch
-
-**目标函数**: $\min \sum_{i=1}^n C_i(P_i)$
-
-**约束条件**:
-
-- $\sum_{i=1}^n P_i = P_D$ (功率平衡)
-- $P_{i,min} \leq P_i \leq P_{i,max}$ (发电限制)
-
-**拉格朗日函数**: $L = \sum_{i=1}^n C_i(P_i) + \lambda(P_D - \sum_{i=1}^n P_i)$
-
-**最优条件**: $\frac{dC_i}{dP_i} = \lambda$ (等增量成本)
-
-### 机组组合 / Unit Commitment
-
-**目标函数**: $\min \sum_{t=1}^T \sum_{i=1}^n [C_i(P_{it}) + SU_i u_{it} + SD_i v_{it}]$
-
-**约束条件**:
-
-- 功率平衡: $\sum_{i=1}^n P_{it} = P_{Dt}$
-- 机组限制: $P_{i,min} u_{it} \leq P_{it} \leq P_{i,max} u_{it}$
-- 最小运行时间: $u_{it} - u_{i,t-1} \leq u_{i,t+UT_i-1}$
-- 最小停机时间: $u_{i,t-1} - u_{it} \leq 1 - u_{i,t+DT_i-1}$
-
-### 电力拍卖模型 / Electricity Auction Model
-
-**统一价格拍卖**: $p = \max \{b_i : i \in S\}$
-
-**按报价支付**: $p_i = b_i$
-
-**市场出清**: $\sum_{i \in S} q_i = D$
-
----
-
-## 8.3.4 可再生能源模型 / Renewable Energy Models
-
-### 风电模型 / Wind Power Model
-
-**风速分布**: $f(v) = \frac{k}{c} \left(\frac{v}{c}\right)^{k-1} e^{-(v/c)^k}$
-
-**功率曲线**: $P(v) = \begin{cases} 0 & v < v_{ci} \\ P_r \frac{v^3 - v_{ci}^3}{v_r^3 - v_{ci}^3} & v_{ci} \leq v < v_r \\ P_r & v_r \leq v < v_{co} \\ 0 & v \geq v_{co} \end{cases}$
-
-**容量因子**: $CF = \frac{\int_{v_{ci}}^{v_{co}} P(v) f(v) dv}{P_r}$
-
-### 光伏模型 / Solar PV Model
-
-**太阳辐射**: $G = G_0 \cos \theta \cdot T$
-
-**光伏功率**: $P = \eta A G (1 - 0.005(T_c - 25))$
-
-**温度系数**: $T_c = T_a + \frac{NOCT - 20}{800} G$
-
-### 水能模型 / Hydropower Model
+### 水电模型 / Hydroelectric Models
 
 **水头**: $H = H_{gross} - H_{loss}$
 
-**功率**: $P = \eta \rho g Q H$
+**功率**: $P = \eta \cdot \rho \cdot g \cdot Q \cdot H$
 
-**水库调度**: $\frac{dV}{dt} = I - Q - E$
+**水库调度**: $V(t+1) = V(t) + I(t) - Q(t) - L(t)$
 
----
+### 新能源模型 / Renewable Energy Models
 
-## 8.3.5 智能电网模型 / Smart Grid Models
+**风电功率**: $P = \frac{1}{2} \rho A v^3 C_p$
 
-### 需求响应 / Demand Response
+**光伏功率**: $P = P_{STC} \cdot \frac{G}{G_{STC}} \cdot [1 + \alpha(T - T_{STC})]$
 
-**价格响应**: $D_t = D_0 \left(1 + \epsilon \frac{p_t - p_0}{p_0}\right)$
-
-**负荷转移**: $\sum_{t=1}^T D_t = \sum_{t=1}^T D_0$
-
-**用户效用**: $U = \sum_{t=1}^T [B(D_t) - p_t D_t]$
-
-### 微电网模型 / Microgrid Model
-
-**功率平衡**: $P_{DG} + P_{BESS} + P_{GRID} = P_{LOAD}$
-
-**储能约束**: $SOC_{min} \leq SOC_t \leq SOC_{max}$
-
-**经济调度**: $\min \sum_{i=1}^n C_i(P_i) + C_{BESS}(P_{BESS}) + C_{GRID}(P_{GRID})$
-
-### 分布式能源 / Distributed Energy Resources
-
-**光伏系统**: $P_{PV} = \eta_{PV} A_{PV} G$
-
-**风力发电**: $P_{WT} = \frac{1}{2} \rho A v^3 C_p$
-
-**燃料电池**: $P_{FC} = \eta_{FC} \dot{m}_{H2} LHV_{H2}$
+**储能模型**: $SOC(t+1) = SOC(t) + \frac{P_{charge}(t) - P_{discharge}(t)}{E_{rated}} \cdot \Delta t$
 
 ---
 
-## 8.3.6 能源优化模型 / Energy Optimization Models
+## 8.3.3 输电网络模型 / Transmission Network Models
 
-### 能源规划 / Energy Planning
+### 线路模型 / Line Models
 
-**目标函数**: $\min \sum_{i=1}^n \sum_{t=1}^T [C_i(P_{it}) + E_i(P_{it})]$
+**π型等效电路**: $Y = \frac{1}{R + jX} + j\frac{B}{2}$
 
-**约束条件**:
+**传输功率**: $P_{12} = \frac{V_1 V_2}{X} \sin(\theta_1 - \theta_2)$
 
-- 能源平衡: $\sum_{i=1}^n P_{it} = D_t$
-- 容量限制: $P_{it} \leq C_i$
-- 环境约束: $\sum_{i=1}^n E_i(P_{it}) \leq E_{max}$
+**热极限**: $P_{max} = \frac{V_{rated}^2}{X} \sin(90°) = \frac{V_{rated}^2}{X}$
 
-### 多目标优化 / Multi-objective Optimization
+### 变压器模型 / Transformer Models
 
-**目标函数**:
+**变比**: $a = \frac{N_1}{N_2} = \frac{V_1}{V_2}$
 
-- 最小化成本: $\min \sum_{i=1}^n C_i(P_i)$
-- 最小化排放: $\min \sum_{i=1}^n E_i(P_i)$
-- 最大化可靠性: $\max R(P_1, \ldots, P_n)$
+**阻抗**: $Z_{pu} = \frac{Z_{actual}}{Z_{base}}$
 
-**帕累托最优**: 使用遗传算法或粒子群优化
+**损耗**: $P_{loss} = I^2 R + P_{core}$
 
-### 能源效率 / Energy Efficiency
+### 网络拓扑 / Network Topology
 
-**能效比**: $EER = \frac{Q}{W}$
+**节点导纳矩阵**: $Y_{bus} = A Y A^T$
 
-**性能系数**: $COP = \frac{Q}{W}$
-
-**综合效率**: $\eta_{total} = \eta_1 \cdot \eta_2 \cdot \ldots \cdot \eta_n$
+**节点阻抗矩阵**: $Z_{bus} = Y_{bus}^{-1}$
 
 ---
 
-## 8.3.7 储能系统模型 / Energy Storage Models
+## 8.3.4 配电系统模型 / Distribution System Models
 
-### 电池储能 / Battery Storage
+### 配电网潮流 / Distribution Power Flow
 
-**荷电状态**: $SOC(t) = SOC_0 + \frac{1}{C} \int_0^t i(\tau) d\tau$
+**前推回代法**:
 
-**功率约束**: $-P_{max} \leq P(t) \leq P_{max}$
+- 前推: $V_i^{(k+1)} = V_{i-1}^{(k)} - I_i^{(k)} Z_i$
+- 回代: $I_i^{(k+1)} = \frac{S_i^*}{V_i^{(k+1)*}}$
 
-**能量约束**: $SOC_{min} \leq SOC(t) \leq SOC_{max}$
+### 负荷建模 / Load Modeling
 
-**寿命模型**: $L = L_0 \left(\frac{C}{C_0}\right)^\alpha \left(\frac{I}{I_0}\right)^\beta$
+**恒功率负荷**: $P = P_0, Q = Q_0$
 
-### 抽水蓄能 / Pumped Hydro Storage
+**恒阻抗负荷**: $P = P_0 \left(\frac{V}{V_0}\right)^2$
 
-**能量**: $E = \rho g V H \eta$
+**恒电流负荷**: $P = P_0 \left(\frac{V}{V_0}\right)$
 
-**功率**: $P = \rho g Q H \eta$
+### 电压控制 / Voltage Control
 
-**效率**: $\eta = \eta_p \cdot \eta_t \cdot \eta_m \cdot \eta_g$
+**电压调节**: $\Delta V = \frac{R \Delta P + X \Delta Q}{V}$
 
-### 压缩空气储能 / Compressed Air Energy Storage
-
-**能量**: $E = \frac{1}{2} m v^2 + mgh$
-
-**压力**: $P = P_0 \left(\frac{V_0}{V}\right)^\gamma$
-
-**温度**: $T = T_0 \left(\frac{V_0}{V}\right)^{\gamma-1}$
+**电容器补偿**: $Q_c = \frac{V^2}{X_c}$
 
 ---
 
-## 8.3.8 实现与应用 / Implementation and Applications
+## 8.3.5 能源经济模型 / Energy Economics Models
+
+### 电价模型 / Electricity Price Models
+
+**边际成本**: $MC = \frac{\partial TC}{\partial Q}$
+
+**电价**: $P = MC + markup$
+
+**峰谷电价**: $P_{peak} = \alpha P_{base}, P_{valley} = \beta P_{base}$
+
+### 投资决策 / Investment Decision
+
+**净现值**: $NPV = \sum_{t=0}^T \frac{CF_t}{(1+r)^t}$
+
+**内部收益率**: $\sum_{t=0}^T \frac{CF_t}{(1+IRR)^t} = 0$
+
+**投资回收期**: $\sum_{t=0}^{PBP} CF_t = 0$
+
+### 市场机制 / Market Mechanisms
+
+**竞价机制**: $P = \arg\max \sum_{i=1}^n b_i(Q_i)$
+
+**市场出清**: $\sum_{i=1}^n Q_i^{supply} = \sum_{j=1}^m Q_j^{demand}$
+
+---
+
+## 8.3.6 实现与应用 / Implementation and Applications
 
 ### Rust实现示例 / Rust Implementation Example
 
@@ -268,10 +174,10 @@ $$\begin{pmatrix} V_A \\ I_A \end{pmatrix} = \begin{pmatrix} A & B \\ C & D \end
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
-pub struct PowerSystem {
-    pub buses: Vec<Bus>,
-    pub lines: Vec<TransmissionLine>,
-    pub generators: Vec<Generator>,
+pub struct PowerSystemModel {
+    pub buses: HashMap<String, Bus>,
+    pub lines: HashMap<String, Line>,
+    pub generators: HashMap<String, Generator>,
 }
 
 #[derive(Debug, Clone)]
@@ -292,7 +198,7 @@ pub enum BusType {
 }
 
 #[derive(Debug, Clone)]
-pub struct TransmissionLine {
+pub struct Line {
     pub from_bus: String,
     pub to_bus: String,
     pub resistance: f64,
@@ -308,191 +214,248 @@ pub struct Generator {
     pub reactive_power: f64,
     pub max_power: f64,
     pub min_power: f64,
-    pub cost_function: Box<dyn Fn(f64) -> f64>,
+    pub cost: f64,
 }
 
-impl PowerSystem {
+impl PowerSystemModel {
     pub fn new() -> Self {
         Self {
-            buses: Vec::new(),
-            lines: Vec::new(),
-            generators: Vec::new(),
+            buses: HashMap::new(),
+            lines: HashMap::new(),
+            generators: HashMap::new(),
         }
     }
     
     pub fn add_bus(&mut self, bus: Bus) {
-        self.buses.push(bus);
+        self.buses.insert(bus.id.clone(), bus);
     }
     
-    pub fn add_line(&mut self, line: TransmissionLine) {
-        self.lines.push(line);
+    pub fn add_line(&mut self, line: Line) {
+        let line_id = format!("{}-{}", line.from_bus, line.to_bus);
+        self.lines.insert(line_id, line);
     }
     
     pub fn add_generator(&mut self, generator: Generator) {
-        self.generators.push(generator);
+        self.generators.insert(generator.bus_id.clone(), generator);
     }
     
-    pub fn newton_raphson_power_flow(&mut self, max_iterations: usize, tolerance: f64) -> Result<(), String> {
-        for iteration in 0..max_iterations {
-            let mut max_mismatch = 0.0;
+    pub fn power_flow_analysis(&self) -> HashMap<String, (f64, f64)> {
+        let mut results = HashMap::new();
+        
+        // 简化的潮流计算
+        for (bus_id, bus) in &self.buses {
+            let mut total_power = 0.0;
+            let mut total_reactive = 0.0;
             
-            // 计算功率不平衡量
-            for bus in &mut self.buses {
-                if let BusType::PQ = bus.bus_type {
-                    let (p_calc, q_calc) = self.calculate_power_at_bus(bus);
-                    let p_mismatch = bus.active_power - p_calc;
-                    let q_mismatch = bus.reactive_power - q_calc;
-                    
-                    max_mismatch = max_mismatch.max(p_mismatch.abs()).max(q_mismatch.abs());
-                    
-                    // 更新电压和相角
-                    // 这里简化处理，实际需要构建雅可比矩阵
-                    bus.voltage_angle += 0.1 * p_mismatch;
-                    bus.voltage_magnitude += 0.1 * q_mismatch;
+            // 计算注入功率
+            for (line_id, line) in &self.lines {
+                if line.from_bus == *bus_id {
+                    let power_flow = self.calculate_line_power_flow(line, bus);
+                    total_power += power_flow.0;
+                    total_reactive += power_flow.1;
                 }
             }
             
-            if max_mismatch < tolerance {
-                println!("Power flow converged in {} iterations", iteration + 1);
-                return Ok(());
-            }
+            results.insert(bus_id.clone(), (total_power, total_reactive));
         }
         
-        Err("Power flow did not converge".to_string())
+        results
     }
     
-    fn calculate_power_at_bus(&self, bus: &Bus) -> (f64, f64) {
-        let mut p_calc = 0.0;
-        let mut q_calc = 0.0;
+    fn calculate_line_power_flow(&self, line: &Line, from_bus: &Bus) -> (f64, f64) {
+        let v1 = from_bus.voltage_magnitude;
+        let theta1 = from_bus.voltage_angle;
         
-        for line in &self.lines {
-            if line.from_bus == bus.id {
-                // 简化的功率计算
-                let v_i = bus.voltage_magnitude;
-                let v_j = 1.0; // 假设其他节点电压为标幺值
-                let theta_ij = bus.voltage_angle;
-                
-                p_calc += v_i * v_j * (line.resistance * theta_ij.cos() + line.reactance * theta_ij.sin());
-                q_calc += v_i * v_j * (line.reactance * theta_ij.cos() - line.resistance * theta_ij.sin());
-            }
-        }
+        // 简化的功率流计算
+        let impedance = (line.resistance * line.resistance + line.reactance * line.reactance).sqrt();
+        let power = (v1 * v1) / impedance;
+        let reactive = power * line.reactance / impedance;
         
-        (p_calc, q_calc)
+        (power, reactive)
     }
     
     pub fn economic_dispatch(&self, total_demand: f64) -> HashMap<String, f64> {
         let mut dispatch = HashMap::new();
-        let mut lambda = 10.0; // 初始增量成本
+        let mut remaining_demand = total_demand;
         
-        for _ in 0..100 { // 迭代求解
-            let mut total_power = 0.0;
-            
-            for generator in &self.generators {
-                // 简化的等增量成本法
-                let power = (lambda - 5.0) / 0.1; // 假设成本函数为二次函数
-                let power = power.max(generator.min_power).min(generator.max_power);
-                dispatch.insert(generator.bus_id.clone(), power);
-                total_power += power;
+        // 按成本排序发电机
+        let mut sorted_generators: Vec<_> = self.generators.iter().collect();
+        sorted_generators.sort_by(|a, b| a.1.cost.partial_cmp(&b.1.cost).unwrap());
+        
+        for (bus_id, generator) in sorted_generators {
+            if remaining_demand > 0.0 {
+                let allocated_power = remaining_demand.min(generator.max_power);
+                dispatch.insert(bus_id.clone(), allocated_power);
+                remaining_demand -= allocated_power;
+            } else {
+                dispatch.insert(bus_id.clone(), 0.0);
             }
-            
-            if (total_power - total_demand).abs() < 0.01 {
-                break;
-            }
-            
-            lambda += 0.1 * (total_demand - total_power);
         }
         
         dispatch
     }
+    
+    pub fn calculate_system_losses(&self) -> f64 {
+        let mut total_losses = 0.0;
+        
+        for line in self.lines.values() {
+            let current = self.calculate_line_current(line);
+            let losses = current * current * line.resistance;
+            total_losses += losses;
+        }
+        
+        total_losses
+    }
+    
+    fn calculate_line_current(&self, line: &Line) -> f64 {
+        // 简化的电流计算
+        let voltage_diff = 1.0; // 假设电压差
+        let impedance = (line.resistance * line.resistance + line.reactance * line.reactance).sqrt();
+        voltage_diff / impedance
+    }
 }
 
-#[derive(Debug)]
-pub struct WindFarm {
-    pub capacity: f64,
+#[derive(Debug, Clone)]
+pub struct RenewableEnergyModel {
     pub wind_speed: f64,
+    pub solar_irradiance: f64,
+    pub temperature: f64,
+    pub wind_turbine_params: WindTurbineParams,
+    pub solar_panel_params: SolarPanelParams,
+}
+
+#[derive(Debug, Clone)]
+pub struct WindTurbineParams {
+    pub rated_power: f64,
     pub cut_in_speed: f64,
     pub rated_speed: f64,
     pub cut_out_speed: f64,
+    pub rotor_area: f64,
+    pub power_coefficient: f64,
 }
 
-impl WindFarm {
-    pub fn new(capacity: f64) -> Self {
-        Self {
-            capacity,
-            wind_speed: 0.0,
-            cut_in_speed: 3.0,
-            rated_speed: 12.0,
-            cut_out_speed: 25.0,
-        }
-    }
-    
-    pub fn set_wind_speed(&mut self, speed: f64) {
-        self.wind_speed = speed;
-    }
-    
-    pub fn calculate_power(&self) -> f64 {
-        if self.wind_speed < self.cut_in_speed || self.wind_speed > self.cut_out_speed {
-            0.0
-        } else if self.wind_speed < self.rated_speed {
-            self.capacity * ((self.wind_speed.powi(3) - self.cut_in_speed.powi(3)) / 
-                            (self.rated_speed.powi(3) - self.cut_in_speed.powi(3)))
-        } else {
-            self.capacity
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct BatteryStorage {
-    pub capacity: f64,
-    pub max_power: f64,
-    pub state_of_charge: f64,
+#[derive(Debug, Clone)]
+pub struct SolarPanelParams {
+    pub rated_power: f64,
+    pub area: f64,
     pub efficiency: f64,
+    pub temperature_coefficient: f64,
 }
 
-impl BatteryStorage {
-    pub fn new(capacity: f64, max_power: f64) -> Self {
+impl RenewableEnergyModel {
+    pub fn new() -> Self {
         Self {
-            capacity,
-            max_power,
-            state_of_charge: 0.5, // 初始50%荷电状态
-            efficiency: 0.9,
+            wind_speed: 0.0,
+            solar_irradiance: 0.0,
+            temperature: 25.0,
+            wind_turbine_params: WindTurbineParams {
+                rated_power: 2000.0,
+                cut_in_speed: 3.0,
+                rated_speed: 12.0,
+                cut_out_speed: 25.0,
+                rotor_area: 1000.0,
+                power_coefficient: 0.4,
+            },
+            solar_panel_params: SolarPanelParams {
+                rated_power: 1000.0,
+                area: 6.0,
+                efficiency: 0.15,
+                temperature_coefficient: -0.004,
+            },
         }
     }
     
-    pub fn charge(&mut self, power: f64, duration: f64) -> f64 {
-        let actual_power = power.min(self.max_power);
-        let energy = actual_power * duration * self.efficiency;
-        let energy_change = energy / self.capacity;
+    pub fn calculate_wind_power(&self) -> f64 {
+        let wind_speed = self.wind_speed;
+        let params = &self.wind_turbine_params;
         
-        self.state_of_charge = (self.state_of_charge + energy_change).min(1.0);
-        actual_power
-    }
-    
-    pub fn discharge(&mut self, power: f64, duration: f64) -> f64 {
-        let actual_power = power.min(self.max_power);
-        let energy = actual_power * duration / self.efficiency;
-        let energy_change = energy / self.capacity;
-        
-        if self.state_of_charge >= energy_change {
-            self.state_of_charge -= energy_change;
-            actual_power
+        if wind_speed < params.cut_in_speed || wind_speed > params.cut_out_speed {
+            0.0
+        } else if wind_speed < params.rated_speed {
+            let power = 0.5 * 1.225 * params.rotor_area * wind_speed.powi(3) * params.power_coefficient;
+            power.min(params.rated_power)
         } else {
-            let available_energy = self.state_of_charge * self.capacity * self.efficiency;
-            let available_power = available_energy / duration;
-            self.state_of_charge = 0.0;
-            available_power
+            params.rated_power
         }
+    }
+    
+    pub fn calculate_solar_power(&self) -> f64 {
+        let irradiance = self.solar_irradiance;
+        let temperature = self.temperature;
+        let params = &self.solar_panel_params;
+        
+        let temperature_factor = 1.0 + params.temperature_coefficient * (temperature - 25.0);
+        let power = irradiance * params.area * params.efficiency * temperature_factor;
+        
+        power.min(params.rated_power)
+    }
+    
+    pub fn calculate_total_renewable_power(&self) -> f64 {
+        self.calculate_wind_power() + self.calculate_solar_power()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct EnergyMarketModel {
+    pub generators: HashMap<String, Generator>,
+    pub demand: f64,
+    pub market_price: f64,
+}
+
+impl EnergyMarketModel {
+    pub fn new() -> Self {
+        Self {
+            generators: HashMap::new(),
+            demand: 0.0,
+            market_price: 0.0,
+        }
+    }
+    
+    pub fn add_generator(&mut self, generator: Generator) {
+        self.generators.insert(generator.bus_id.clone(), generator);
+    }
+    
+    pub fn market_clearing(&mut self) -> (f64, HashMap<String, f64>) {
+        let mut sorted_generators: Vec<_> = self.generators.iter().collect();
+        sorted_generators.sort_by(|a, b| a.1.cost.partial_cmp(&b.1.cost).unwrap());
+        
+        let mut dispatch = HashMap::new();
+        let mut remaining_demand = self.demand;
+        let mut clearing_price = 0.0;
+        
+        for (bus_id, generator) in sorted_generators {
+            if remaining_demand > 0.0 {
+                let allocated_power = remaining_demand.min(generator.max_power);
+                dispatch.insert(bus_id.clone(), allocated_power);
+                remaining_demand -= allocated_power;
+                clearing_price = generator.cost;
+            } else {
+                dispatch.insert(bus_id.clone(), 0.0);
+            }
+        }
+        
+        self.market_price = clearing_price;
+        (clearing_price, dispatch)
+    }
+    
+    pub fn calculate_total_cost(&self, dispatch: &HashMap<String, f64>) -> f64 {
+        dispatch.iter().map(|(bus_id, power)| {
+            if let Some(generator) = self.generators.get(bus_id) {
+                generator.cost * power
+            } else {
+                0.0
+            }
+        }).sum()
     }
 }
 
 // 使用示例
 fn main() {
-    // 创建电力系统
-    let mut system = PowerSystem::new();
+    // 电力系统模型示例
+    let mut power_system = PowerSystemModel::new();
     
     // 添加母线
-    system.add_bus(Bus {
+    power_system.add_bus(Bus {
         id: "Bus1".to_string(),
         voltage_magnitude: 1.0,
         voltage_angle: 0.0,
@@ -501,56 +464,88 @@ fn main() {
         reactive_power: 0.0,
     });
     
-    system.add_bus(Bus {
+    power_system.add_bus(Bus {
         id: "Bus2".to_string(),
         voltage_magnitude: 1.0,
         voltage_angle: 0.0,
         bus_type: BusType::PQ,
-        active_power: -1.0,
-        reactive_power: -0.5,
+        active_power: -100.0,
+        reactive_power: -50.0,
     });
     
-    // 添加传输线
-    system.add_line(TransmissionLine {
+    // 添加线路
+    power_system.add_line(Line {
         from_bus: "Bus1".to_string(),
         to_bus: "Bus2".to_string(),
-        resistance: 0.01,
-        reactance: 0.1,
+        resistance: 0.1,
+        reactance: 0.2,
         susceptance: 0.0,
-        capacity: 2.0,
+        capacity: 200.0,
     });
     
     // 添加发电机
-    system.add_generator(Generator {
+    power_system.add_generator(Generator {
         bus_id: "Bus1".to_string(),
-        active_power: 1.0,
-        reactive_power: 0.5,
-        max_power: 2.0,
+        active_power: 0.0,
+        reactive_power: 0.0,
+        max_power: 500.0,
         min_power: 0.0,
-        cost_function: Box::new(|p| 5.0 * p + 0.1 * p * p),
+        cost: 50.0,
     });
     
-    // 潮流计算
-    match system.newton_raphson_power_flow(100, 0.001) {
-        Ok(_) => println!("Power flow calculation successful"),
-        Err(e) => println!("Power flow calculation failed: {}", e),
-    }
+    let power_flow_results = power_system.power_flow_analysis();
+    let economic_dispatch = power_system.economic_dispatch(100.0);
+    let system_losses = power_system.calculate_system_losses();
     
-    // 经济调度
-    let dispatch = system.economic_dispatch(1.0);
-    println!("Economic dispatch: {:?}", dispatch);
+    println!("电力系统模型示例:");
+    println!("潮流分析结果: {:?}", power_flow_results);
+    println!("经济调度: {:?}", economic_dispatch);
+    println!("系统损耗: {:.2} MW", system_losses);
     
-    // 风电模型
-    let mut wind_farm = WindFarm::new(100.0);
-    wind_farm.set_wind_speed(10.0);
-    println!("Wind power: {:.2} MW", wind_farm.calculate_power());
+    // 新能源模型示例
+    let mut renewable_model = RenewableEnergyModel::new();
+    renewable_model.wind_speed = 10.0;
+    renewable_model.solar_irradiance = 800.0;
+    renewable_model.temperature = 30.0;
     
-    // 储能系统
-    let mut battery = BatteryStorage::new(100.0, 20.0);
-    let charged = battery.charge(15.0, 1.0);
-    let discharged = battery.discharge(10.0, 1.0);
-    println!("Battery SOC: {:.2}, Charged: {:.2} MW, Discharged: {:.2} MW", 
-             battery.state_of_charge, charged, discharged);
+    let wind_power = renewable_model.calculate_wind_power();
+    let solar_power = renewable_model.calculate_solar_power();
+    let total_renewable_power = renewable_model.calculate_total_renewable_power();
+    
+    println!("\n新能源模型示例:");
+    println!("风电功率: {:.2} kW", wind_power);
+    println!("光伏功率: {:.2} kW", solar_power);
+    println!("总可再生能源功率: {:.2} kW", total_renewable_power);
+    
+    // 能源市场模型示例
+    let mut market = EnergyMarketModel::new();
+    market.demand = 1000.0;
+    
+    market.add_generator(Generator {
+        bus_id: "Gen1".to_string(),
+        active_power: 0.0,
+        reactive_power: 0.0,
+        max_power: 500.0,
+        min_power: 0.0,
+        cost: 30.0,
+    });
+    
+    market.add_generator(Generator {
+        bus_id: "Gen2".to_string(),
+        active_power: 0.0,
+        reactive_power: 0.0,
+        max_power: 600.0,
+        min_power: 0.0,
+        cost: 45.0,
+    });
+    
+    let (clearing_price, dispatch) = market.market_clearing();
+    let total_cost = market.calculate_total_cost(&dispatch);
+    
+    println!("\n能源市场模型示例:");
+    println!("市场出清价格: {:.2} $/MWh", clearing_price);
+    println!("发电调度: {:?}", dispatch);
+    println!("总成本: {:.2} $", total_cost);
 }
 ```
 
@@ -561,14 +556,10 @@ module PowerEnergyModels where
 
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.List (sum, length)
+import Data.List (sortBy, sum)
 
--- 电力系统数据类型
-data PowerSystem = PowerSystem {
-    buses :: [Bus],
-    lines :: [TransmissionLine],
-    generators :: [Generator]
-} deriving Show
+-- 电力系统模型
+data BusType = Slack | PV | PQ deriving (Show, Eq)
 
 data Bus = Bus {
     busId :: String,
@@ -579,9 +570,7 @@ data Bus = Bus {
     reactivePower :: Double
 } deriving Show
 
-data BusType = Slack | PV | PQ deriving Show
-
-data TransmissionLine = TransmissionLine {
+data Line = Line {
     fromBus :: String,
     toBus :: String,
     resistance :: Double,
@@ -595,180 +584,262 @@ data Generator = Generator {
     genActivePower :: Double,
     genReactivePower :: Double,
     maxPower :: Double,
-    minPower :: Double
+    minPower :: Double,
+    cost :: Double
 } deriving Show
 
--- 创建电力系统
-newPowerSystem :: PowerSystem
-newPowerSystem = PowerSystem [] [] []
+data PowerSystemModel = PowerSystemModel {
+    buses :: Map String Bus,
+    lines :: Map String Line,
+    generators :: Map String Generator
+} deriving Show
 
--- 添加母线
-addBus :: Bus -> PowerSystem -> PowerSystem
-addBus bus system = system { buses = bus : buses system }
+newPowerSystemModel :: PowerSystemModel
+newPowerSystemModel = PowerSystemModel {
+    buses = Map.empty,
+    lines = Map.empty,
+    generators = Map.empty
+}
 
--- 添加传输线
-addLine :: TransmissionLine -> PowerSystem -> PowerSystem
-addLine line system = system { lines = line : lines system }
+addBus :: Bus -> PowerSystemModel -> PowerSystemModel
+addBus bus model = model { buses = Map.insert (busId bus) bus (buses model) }
 
--- 添加发电机
-addGenerator :: Generator -> PowerSystem -> PowerSystem
-addGenerator gen system = system { generators = gen : generators system }
+addLine :: Line -> PowerSystemModel -> PowerSystemModel
+addLine line model = 
+    let lineId = fromBus line ++ "-" ++ toBus line
+    in model { lines = Map.insert lineId line (lines model) }
 
--- 简化的潮流计算
-powerFlow :: PowerSystem -> Int -> Double -> Either String PowerSystem
-powerFlow system maxIterations tolerance = go system 0
-  where
-    go sys iteration
-        | iteration >= maxIterations = Left "Power flow did not converge"
-        | maxMismatch < tolerance = Right sys
-        | otherwise = go updatedSystem (iteration + 1)
-      where
-        maxMismatch = calculateMaxMismatch sys
-        updatedSystem = updateVoltages sys
+addGenerator :: Generator -> PowerSystemModel -> PowerSystemModel
+addGenerator generator model = 
+    model { generators = Map.insert (genBusId generator) generator (generators model) }
 
--- 计算最大不平衡量
-calculateMaxMismatch :: PowerSystem -> Double
-calculateMaxMismatch system = maximum [abs (activePower bus - pCalc) | bus <- buses system, busType bus == PQ]
-  where
-    pCalc = 1.0 -- 简化的功率计算
+powerFlowAnalysis :: PowerSystemModel -> Map String (Double, Double)
+powerFlowAnalysis model = 
+    Map.fromList [(busId, calculateBusPower model busId) | 
+                  (busId, _) <- Map.toList (buses model)]
 
--- 更新电压
-updateVoltages :: PowerSystem -> PowerSystem
-updateVoltages system = system { buses = map updateBus (buses system) }
-  where
-    updateBus bus = case busType bus of
-        PQ -> bus { voltageAngle = voltageAngle bus + 0.1 }
-        _ -> bus
+calculateBusPower :: PowerSystemModel -> String -> (Double, Double)
+calculateBusPower model busId = 
+    let connectedLines = filter (\line -> fromBus line == busId) (Map.elems (lines model))
+        powerFlows = map (\line -> calculateLinePowerFlow model line) connectedLines
+    in foldr (\(p, q) (totalP, totalQ) -> (totalP + p, totalQ + q)) (0.0, 0.0) powerFlows
 
--- 经济调度
-economicDispatch :: PowerSystem -> Double -> Map String Double
-economicDispatch system totalDemand = go initialLambda
-  where
-    initialLambda = 10.0
-    
-    go lambda
-        | abs (totalPower - totalDemand) < 0.01 = dispatch
-        | otherwise = go (lambda + 0.1 * (totalDemand - totalPower))
-      where
-        dispatch = Map.fromList [(genBusId gen, power) | gen <- generators system]
-        power = (lambda - 5.0) / 0.1
-        totalPower = sum [power | gen <- generators system]
+calculateLinePowerFlow :: PowerSystemModel -> Line -> (Double, Double)
+calculateLinePowerFlow model line = 
+    let impedance = sqrt (resistance line ^ 2 + reactance line ^ 2)
+        power = 1.0 / impedance  -- 简化的功率流计算
+        reactive = power * reactance line / impedance
+    in (power, reactive)
 
--- 风电模型
-data WindFarm = WindFarm {
-    capacity :: Double,
-    windSpeed :: Double,
+economicDispatch :: PowerSystemModel -> Double -> Map String Double
+economicDispatch model totalDemand = 
+    let sortedGenerators = sortBy (\a b -> compare (cost a) (cost b)) (Map.elems (generators model))
+    in dispatchHelper sortedGenerators totalDemand Map.empty
+
+dispatchHelper :: [Generator] -> Double -> Map String Double -> Map String Double
+dispatchHelper [] _ dispatch = dispatch
+dispatchHelper (gen:gens) remainingDemand dispatch
+    | remainingDemand <= 0 = Map.insert (genBusId gen) 0.0 dispatch
+    | otherwise = 
+        let allocatedPower = min remainingDemand (maxPower gen)
+            newDispatch = Map.insert (genBusId gen) allocatedPower dispatch
+        in dispatchHelper gens (remainingDemand - allocatedPower) newDispatch
+
+calculateSystemLosses :: PowerSystemModel -> Double
+calculateSystemLosses model = 
+    sum [calculateLineLosses line | line <- Map.elems (lines model)]
+
+calculateLineLosses :: Line -> Double
+calculateLineLosses line = 
+    let current = 1.0 / sqrt (resistance line ^ 2 + reactance line ^ 2)
+    in current ^ 2 * resistance line
+
+-- 新能源模型
+data WindTurbineParams = WindTurbineParams {
+    ratedPower :: Double,
     cutInSpeed :: Double,
     ratedSpeed :: Double,
-    cutOutSpeed :: Double
+    cutOutSpeed :: Double,
+    rotorArea :: Double,
+    powerCoefficient :: Double
 } deriving Show
 
-newWindFarm :: Double -> WindFarm
-newWindFarm cap = WindFarm cap 0.0 3.0 12.0 25.0
-
-setWindSpeed :: Double -> WindFarm -> WindFarm
-setWindSpeed speed wf = wf { windSpeed = speed }
-
-calculateWindPower :: WindFarm -> Double
-calculateWindPower wf
-    | windSpeed wf < cutInSpeed wf || windSpeed wf > cutOutSpeed wf = 0.0
-    | windSpeed wf < ratedSpeed wf = capacity wf * powerRatio
-    | otherwise = capacity wf
-  where
-    powerRatio = ((windSpeed wf)^3 - (cutInSpeed wf)^3) / ((ratedSpeed wf)^3 - (cutInSpeed wf)^3)
-
--- 储能系统
-data BatteryStorage = BatteryStorage {
-    batCapacity :: Double,
-    maxPower :: Double,
-    stateOfCharge :: Double,
-    efficiency :: Double
+data SolarPanelParams = SolarPanelParams {
+    panelRatedPower :: Double,
+    area :: Double,
+    efficiency :: Double,
+    temperatureCoefficient :: Double
 } deriving Show
 
-newBatteryStorage :: Double -> Double -> BatteryStorage
-newBatteryStorage cap maxP = BatteryStorage cap maxP 0.5 0.9
+data RenewableEnergyModel = RenewableEnergyModel {
+    windSpeed :: Double,
+    solarIrradiance :: Double,
+    temperature :: Double,
+    windTurbineParams :: WindTurbineParams,
+    solarPanelParams :: SolarPanelParams
+} deriving Show
 
-charge :: Double -> Double -> BatteryStorage -> (Double, BatteryStorage)
-charge power duration battery
-    | newSOC > 1.0 = (actualPower, battery { stateOfCharge = 1.0 })
-    | otherwise = (actualPower, battery { stateOfCharge = newSOC })
-  where
-    actualPower = min power (maxPower battery)
-    energy = actualPower * duration * efficiency battery
-    energyChange = energy / batCapacity battery
-    newSOC = stateOfCharge battery + energyChange
+newRenewableEnergyModel :: RenewableEnergyModel
+newRenewableEnergyModel = RenewableEnergyModel {
+    windSpeed = 0.0,
+    solarIrradiance = 0.0,
+    temperature = 25.0,
+    windTurbineParams = WindTurbineParams {
+        ratedPower = 2000.0,
+        cutInSpeed = 3.0,
+        ratedSpeed = 12.0,
+        cutOutSpeed = 25.0,
+        rotorArea = 1000.0,
+        powerCoefficient = 0.4
+    },
+    solarPanelParams = SolarPanelParams {
+        panelRatedPower = 1000.0,
+        area = 6.0,
+        efficiency = 0.15,
+        temperatureCoefficient = -0.004
+    }
+}
 
-discharge :: Double -> Double -> BatteryStorage -> (Double, BatteryStorage)
-discharge power duration battery
-    | stateOfCharge battery < energyChange = (availablePower, battery { stateOfCharge = 0.0 })
-    | otherwise = (actualPower, battery { stateOfCharge = newSOC })
-  where
-    actualPower = min power (maxPower battery)
-    energy = actualPower * duration / efficiency battery
-    energyChange = energy / batCapacity battery
-    availableEnergy = stateOfCharge battery * batCapacity battery * efficiency battery
-    availablePower = availableEnergy / duration
-    newSOC = stateOfCharge battery - energyChange
+calculateWindPower :: RenewableEnergyModel -> Double
+calculateWindPower model = 
+    let windSpeed = windSpeed model
+        params = windTurbineParams model
+    in if windSpeed < cutInSpeed params || windSpeed > cutOutSpeed params
+       then 0.0
+       else if windSpeed < ratedSpeed params
+            then let power = 0.5 * 1.225 * rotorArea params * windSpeed ^ 3 * powerCoefficient params
+                 in min power (ratedPower params)
+            else ratedPower params
+
+calculateSolarPower :: RenewableEnergyModel -> Double
+calculateSolarPower model = 
+    let irradiance = solarIrradiance model
+        temperature = temperature model
+        params = solarPanelParams model
+        temperatureFactor = 1.0 + temperatureCoefficient params * (temperature - 25.0)
+        power = irradiance * area params * efficiency params * temperatureFactor
+    in min power (panelRatedPower params)
+
+calculateTotalRenewablePower :: RenewableEnergyModel -> Double
+calculateTotalRenewablePower model = 
+    calculateWindPower model + calculateSolarPower model
+
+-- 能源市场模型
+data EnergyMarketModel = EnergyMarketModel {
+    marketGenerators :: Map String Generator,
+    demand :: Double,
+    marketPrice :: Double
+} deriving Show
+
+newEnergyMarketModel :: EnergyMarketModel
+newEnergyMarketModel = EnergyMarketModel {
+    marketGenerators = Map.empty,
+    demand = 0.0,
+    marketPrice = 0.0
+}
+
+addMarketGenerator :: Generator -> EnergyMarketModel -> EnergyMarketModel
+addMarketGenerator generator model = 
+    model { marketGenerators = Map.insert (genBusId generator) generator (marketGenerators model) }
+
+marketClearing :: EnergyMarketModel -> (Double, Map String Double)
+marketClearing model = 
+    let sortedGenerators = sortBy (\a b -> compare (cost a) (cost b)) (Map.elems (marketGenerators model))
+    in clearingHelper sortedGenerators (demand model) Map.empty 0.0
+
+clearingHelper :: [Generator] -> Double -> Map String Double -> Double -> (Double, Map String Double)
+clearingHelper [] _ dispatch price = (price, dispatch)
+clearingHelper (gen:gens) remainingDemand dispatch price
+    | remainingDemand <= 0 = (price, Map.insert (genBusId gen) 0.0 dispatch)
+    | otherwise = 
+        let allocatedPower = min remainingDemand (maxPower gen)
+            newDispatch = Map.insert (genBusId gen) allocatedPower dispatch
+            newPrice = cost gen
+        in clearingHelper gens (remainingDemand - allocatedPower) newDispatch newPrice
+
+calculateTotalCost :: EnergyMarketModel -> Map String Double -> Double
+calculateTotalCost model dispatch = 
+    sum [cost * power | (genId, power) <- Map.toList dispatch,
+                       let gen = marketGenerators model Map.! genId,
+                       let cost = PowerEnergyModels.cost gen]
 
 -- 示例使用
 example :: IO ()
 example = do
-    -- 创建电力系统
-    let system = addGenerator (Generator "Bus1" 1.0 0.5 2.0 0.0) $
-                 addLine (TransmissionLine "Bus1" "Bus2" 0.01 0.1 0.0 2.0) $
-                 addBus (Bus "Bus2" 1.0 0.0 PQ (-1.0) (-0.5)) $
-                 addBus (Bus "Bus1" 1.0 0.0 Slack 0.0 0.0) newPowerSystem
+    -- 电力系统模型示例
+    let powerSystem = addGenerator (Generator "Bus1" 0.0 0.0 500.0 0.0 50.0) $
+                     addLine (Line "Bus1" "Bus2" 0.1 0.2 0.0 200.0) $
+                     addBus (Bus "Bus2" 1.0 0.0 PQ (-100.0) (-50.0)) $
+                     addBus (Bus "Bus1" 1.0 0.0 Slack 0.0 0.0) $
+                     newPowerSystemModel
     
-    -- 潮流计算
-    case powerFlow system 100 0.001 of
-        Right _ -> putStrLn "Power flow calculation successful"
-        Left err -> putStrLn $ "Power flow calculation failed: " ++ err
+    let powerFlowResults = powerFlowAnalysis powerSystem
+        economicDispatch = economicDispatch powerSystem 100.0
+        systemLosses = calculateSystemLosses powerSystem
     
-    -- 经济调度
-    let dispatch = economicDispatch system 1.0
-    putStrLn $ "Economic dispatch: " ++ show dispatch
+    putStrLn "电力系统模型示例:"
+    putStrLn $ "潮流分析结果: " ++ show powerFlowResults
+    putStrLn $ "经济调度: " ++ show economicDispatch
+    putStrLn $ "系统损耗: " ++ show systemLosses ++ " MW"
     
-    -- 风电模型
-    let windFarm = setWindSpeed 10.0 (newWindFarm 100.0)
-    putStrLn $ "Wind power: " ++ show (calculateWindPower windFarm) ++ " MW"
+    -- 新能源模型示例
+    let renewableModel = (newRenewableEnergyModel) {
+        windSpeed = 10.0,
+        solarIrradiance = 800.0,
+        temperature = 30.0
+    }
     
-    -- 储能系统
-    let battery = newBatteryStorage 100.0 20.0
-        (charged, battery1) = charge 15.0 1.0 battery
-        (discharged, battery2) = discharge 10.0 1.0 battery1
+    let windPower = calculateWindPower renewableModel
+        solarPower = calculateSolarPower renewableModel
+        totalRenewablePower = calculateTotalRenewablePower renewableModel
     
-    putStrLn $ "Battery SOC: " ++ show (stateOfCharge battery2) ++ 
-               ", Charged: " ++ show charged ++ " MW, Discharged: " ++ show discharged ++ " MW"
+    putStrLn "\n新能源模型示例:"
+    putStrLn $ "风电功率: " ++ show windPower ++ " kW"
+    putStrLn $ "光伏功率: " ++ show solarPower ++ " kW"
+    putStrLn $ "总可再生能源功率: " ++ show totalRenewablePower ++ " kW"
+    
+    -- 能源市场模型示例
+    let market = addMarketGenerator (Generator "Gen2" 0.0 0.0 600.0 0.0 45.0) $
+                 addMarketGenerator (Generator "Gen1" 0.0 0.0 500.0 0.0 30.0) $
+                 (newEnergyMarketModel) { demand = 1000.0 }
+    
+    let (clearingPrice, dispatch) = marketClearing market
+        totalCost = calculateTotalCost market dispatch
+    
+    putStrLn "\n能源市场模型示例:"
+    putStrLn $ "市场出清价格: " ++ show clearingPrice ++ " $/MWh"
+    putStrLn $ "发电调度: " ++ show dispatch
+    putStrLn $ "总成本: " ++ show totalCost ++ " $"
 ```
 
 ### 应用领域 / Application Domains
 
-#### 电力系统运行 / Power System Operation
+#### 电网规划 / Grid Planning
 
-- **潮流计算**: 稳态分析、电压稳定性
-- **经济调度**: 成本最小化、燃料优化
-- **安全分析**: 暂态稳定性、故障分析
+- **网络扩展**: 输电线路规划、变电站选址
+- **容量规划**: 发电容量规划、负荷预测
+- **投资决策**: 经济性分析、风险评估
 
-#### 电力市场 / Electricity Markets
+#### 运行调度 / Operation Dispatch
 
-- **市场设计**: 拍卖机制、价格形成
-- **风险管理**: 价格风险、容量风险
-- **市场监管**: 反垄断、公平竞争
+- **经济调度**: 发电机组组合、负荷分配
+- **安全运行**: 稳定性分析、故障处理
+- **实时控制**: 自动发电控制、电压控制
 
-#### 智能电网 / Smart Grid
+#### 市场交易 / Market Trading
 
-- **需求响应**: 负荷管理、价格响应
-- **分布式能源**: 微电网、虚拟电厂
-- **储能系统**: 电池储能、抽水蓄能
+- **电力市场**: 竞价机制、市场出清
+- **辅助服务**: 调频、调峰、备用容量
+- **价格机制**: 峰谷电价、实时电价
 
 ---
 
 ## 参考文献 / References
 
-1. Grainger, J. J., & Stevenson, W. D. (1994). Power System Analysis. McGraw-Hill.
-2. Wood, A. J., & Wollenberg, B. F. (2012). Power Generation, Operation, and Control. Wiley.
-3. Kirschen, D. S., & Strbac, G. (2018). Fundamentals of Power System Economics. Wiley.
-4. Kundur, P. (1994). Power System Stability and Control. McGraw-Hill.
+1. Kundur, P. (1994). Power system stability and control. McGraw-Hill.
+2. Wood, A. J., & Wollenberg, B. F. (2012). Power generation, operation, and control. Wiley.
+3. Saadat, H. (2011). Power system analysis. McGraw-Hill.
+4. Kirschen, D. S., & Strbac, G. (2018). Fundamentals of power system economics. Wiley.
 
 ---
 

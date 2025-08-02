@@ -167,8 +167,6 @@ class ModelName:
 1. 作者. (年份). 标题. 期刊/会议.
 2. 作者. (年份). 标题. 出版社.
 
-```
-
 ### 5. 提交更改 / Commit Changes
 
 ```bash
@@ -301,8 +299,6 @@ def calculate_kinetic_energy(mass: float, velocity: float) -> float:
         raise ValueError("质量和速度必须为正数")
     
     return 0.5 * mass * velocity**2
-```
-
 ```
 
 ### 🔧 代码贡献 / Code Contributions

@@ -249,38 +249,38 @@ $$\text{Tr}(J) < 0, \quad \det(J) > 0$$
 扰动 → 系统响应 → 恢复过程 → 新平衡态
 ```
 
-#### 3.3 状态图表征 / State Diagram Representation
+#### 2.3.3 状态图表征 / State Diagram Representation
 
-```
+```text
 生态系统状态:
 稳定态 → 扰动 → 不稳定态 → 恢复 → 新稳定态
 ```
 
-### 4. 语言表征 / Linguistic Representation
+### 2.4. 语言表征 / Linguistic Representation
 
-#### 4.1 自然语言表征 / Natural Language Representation
+#### 2.4.1 自然语言表征 / Natural Language Representation
 
 **生态系统稳定性的重要性**:
 生态系统稳定性是维持地球生命支持系统的关键。稳定的生态系统能够为人类提供清洁的空气、水源、食物和其他生态系统服务。当生态系统受到过度开发、污染或气候变化等扰动时，其稳定性可能受到威胁，进而影响人类的生存和发展。
 
-#### 4.2 形式语言表征 / Formal Language Representation
+#### 2.4.2 形式语言表征 / Formal Language Representation
 
-```
+```text
 稳定性定义:
 系统在平衡点附近，对于任意ε>0，存在δ>0，
 使得当初始条件在δ邻域内时，解始终在ε邻域内
 ```
 
-#### 4.3 符号语言表征 / Symbolic Language Representation
+#### 2.4.3 符号语言表征 / Symbolic Language Representation
 
 - **种群密度**: N₁, N₂, ..., Nₙ
 - **增长率**: r₁, r₂, ..., rₙ
 - **相互作用**: aᵢⱼ
 - **环境容量**: K₁, K₂, ..., Kₙ
 
-### 5. 物理表征 / Physical Representation
+### 2.5. 物理表征 / Physical Representation
 
-#### 5.1 实验表征 / Experimental Representation
+#### 2.5.1 实验表征 / Experimental Representation
 
 **微生态系统实验**:
 
@@ -289,73 +289,73 @@ $$\text{Tr}(J) < 0, \quad \det(J) > 0$$
 - 扰动实验: 添加或移除物种
 - 恢复观测: 记录系统恢复过程
 
-#### 5.2 模拟表征 / Simulation Representation
+#### 2.5.2 模拟表征 / Simulation Representation
 
 - **计算机模拟**: 生态系统动态模拟
 - **蒙特卡洛**: 随机过程模拟
 - **Agent模型**: 个体行为模拟
 
-#### 5.3 原型表征 / Prototype Representation
+#### 2.5.3 原型表征 / Prototype Representation
 
 - **实验生态系统**: 实验室生态系统原型
 - **野外监测**: 野外生态系统监测
 - **保护区域**: 自然保护区管理
 
-### 6. 认知表征 / Cognitive Representation
+### 2.6. 认知表征 / Cognitive Representation
 
-#### 6.1 心理表征 / Psychological Representation
+#### 2.6.1 心理表征 / Psychological Representation
 
 - **生态直觉**: 对生态系统平衡的直觉理解
 - **风险感知**: 对生态风险的感知和评估
 - **价值判断**: 对生态保护的价值判断
 
-#### 6.2 学习表征 / Learning Representation
+#### 2.6.2 学习表征 / Learning Representation
 
 - **生态教育**: 生态系统知识的学习
 - **实地考察**: 野外生态系统的观察学习
 - **案例分析**: 生态破坏和恢复的案例分析
 
-#### 6.3 创造表征 / Creative Representation
+#### 2.6.3 创造表征 / Creative Representation
 
 - **生态设计**: 基于生态原理的设计创新
 - **保护策略**: 生态系统保护的创新策略
 - **可持续发展**: 可持续发展的创新模式
 
-### 7. 社会表征 / Social Representation
+### 2.7. 社会表征 / Social Representation
 
-#### 7.1 文化表征 / Cultural Representation
+#### 2.7.1 文化表征 / Cultural Representation
 
 - **生态文化**: 不同文化的生态观念
 - **传统知识**: 传统生态知识和智慧
 - **现代价值观**: 现代社会的生态价值观
 
-#### 7.2 群体表征 / Group Representation
+#### 2.7.2 群体表征 / Group Representation
 
 - **利益相关者**: 政府、企业、公众、科学家
 - **环保组织**: 环保组织和活动家
 - **原住民**: 原住民的传统生态知识
 
-#### 7.3 制度表征 / Institutional Representation
+#### 2.7.3 制度表征 / Institutional Representation
 
 - **环境政策**: 环境保护政策和法规
 - **管理体制**: 生态系统管理体制
 - **国际合作**: 国际生态保护合作
 
-### 8. 时间表征 / Temporal Representation
+### 2.8. 时间表征 / Temporal Representation
 
-#### 8.1 历史表征 / Historical Representation
+#### 2.8.1 历史表征 / Historical Representation
 
 - **演化历史**: 生态系统的演化历史
 - **人类影响**: 人类活动对生态系统的影响
 - **保护历史**: 生态保护的历史发展
 
-#### 8.2 动态表征 / Dynamic Representation
+#### 2.8.2 动态表征 / Dynamic Representation
 
 - **季节变化**: 生态系统的季节性变化
 - **长期趋势**: 生态系统变化的长期趋势
 - **预测模型**: 生态系统未来的预测模型
 
-#### 8.3 周期表征 / Cyclical Representation
+#### 2.8.3 周期表征 / Cyclical Representation
 
 - **生命周期**: 生物的生命周期
 - **生态循环**: 物质和能量的生态循环

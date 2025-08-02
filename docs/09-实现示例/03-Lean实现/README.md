@@ -613,4 +613,4 @@ def LowEquivalent {State : Type} (s1 s2 : State) : Prop :=
 ---
 
 *最后更新: 2025-08-01*  
-*版本: 1.0.0* 
+*版本: 1.0.0*

@@ -2,14 +2,10 @@
 
 ## 目录 / Table of Contents
 
-- [边缘计算与物联网在电力系统中的应用实现](#边缘计算与物联网在电力系统中的应用实现--edge-computing--iot-implementation-for-power-systems)
+- [边缘计算与物联网在电力系统中的应用实现 / Edge Computing \& IoT Implementation for Power Systems](#边缘计算与物联网在电力系统中的应用实现--edge-computing--iot-implementation-for-power-systems)
   - [目录 / Table of Contents](#目录--table-of-contents)
   - [8.3.49 边缘计算架构 / Edge Computing Architecture](#8349-边缘计算架构--edge-computing-architecture)
-  - [8.3.50 物联网设备管理 / IoT Device Management](#8350-物联网设备管理--iot-device-management)
-  - [8.3.51 边缘智能算法 / Edge Intelligence Algorithms](#8351-边缘智能算法--edge-intelligence-algorithms)
-  - [8.3.52 实时数据处理 / Real-Time Data Processing](#8352-实时数据处理--real-time-data-processing)
-  - [8.3.53 分布式控制 / Distributed Control](#8353-分布式控制--distributed-control)
-  - [8.3.54 安全与隐私保护 / Security and Privacy Protection](#8354-安全与隐私保护--security-and-privacy-protection)
+    - [边缘计算电力系统架构 / Edge Computing Power System Architecture](#边缘计算电力系统架构--edge-computing-power-system-architecture)
 
 ---
 
@@ -988,4 +984,4 @@ if __name__ == "__main__":
 ---
 
 *最后更新: 2025-01-01*
-*版本: 1.0.0* 
+*版本: 1.0.0*

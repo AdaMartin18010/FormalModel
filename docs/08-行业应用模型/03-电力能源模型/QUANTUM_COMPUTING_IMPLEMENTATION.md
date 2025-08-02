@@ -2,14 +2,12 @@
 
 ## 目录 / Table of Contents
 
-- [量子计算在电力系统中的应用实现](#量子计算在电力系统中的应用实现--quantum-computing-implementation-for-power-systems)
+- [量子计算在电力系统中的应用实现 / Quantum Computing Implementation for Power Systems](#量子计算在电力系统中的应用实现--quantum-computing-implementation-for-power-systems)
   - [目录 / Table of Contents](#目录--table-of-contents)
   - [8.3.43 量子计算基础 / Quantum Computing Fundamentals](#8343-量子计算基础--quantum-computing-fundamentals)
+    - [量子计算在电力系统中的应用基础 / Quantum Computing Fundamentals for Power Systems](#量子计算在电力系统中的应用基础--quantum-computing-fundamentals-for-power-systems)
   - [8.3.44 量子优化算法 / Quantum Optimization Algorithms](#8344-量子优化算法--quantum-optimization-algorithms)
-  - [8.3.45 量子机器学习 / Quantum Machine Learning](#8345-量子机器学习--quantum-machine-learning)
-  - [8.3.46 量子电力系统仿真 / Quantum Power System Simulation](#8346-量子电力系统仿真--quantum-power-system-simulation)
-  - [8.3.47 量子安全通信 / Quantum Secure Communication](#8347-量子安全通信--quantum-secure-communication)
-  - [8.3.48 混合量子经典算法 / Hybrid Quantum-Classical Algorithms](#8348-混合量子经典算法--hybrid-quantum-classical-algorithms)
+    - [量子近似优化算法 (QAOA) / Quantum Approximate Optimization Algorithm](#量子近似优化算法-qaoa--quantum-approximate-optimization-algorithm)
 
 ---
 
@@ -860,4 +858,4 @@ if __name__ == "__main__":
 ---
 
 *最后更新: 2025-01-01*
-*版本: 1.0.0* 
+*版本: 1.0.0*

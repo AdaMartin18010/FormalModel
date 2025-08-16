@@ -415,7 +415,7 @@ $$\dot{K}_r = -\gamma e r^T$$
 
 **参数估计**：
 使用递归最小二乘法：
-$$\hat{\theta}(k) = \hat{\theta}(k-1) + K(k)[y(k) - \phi^T(k)\hat{\theta}(k-1)]$$
+$$\hat{\theta}(k) = \hat{\theta}(k-1) + K[k](y(k) - \phi^T(k)\hat{\theta}(k-1))$$
 
 其中 $K(k)$ 是增益矩阵。
 
@@ -1022,4 +1022,4 @@ $$P_e = Q\left(\sqrt{\frac{2E_b}{N_0}}\right)$$
 ---
 
 *编写日期: 2025-08-01*  
-*版本: 1.0.0* 
+*版本: 1.0.0*

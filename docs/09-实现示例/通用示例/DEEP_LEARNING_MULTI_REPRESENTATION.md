@@ -14,6 +14,7 @@
 $$(f * k)(i, j) = \sum_{m=-\infty}^{\infty} \sum_{n=-\infty}^{\infty} f(m, n) \cdot k(i-m, j-n)$$
 
 其中：
+
 - $f$ 是输入特征图
 - $k$ 是卷积核
 - $(i, j)$ 是输出位置
@@ -587,18 +588,21 @@ graph TD
 **卷积神经网络（CNN）**是一种专门用于处理网格结构数据的深度学习模型，具有以下核心特征：
 
 **基本概念**:
+
 - **卷积层**: 使用卷积核提取局部特征
 - **池化层**: 降低特征图尺寸，提取主要特征
 - **激活函数**: 引入非线性变换
 - **全连接层**: 将特征映射到分类结果
 
 **核心优势**:
+
 - **局部感知**: 能够捕获局部空间特征
 - **参数共享**: 减少模型参数数量
 - **平移不变性**: 对输入平移具有鲁棒性
 - **层次化特征**: 逐层提取从低级到高级的特征
 
 **应用领域**:
+
 - **计算机视觉**: 图像分类、目标检测、图像分割
 - **自然语言处理**: 文本分类、情感分析
 - **语音识别**: 语音特征提取
@@ -609,18 +613,21 @@ graph TD
 **Convolutional Neural Networks (CNN)** are deep learning models specifically designed for processing grid-structured data with the following core features:
 
 **Basic Concepts**:
+
 - **Convolutional Layers**: Extract local features using convolution kernels
 - **Pooling Layers**: Reduce feature map size and extract main features
 - **Activation Functions**: Introduce non-linear transformations
 - **Fully Connected Layers**: Map features to classification results
 
 **Core Advantages**:
+
 - **Local Perception**: Can capture local spatial features
 - **Parameter Sharing**: Reduces model parameter count
 - **Translation Invariance**: Robust to input translations
 - **Hierarchical Features**: Extract features from low-level to high-level
 
 **Applications**:
+
 - **Computer Vision**: Image classification, object detection, image segmentation
 - **Natural Language Processing**: Text classification, sentiment analysis
 - **Speech Recognition**: Speech feature extraction
@@ -639,6 +646,7 @@ $$h_t = \tanh(W_{hh} h_{t-1} + W_{xh} x_t + b_h)$$
 $$y_t = W_{hy} h_t + b_y$$
 
 其中：
+
 - $h_t$ 是时间步 $t$ 的隐藏状态
 - $x_t$ 是时间步 $t$ 的输入
 - $W_{hh}, W_{xh}, W_{hy}$ 是权重矩阵

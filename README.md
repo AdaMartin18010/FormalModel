@@ -26,7 +26,7 @@
 
 ## 📚 项目结构 / Project Structure
 
-```
+```text
 FormalModel/
 ├── docs/                          # 文档目录
 │   ├── 00-项目管理/               # 项目管理文档
@@ -85,17 +85,20 @@ ghci ClassicalMechanics.hs
 ### 🔬 科学模型 / Scientific Models
 
 #### 物理科学模型 / Physical Science Models
+
 - [经典力学模型](docs/02-物理科学模型/01-经典力学模型/README.md) - 牛顿力学、拉格朗日力学、哈密顿力学
 - [量子力学模型](docs/02-物理科学模型/02-量子力学模型/README.md) - 薛定谔方程、量子态、测量
 - [相对论模型](docs/02-物理科学模型/03-相对论模型/README.md) - 狭义相对论、广义相对论
 - [热力学模型](docs/02-物理科学模型/04-热力学模型/README.md) - 热力学定律、统计力学
 
 #### 数学科学模型 / Mathematical Science Models
+
 - [代数模型](docs/03-数学科学模型/01-代数模型/README.md) - 群论、环论、域论
 - [几何模型](docs/03-数学科学模型/02-几何模型/README.md) - 欧几里得几何、非欧几何、微分几何
 - [拓扑模型](docs/03-数学科学模型/03-拓扑模型/README.md) - 点集拓扑、代数拓扑、微分拓扑
 
 #### 计算机科学模型 / Computer Science Models
+
 - [计算模型](docs/04-计算机科学模型/01-计算模型/README.md) - 图灵机、有限状态机、λ演算
 - [算法模型](docs/04-计算机科学模型/02-算法模型/README.md) - 复杂度模型、随机算法、近似算法
 - [人工智能模型](docs/04-计算机科学模型/05-人工智能模型/README.md) - 机器学习、深度学习、强化学习
@@ -125,16 +128,19 @@ ghci ClassicalMechanics.hs
 ### 📖 学习路径 / Learning Path
 
 #### 初学者路径 / Beginner Path
+
 1. 阅读[基础理论](docs/01-基础理论/)了解基本概念
 2. 查看[经典力学模型](docs/02-物理科学模型/01-经典力学模型/README.md)的简单示例
 3. 运行Python实现示例熟悉基本操作
 
 #### 进阶路径 / Advanced Path
+
 1. 深入研究[形式化方法论](docs/01-基础理论/02-形式化方法论/README.md)
 2. 查看Rust和Haskell的高级实现
 3. 学习[形式化验证](docs/09-实现示例/04-形式化验证/README.md)
 
 #### 应用路径 / Application Path
+
 1. 选择相关[行业应用模型](docs/08-行业应用模型/)
 2. 查看实际应用案例
 3. 根据需求定制和扩展模型
@@ -142,12 +148,14 @@ ghci ClassicalMechanics.hs
 ### 🔧 开发指南 / Development Guide
 
 #### 添加新模型 / Adding New Models
+
 1. 在相应目录下创建新的README.md文件
 2. 提供数学表征、代码实现、图表可视化
 3. 添加自然语言描述和应用场景
 4. 更新全局索引
 
 #### 改进现有内容 / Improving Existing Content
+
 1. 完善多表征实现
 2. 添加更多编程语言实现
 3. 改进文档质量和可读性

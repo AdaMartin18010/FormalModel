@@ -33,7 +33,7 @@
       - [可视化表征 / Visual Representation](#可视化表征--visual-representation)
     - [示例2：弹簧-质量系统 / Example 2: Spring-Mass System](#示例2弹簧-质量系统--example-2-spring-mass-system)
       - [1数学表征 / Mathematical Representation](#1数学表征--mathematical-representation)
-      - [代码表征 / Code Representation](#代码表征--code-representation-1)
+      - [1代码表征 / Code Representation](#1代码表征--code-representation)
   - [工具集成 / Tool Integration](#工具集成--tool-integration)
     - [1. 数学公式渲染 / Mathematical Formula Rendering](#1-数学公式渲染--mathematical-formula-rendering)
     - [2. 代码高亮 / Code Highlighting](#2-代码高亮--code-highlighting)

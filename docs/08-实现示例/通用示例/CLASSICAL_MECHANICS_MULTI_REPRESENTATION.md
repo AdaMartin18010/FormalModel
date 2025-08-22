@@ -24,6 +24,7 @@ $$\vec{F}_{12} = -\vec{F}_{21}$$
 $$\vec{F} = G\frac{m_1m_2}{r^2}\hat{r}$$
 
 其中：
+
 - $G = 6.674 \times 10^{-11} \text{ N⋅m}^2/\text{kg}^2$: 引力常数
 - $m_1, m_2$: 两物体质量
 - $r$: 两物体间距离
@@ -456,18 +457,21 @@ stateDiagram-v2
 **牛顿力学系统**是经典物理学的基础，描述了物体在重力作用下的运动规律。
 
 **核心概念**:
+
 - **粒子**: 具有质量、位置、速度等属性的质点
 - **重力**: 地球对物体的吸引力，方向向下
 - **运动**: 位置和速度随时间的变化
 - **能量**: 系统的运动能力，包括动能和势能
 
 **运动规律**:
+
 1. 物体在重力作用下做自由落体运动
 2. 重力加速度为9.81 m/s²
 3. 动能和势能相互转换，总机械能守恒
 4. 动量随时间变化，但总动量在无外力时守恒
 
 **应用场景**:
+
 - 天体运动计算
 - 机械系统分析
 - 碰撞问题研究
@@ -478,18 +482,21 @@ stateDiagram-v2
 **Newtonian mechanical system** is the foundation of classical physics, describing the motion of objects under gravitational forces.
 
 **Core Concepts**:
+
 - **Particle**: A point mass with properties such as mass, position, and velocity
 - **Gravity**: Earth's gravitational force acting downward on objects
 - **Motion**: Changes in position and velocity over time
 - **Energy**: The system's capacity for motion, including kinetic and potential energy
 
 **Motion Laws**:
+
 1. Objects undergo free-fall motion under gravity
 2. Gravitational acceleration is 9.81 m/s²
 3. Kinetic and potential energy convert between each other, total mechanical energy is conserved
 4. Momentum changes over time, but total momentum is conserved in the absence of external forces
 
 **Applications**:
+
 - Celestial motion calculations
 - Mechanical system analysis
 - Collision problem studies
@@ -515,7 +522,7 @@ $$\theta(t) = \theta_0\cos(\omega t + \phi)$$
 
 ### 2.2 代码表征 / Code Representation
 
-#### Rust实现 / Rust Implementation
+#### 2.2.1 Rust实现 / Rust Implementation
 
 ```rust
 #[derive(Debug)]
@@ -586,6 +593,7 @@ graph LR
 **单摆系统**是一个经典的振动系统，由一根不可伸长的轻绳和一个质点组成。
 
 **运动特征**:
+
 - 在重力作用下做周期性振动
 - 振动周期与摆长和重力加速度有关
 - 在小角度下近似为简谐振动

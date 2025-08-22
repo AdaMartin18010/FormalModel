@@ -1,63 +1,502 @@
-# 多智能体系统多表征示例 / Multi-Agent Systems Multi-Representation Example
+# 多智能体系统扩展多表征示例 / Multi-Agent Systems Extension Multi-Representation Examples
 
 ## 概述 / Overview
 
-本文档提供多智能体系统的多表征实现示例，包括多智能体强化学习、博弈论应用和分布式学习。
-
-This document provides multi-representation implementation examples for multi-agent systems, including Multi-Agent Reinforcement Learning, Game Theory applications, and Distributed Learning.
+本文档提供了多智能体系统扩展的完整多表征示例，包括多智能体强化学习、博弈论应用和分布式学习。每种方法都包含数学表示、可视化图表和完整的代码实现。
 
 ## 1. 多智能体强化学习 / Multi-Agent Reinforcement Learning
 
-### 1.1 MARL理论 / MARL Theory
+### 1.1 独立Q学习算法 / Independent Q-Learning Algorithm
 
 #### 数学表示 / Mathematical Representation
 
-多智能体强化学习在部分可观察马尔可夫决策过程中学习：
+独立Q学习是每个智能体独立学习自己的Q函数：
 
-Multi-Agent Reinforcement Learning learns in Partially Observable Markov Decision Processes:
+Independent Q-Learning where each agent learns its own Q-function independently:
 
-$$Q_i(s, a_i) = \mathbb{E}[r_i + \gamma \max_{a_i'} Q_i(s', a_i') | s, a_i]$$
+$$Q_i(s, a_i) \leftarrow Q_i(s, a_i) + \alpha[r_i + \gamma \max_{a_i'} Q_i(s', a_i') - Q_i(s, a_i)]$$
 
 其中：
-
-- $Q_i$ 是智能体i的Q值函数
-- $s$ 是全局状态
-- $a_i$ 是智能体i的动作
-- $r_i$ 是智能体i的奖励
+- $Q_i$ 是智能体$i$的Q函数
+- $s$ 是当前状态
+- $a_i$ 是智能体$i$的动作
+- $r_i$ 是智能体$i$的奖励
+- $\alpha$ 是学习率
 - $\gamma$ 是折扣因子
 
 where:
-
-- $Q_i$ is the Q-value function for agent i
-- $s$ is the global state
-- $a_i$ is the action of agent i
-- $r_i$ is the reward for agent i
+- $Q_i$ is the Q-function of agent $i$
+- $s$ is the current state
+- $a_i$ is the action of agent $i$
+- $r_i$ is the reward of agent $i$
+- $\alpha$ is the learning rate
 - $\gamma$ is the discount factor
+
+联合策略的Q值：
+
+Joint policy Q-value:
+
+$$Q^{\pi}(s, \vec{a}) = \sum_{i=1}^{n} Q_i^{\pi_i}(s, a_i)$$
+
+其中：
+- $\vec{a} = (a_1, a_2, ..., a_n)$ 是联合动作
+- $\pi = (\pi_1, \pi_2, ..., \pi_n)$ 是联合策略
+
+where:
+- $\vec{a} = (a_1, a_2, ..., a_n)$ is the joint action
+- $\pi = (\pi_1, \pi_2, ..., \pi_n)$ is the joint policy
 
 #### 可视化表示 / Visual Representation
 
 ```mermaid
 graph TD
-    A[环境状态 s] --> B[智能体1 观察 o₁]
-    A --> C[智能体2 观察 o₂]
-    A --> D[智能体N 观察 oₙ]
+    A[环境状态] --> B[智能体1]
+    A --> C[智能体2]
+    A --> D[智能体N]
+    B --> E[Q学习更新]
+    C --> F[Q学习更新]
+    D --> G[Q学习更新]
+    E --> H[策略选择]
+    F --> I[策略选择]
+    G --> J[策略选择]
+    H --> K[联合动作]
+    I --> K
+    J --> K
+    K --> L[环境反馈]
+    L --> A
     
-    B --> E[智能体1 策略 π₁]
-    C --> F[智能体2 策略 π₂]
-    D --> G[智能体N 策略 πₙ]
+    subgraph "多智能体系统"
+        M[智能体网络]
+        N[通信协议]
+        O[协调机制]
+        P[学习算法]
+    end
     
-    E --> H[联合动作 a]
-    F --> H
-    G --> H
+    subgraph "学习过程"
+        Q[经验收集]
+        R[Q值更新]
+        S[策略优化]
+        T[收敛检查]
+    end
+```
+
+#### Python实现 / Python Implementation
+
+```python
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import numpy as np
+import matplotlib.pyplot as plt
+from typing import List, Dict, Tuple, Optional
+import random
+from collections import deque
+import warnings
+warnings.filterwarnings('ignore')
+
+class Agent(nn.Module):
+    """智能体网络"""
     
-    H --> I[环境转换]
-    I --> J[奖励分配]
-    J --> A
+    def __init__(self, state_dim: int, action_dim: int, agent_id: int, 
+                 hidden_dim: int = 64, lr: float = 0.001):
+        super(Agent, self).__init__()
+        self.agent_id = agent_id
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        
+        # Q网络
+        self.q_network = nn.Sequential(
+            nn.Linear(state_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, action_dim)
+        )
+        
+        # 目标网络
+        self.target_network = nn.Sequential(
+            nn.Linear(state_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, action_dim)
+        )
+        
+        self.target_network.load_state_dict(self.q_network.state_dict())
+        self.optimizer = optim.Adam(self.q_network.parameters(), lr=lr)
+        
+        # 经验回放缓冲区
+        self.memory = deque(maxlen=10000)
+        self.batch_size = 32
+        self.gamma = 0.99
+        self.epsilon = 1.0
+        self.epsilon_min = 0.01
+        self.epsilon_decay = 0.995
+        
+    def forward(self, state: torch.Tensor) -> torch.Tensor:
+        """前向传播"""
+        return self.q_network(state)
     
-    subgraph "多智能体学习"
-        K[独立Q学习]
-        L[联合Q学习]
-        M[策略梯度]
+    def select_action(self, state: np.ndarray, training: bool = True) -> int:
+        """选择动作"""
+        if training and random.random() < self.epsilon:
+            return random.randrange(self.action_dim)
+        
+        state_tensor = torch.FloatTensor(state).unsqueeze(0)
+        q_values = self.forward(state_tensor)
+        return q_values.argmax().item()
+    
+    def store_experience(self, state: np.ndarray, action: int, reward: float, 
+                        next_state: np.ndarray, done: bool):
+        """存储经验"""
+        self.memory.append((state, action, reward, next_state, done))
+    
+    def train(self) -> float:
+        """训练智能体"""
+        if len(self.memory) < self.batch_size:
+            return 0.0
+        
+        # 采样批次
+        batch = random.sample(self.memory, self.batch_size)
+        states, actions, rewards, next_states, dones = zip(*batch)
+        
+        states = torch.FloatTensor(states)
+        actions = torch.LongTensor(actions)
+        rewards = torch.FloatTensor(rewards)
+        next_states = torch.FloatTensor(next_states)
+        dones = torch.BoolTensor(dones)
+        
+        # 计算当前Q值
+        current_q_values = self.q_network(states).gather(1, actions.unsqueeze(1))
+        
+        # 计算目标Q值
+        with torch.no_grad():
+            next_q_values = self.target_network(next_states).max(1)[0]
+            target_q_values = rewards + (self.gamma * next_q_values * ~dones)
+        
+        # 计算损失
+        loss = F.mse_loss(current_q_values.squeeze(), target_q_values)
+        
+        # 反向传播
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        
+        # 更新epsilon
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
+        
+        return loss.item()
+    
+    def update_target_network(self):
+        """更新目标网络"""
+        self.target_network.load_state_dict(self.q_network.state_dict())
+
+class MultiAgentEnvironment:
+    """多智能体环境"""
+    
+    def __init__(self, num_agents: int = 3, grid_size: int = 5):
+        self.num_agents = num_agents
+        self.grid_size = grid_size
+        self.reset()
+        
+    def reset(self) -> np.ndarray:
+        """重置环境"""
+        # 随机放置智能体
+        self.agent_positions = []
+        for _ in range(self.num_agents):
+            while True:
+                pos = (random.randint(0, self.grid_size-1), 
+                      random.randint(0, self.grid_size-1))
+                if pos not in self.agent_positions:
+                    self.agent_positions.append(pos)
+                    break
+        
+        # 随机放置目标
+        self.target_positions = []
+        for _ in range(self.num_agents):
+            while True:
+                pos = (random.randint(0, self.grid_size-1), 
+                      random.randint(0, self.grid_size-1))
+                if pos not in self.agent_positions and pos not in self.target_positions:
+                    self.target_positions.append(pos)
+                    break
+        
+        return self.get_state()
+    
+    def get_state(self) -> np.ndarray:
+        """获取状态"""
+        state = []
+        for i in range(self.num_agents):
+            # 智能体位置
+            agent_pos = self.agent_positions[i]
+            target_pos = self.target_positions[i]
+            
+            # 相对位置
+            relative_x = target_pos[0] - agent_pos[0]
+            relative_y = target_pos[1] - agent_pos[1]
+            
+            # 距离
+            distance = np.sqrt(relative_x**2 + relative_y**2)
+            
+            # 其他智能体的位置（简化表示）
+            other_agents = []
+            for j in range(self.num_agents):
+                if j != i:
+                    other_agents.extend([
+                        self.agent_positions[j][0] - agent_pos[0],
+                        self.agent_positions[j][1] - agent_pos[1]
+                    ])
+            
+            agent_state = [relative_x, relative_y, distance] + other_agents
+            state.extend(agent_state)
+        
+        return np.array(state, dtype=np.float32)
+    
+    def step(self, actions: List[int]) -> Tuple[np.ndarray, List[float], bool, Dict]:
+        """执行动作"""
+        rewards = []
+        
+        # 执行动作
+        for i, action in enumerate(actions):
+            agent_pos = list(self.agent_positions[i])
+            
+            # 动作映射：0-上，1-下，2-左，3-右
+            if action == 0:  # 上
+                agent_pos[1] = max(0, agent_pos[1] - 1)
+            elif action == 1:  # 下
+                agent_pos[1] = min(self.grid_size - 1, agent_pos[1] + 1)
+            elif action == 2:  # 左
+                agent_pos[0] = max(0, agent_pos[0] - 1)
+            elif action == 3:  # 右
+                agent_pos[0] = min(self.grid_size - 1, agent_pos[0] + 1)
+            
+            self.agent_positions[i] = tuple(agent_pos)
+        
+        # 计算奖励
+        done = False
+        for i in range(self.num_agents):
+            agent_pos = self.agent_positions[i]
+            target_pos = self.target_positions[i]
+            
+            # 距离奖励
+            distance = np.sqrt((agent_pos[0] - target_pos[0])**2 + 
+                             (agent_pos[1] - target_pos[1])**2)
+            
+            if distance == 0:
+                reward = 10.0  # 到达目标
+            else:
+                reward = -distance / self.grid_size  # 距离惩罚
+            
+            # 碰撞惩罚
+            for j in range(self.num_agents):
+                if i != j and agent_pos == self.agent_positions[j]:
+                    reward -= 5.0
+            
+            rewards.append(reward)
+        
+        # 检查是否所有智能体都到达目标
+        if all(self.agent_positions[i] == self.target_positions[i] 
+               for i in range(self.num_agents)):
+            done = True
+        
+        next_state = self.get_state()
+        info = {}
+        
+        return next_state, rewards, done, info
+
+class MultiAgentQLearning:
+    """多智能体Q学习"""
+    
+    def __init__(self, num_agents: int = 3, state_dim: int = 15, action_dim: int = 4):
+        self.num_agents = num_agents
+        self.agents = []
+        
+        # 创建智能体
+        for i in range(num_agents):
+            agent = Agent(state_dim, action_dim, i)
+            self.agents.append(agent)
+        
+        self.environment = MultiAgentEnvironment(num_agents)
+        
+    def train(self, episodes: int = 1000) -> List[float]:
+        """训练多智能体系统"""
+        episode_rewards = []
+        
+        for episode in range(episodes):
+            state = self.environment.reset()
+            total_reward = 0
+            done = False
+            
+            while not done:
+                # 选择动作
+                actions = []
+                for agent in self.agents:
+                    action = agent.select_action(state)
+                    actions.append(action)
+                
+                # 执行动作
+                next_state, rewards, done, _ = self.environment.step(actions)
+                
+                # 存储经验
+                for i, agent in enumerate(self.agents):
+                    agent.store_experience(state, actions[i], rewards[i], 
+                                         next_state, done)
+                
+                # 训练智能体
+                for agent in self.agents:
+                    agent.train()
+                
+                state = next_state
+                total_reward += sum(rewards)
+            
+            # 更新目标网络
+            if episode % 10 == 0:
+                for agent in self.agents:
+                    agent.update_target_network()
+            
+            episode_rewards.append(total_reward)
+            
+            if episode % 100 == 0:
+                avg_reward = np.mean(episode_rewards[-100:])
+                print(f"Episode {episode}: Average Reward = {avg_reward:.2f}")
+        
+        return episode_rewards
+    
+    def evaluate(self, episodes: int = 100) -> float:
+        """评估智能体性能"""
+        total_rewards = []
+        
+        for _ in range(episodes):
+            state = self.environment.reset()
+            episode_reward = 0
+            done = False
+            
+            while not done:
+                actions = []
+                for agent in self.agents:
+                    action = agent.select_action(state, training=False)
+                    actions.append(action)
+                
+                next_state, rewards, done, _ = self.environment.step(actions)
+                episode_reward += sum(rewards)
+                state = next_state
+            
+            total_rewards.append(episode_reward)
+        
+        return np.mean(total_rewards)
+
+def visualize_training(rewards: List[float]) -> None:
+    """可视化训练过程"""
+    plt.figure(figsize=(12, 4))
+    
+    # 奖励曲线
+    plt.subplot(1, 2, 1)
+    plt.plot(rewards, alpha=0.6, color='blue')
+    plt.title('Multi-Agent Q-Learning Training')
+    plt.xlabel('Episode')
+    plt.ylabel('Total Reward')
+    plt.grid(True, alpha=0.3)
+    
+    # 移动平均
+    window_size = 50
+    if len(rewards) >= window_size:
+        moving_avg = np.convolve(rewards, np.ones(window_size)/window_size, mode='valid')
+        plt.plot(range(window_size-1, len(rewards)), moving_avg, 
+                color='red', linewidth=2, label=f'{window_size}-Episode Moving Average')
+        plt.legend()
+    
+    # 奖励分布
+    plt.subplot(1, 2, 2)
+    plt.hist(rewards, bins=30, alpha=0.7, color='green')
+    plt.title('Reward Distribution')
+    plt.xlabel('Total Reward')
+    plt.ylabel('Frequency')
+    plt.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.show()
+
+# 测试多智能体强化学习
+if __name__ == "__main__":
+    # 创建多智能体Q学习系统
+    ma_ql = MultiAgentQLearning(num_agents=3, state_dim=15, action_dim=4)
+    
+    # 训练智能体
+    print("开始训练多智能体Q学习...")
+    rewards = ma_ql.train(episodes=500)
+    
+    # 评估性能
+    avg_reward = ma_ql.evaluate(episodes=50)
+    print(f"评估结果 - 平均奖励: {avg_reward:.2f}")
+    
+    # 可视化训练过程
+    visualize_training(rewards)
+```
+
+## 2. 博弈论应用 / Game Theory Applications
+
+### 2.1 纳什均衡计算 / Nash Equilibrium Computation
+
+#### 数学表示 / Mathematical Representation
+
+纳什均衡是博弈论中的核心概念：
+
+Nash Equilibrium is a central concept in game theory:
+
+对于策略组合 $\sigma^* = (\sigma_1^*, \sigma_2^*, ..., \sigma_n^*)$，如果对于每个玩家$i$：
+
+For strategy profile $\sigma^* = (\sigma_1^*, \sigma_2^*, ..., \sigma_n^*)$, if for each player $i$:
+
+$$u_i(\sigma_i^*, \sigma_{-i}^*) \geq u_i(\sigma_i, \sigma_{-i}^*) \quad \forall \sigma_i \in \Sigma_i$$
+
+其中：
+- $u_i$ 是玩家$i$的效用函数
+- $\sigma_{-i}^*$ 是其他玩家的策略
+- $\Sigma_i$ 是玩家$i$的策略空间
+
+where:
+- $u_i$ is the utility function of player $i$
+- $\sigma_{-i}^*$ are the strategies of other players
+- $\Sigma_i$ is the strategy space of player $i$
+
+混合策略纳什均衡：
+
+Mixed Strategy Nash Equilibrium:
+
+$$\sum_{s_i \in S_i} \sigma_i^*(s_i) = 1$$
+$$\sigma_i^*(s_i) \geq 0 \quad \forall s_i \in S_i$$
+
+其中：
+- $S_i$ 是玩家$i$的纯策略集
+- $\sigma_i^*(s_i)$ 是选择策略$s_i$的概率
+
+where:
+- $S_i$ is the pure strategy set of player $i$
+- $\sigma_i^*(s_i)$ is the probability of choosing strategy $s_i$
+
+#### 可视化表示 / Visual Representation
+
+```mermaid
+graph TD
+    A[博弈矩阵] --> B[策略分析]
+    B --> C[效用计算]
+    C --> D[纳什均衡检查]
+    D --> E[均衡策略]
+    
+    subgraph "博弈论框架"
+        F[玩家策略]
+        G[效用矩阵]
+        H[均衡计算]
+        I[稳定性分析]
+    end
+    
+    subgraph "纳什均衡"
+        J[纯策略均衡]
+        K[混合策略均衡]
+        L[多重均衡]
+        M[均衡选择]
     end
 ```
 
@@ -65,923 +504,491 @@ graph TD
 
 ```python
 import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from dataclasses import dataclass
-from typing import List, Tuple, Dict, Optional
-import random
+from typing import List, Tuple, Dict
+import itertools
 
-@dataclass
-class Agent:
-    """智能体"""
-    id: int
-    state_size: int
-    action_size: int
-    learning_rate: float = 0.01
-    epsilon: float = 0.1
-    gamma: float = 0.95
-
-class MultiAgentEnvironment:
-    """多智能体环境"""
+class GameTheory:
+    """博弈论工具类"""
     
-    def __init__(self, num_agents: int, grid_size: int = 5):
-        self.num_agents = num_agents
-        self.grid_size = grid_size
-        self.positions = np.random.randint(0, grid_size, (num_agents, 2))
-        self.targets = np.random.randint(0, grid_size, (num_agents, 2))
-        
-        # 避免初始位置与目标重叠
-        for i in range(num_agents):
-            while np.array_equal(self.positions[i], self.targets[i]):
-                self.targets[i] = np.random.randint(0, grid_size, 2)
+    def __init__(self):
+        pass
     
-    def reset(self) -> Dict[int, np.ndarray]:
-        """重置环境"""
-        self.positions = np.random.randint(0, self.grid_size, (self.num_agents, 2))
-        self.targets = np.random.randint(0, self.grid_size, (self.num_agents, 2))
+    def prisoner_dilemma(self) -> Tuple[np.ndarray, np.ndarray]:
+        """囚徒困境博弈"""
+        # 玩家1的收益矩阵
+        player1_payoff = np.array([
+            [3, 0],  # 合作策略
+            [5, 1]   # 背叛策略
+        ])
         
-        # 避免初始位置与目标重叠
-        for i in range(self.num_agents):
-            while np.array_equal(self.positions[i], self.targets[i]):
-                self.targets[i] = np.random.randint(0, self.grid_size, 2)
+        # 玩家2的收益矩阵
+        player2_payoff = np.array([
+            [3, 5],  # 合作策略
+            [0, 1]   # 背叛策略
+        ])
         
-        return self._get_observations()
+        return player1_payoff, player2_payoff
     
-    def step(self, actions: Dict[int, int]) -> Tuple[Dict[int, np.ndarray], Dict[int, float], bool]:
-        """执行动作"""
-        rewards = {}
+    def battle_of_sexes(self) -> Tuple[np.ndarray, np.ndarray]:
+        """性别之战博弈"""
+        # 玩家1的收益矩阵
+        player1_payoff = np.array([
+            [2, 0],  # 足球策略
+            [0, 1]   # 芭蕾策略
+        ])
         
-        # 执行动作
-        for agent_id, action in actions.items():
-            if action == 0:  # 上
-                self.positions[agent_id][1] = max(0, self.positions[agent_id][1] - 1)
-            elif action == 1:  # 下
-                self.positions[agent_id][1] = min(self.grid_size - 1, self.positions[agent_id][1] + 1)
-            elif action == 2:  # 左
-                self.positions[agent_id][0] = max(0, self.positions[agent_id][0] - 1)
-            elif action == 3:  # 右
-                self.positions[agent_id][0] = min(self.grid_size - 1, self.positions[agent_id][0] + 1)
+        # 玩家2的收益矩阵
+        player2_payoff = np.array([
+            [1, 0],  # 足球策略
+            [0, 2]   # 芭蕾策略
+        ])
         
-        # 计算奖励
-        for agent_id in range(self.num_agents):
-            distance = np.linalg.norm(self.positions[agent_id] - self.targets[agent_id])
-            if distance == 0:
-                rewards[agent_id] = 10.0  # 到达目标
-            else:
-                rewards[agent_id] = -distance / self.grid_size  # 距离惩罚
-        
-        # 检查是否所有智能体都到达目标
-        done = all(np.linalg.norm(self.positions[i] - self.targets[i]) == 0 
-                  for i in range(self.num_agents))
-        
-        return self._get_observations(), rewards, done
+        return player1_payoff, player2_payoff
     
-    def _get_observations(self) -> Dict[int, np.ndarray]:
-        """获取观察"""
-        observations = {}
-        for agent_id in range(self.num_agents):
-            # 观察包括：当前位置、目标位置、其他智能体位置
-            obs = np.concatenate([
-                self.positions[agent_id],
-                self.targets[agent_id],
-                self.positions.flatten()  # 所有智能体位置
-            ])
-            observations[agent_id] = obs
-        return observations
-
-class MultiAgentQLearning:
-    """多智能体Q学习"""
+    def find_pure_nash_equilibria(self, player1_payoff: np.ndarray, 
+                                 player2_payoff: np.ndarray) -> List[Tuple[int, int]]:
+        """寻找纯策略纳什均衡"""
+        n_strategies1, n_strategies2 = player1_payoff.shape
+        equilibria = []
+        
+        for i in range(n_strategies1):
+            for j in range(n_strategies2):
+                # 检查玩家1是否最优响应
+                player1_best = True
+                for k in range(n_strategies1):
+                    if player1_payoff[k, j] > player1_payoff[i, j]:
+                        player1_best = False
+                        break
+                
+                # 检查玩家2是否最优响应
+                player2_best = True
+                for l in range(n_strategies2):
+                    if player2_payoff[i, l] > player2_payoff[i, j]:
+                        player2_best = False
+                        break
+                
+                if player1_best and player2_best:
+                    equilibria.append((i, j))
+        
+        return equilibria
     
-    def __init__(self, num_agents: int, state_size: int, action_size: int):
-        self.num_agents = num_agents
-        self.agents = {}
-        self.q_tables = {}
+    def find_mixed_nash_equilibrium(self, player1_payoff: np.ndarray, 
+                                   player2_payoff: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """寻找混合策略纳什均衡"""
+        n_strategies1, n_strategies2 = player1_payoff.shape
         
-        for i in range(num_agents):
-            self.agents[i] = Agent(i, state_size, action_size)
-            self.q_tables[i] = {}
-    
-    def get_action(self, agent_id: int, state: np.ndarray) -> int:
-        """选择动作"""
-        state_key = tuple(state)
+        # 使用线性规划求解（简化版本）
+        # 这里使用迭代方法
         
-        if state_key not in self.q_tables[agent_id]:
-            self.q_tables[agent_id][state_key] = np.zeros(self.agents[agent_id].action_size)
+        # 初始化混合策略
+        p1 = np.ones(n_strategies1) / n_strategies1
+        p2 = np.ones(n_strategies2) / n_strategies2
         
-        # ε-贪婪策略
-        if random.random() < self.agents[agent_id].epsilon:
-            return random.randint(0, self.agents[agent_id].action_size - 1)
-        else:
-            return np.argmax(self.q_tables[agent_id][state_key])
-    
-    def update(self, agent_id: int, state: np.ndarray, action: int, 
-               reward: float, next_state: np.ndarray) -> None:
-        """更新Q值"""
-        state_key = tuple(state)
-        next_state_key = tuple(next_state)
-        
-        if state_key not in self.q_tables[agent_id]:
-            self.q_tables[agent_id][state_key] = np.zeros(self.agents[agent_id].action_size)
-        
-        if next_state_key not in self.q_tables[agent_id]:
-            self.q_tables[agent_id][next_state_key] = np.zeros(self.agents[agent_id].action_size)
-        
-        # Q学习更新
-        current_q = self.q_tables[agent_id][state_key][action]
-        max_next_q = np.max(self.q_tables[agent_id][next_state_key])
-        
-        new_q = current_q + self.agents[agent_id].learning_rate * (
-            reward + self.agents[agent_id].gamma * max_next_q - current_q
-        )
-        
-        self.q_tables[agent_id][state_key][action] = new_q
-
-def train_marl(env: MultiAgentEnvironment, marl: MultiAgentQLearning, 
-               episodes: int = 1000) -> List[float]:
-    """训练多智能体强化学习"""
-    episode_rewards = []
-    
-    for episode in range(episodes):
-        observations = env.reset()
-        total_reward = 0
-        step_count = 0
-        
-        while step_count < 100:  # 最大步数限制
-            # 选择动作
-            actions = {}
-            for agent_id, obs in observations.items():
-                actions[agent_id] = marl.get_action(agent_id, obs)
+        # 迭代更新
+        for _ in range(100):
+            # 计算期望收益
+            expected_payoff1 = player1_payoff @ p2
+            expected_payoff2 = player2_payoff.T @ p1
             
-            # 执行动作
-            next_observations, rewards, done = env.step(actions)
+            # 更新策略（软最大化）
+            p1_new = np.exp(expected_payoff1) / np.sum(np.exp(expected_payoff1))
+            p2_new = np.exp(expected_payoff2) / np.sum(np.exp(expected_payoff2))
             
-            # 更新Q值
-            for agent_id in range(env.num_agents):
-                marl.update(agent_id, observations[agent_id], actions[agent_id],
-                           rewards[agent_id], next_observations[agent_id])
-            
-            # 更新总奖励
-            total_reward += sum(rewards.values())
-            observations = next_observations
-            step_count += 1
-            
-            if done:
+            # 检查收敛
+            if np.allclose(p1, p1_new) and np.allclose(p2, p2_new):
                 break
+            
+            p1 = p1_new
+            p2 = p2_new
         
-        episode_rewards.append(total_reward)
-        
-        if episode % 100 == 0:
-            print(f"Episode {episode}, Total Reward: {total_reward:.2f}")
+        return p1, p2
     
-    return episode_rewards
+    def evolutionary_game_dynamics(self, payoff_matrix: np.ndarray, 
+                                  initial_population: np.ndarray, 
+                                  generations: int = 100) -> np.ndarray:
+        """演化博弈动力学"""
+        population = initial_population.copy()
+        history = [population.copy()]
+        
+        for _ in range(generations):
+            # 计算适应度
+            fitness = payoff_matrix @ population
+            
+            # 复制动力学
+            avg_fitness = np.sum(population * fitness)
+            if avg_fitness > 0:
+                population = population * fitness / avg_fitness
+            
+            history.append(population.copy())
+        
+        return np.array(history)
 
-def visualize_marl_results(env: MultiAgentEnvironment, marl: MultiAgentQLearning) -> None:
-    """可视化MARL结果"""
-    # 运行一个测试回合
-    observations = env.reset()
-    step_count = 0
+def analyze_game(game_name: str, player1_payoff: np.ndarray, 
+                player2_payoff: np.ndarray) -> None:
+    """分析博弈"""
+    print(f"\n=== {game_name} 分析 ===")
     
-    plt.figure(figsize=(15, 5))
+    # 显示收益矩阵
+    print("玩家1收益矩阵:")
+    print(player1_payoff)
+    print("\n玩家2收益矩阵:")
+    print(player2_payoff)
     
-    while step_count < 20:
-        # 选择动作
-        actions = {}
-        for agent_id, obs in observations.items():
-            actions[agent_id] = marl.get_action(agent_id, obs)
-        
-        # 可视化当前状态
-        plt.subplot(1, 3, 1)
-        plt.clf()
-        plt.imshow(np.zeros((env.grid_size, env.grid_size)), cmap='Blues')
-        
-        # 绘制智能体位置
-        for i in range(env.num_agents):
-            plt.scatter(env.positions[i][0], env.positions[i][1], 
-                       c=f'C{i}', s=200, marker='o', label=f'Agent {i}')
-            plt.scatter(env.targets[i][0], env.targets[i][1], 
-                       c=f'C{i}', s=200, marker='*', label=f'Target {i}')
-        
-        plt.title(f'Step {step_count}')
-        plt.legend()
-        plt.grid(True)
-        
-        # 执行动作
-        next_observations, rewards, done = env.step(actions)
-        observations = next_observations
-        step_count += 1
-        
-        if done:
-            break
-        
-        plt.pause(0.5)
+    # 寻找纯策略纳什均衡
+    game = GameTheory()
+    pure_equilibria = game.find_pure_nash_equilibria(player1_payoff, player2_payoff)
     
-    plt.show()
+    print(f"\n纯策略纳什均衡: {pure_equilibria}")
+    
+    # 寻找混合策略纳什均衡
+    mixed_p1, mixed_p2 = game.find_mixed_nash_equilibrium(player1_payoff, player2_payoff)
+    
+    print(f"混合策略纳什均衡:")
+    print(f"玩家1策略: {mixed_p1}")
+    print(f"玩家2策略: {mixed_p2}")
+    
+    # 计算均衡收益
+    if pure_equilibria:
+        for eq in pure_equilibria:
+            payoff1 = player1_payoff[eq[0], eq[1]]
+            payoff2 = player2_payoff[eq[0], eq[1]]
+            print(f"均衡 {eq} 的收益: 玩家1={payoff1}, 玩家2={payoff2}")
 
-# 测试MARL
-if __name__ == "__main__":
-    # 创建环境和智能体
-    env = MultiAgentEnvironment(num_agents=3, grid_size=5)
-    marl = MultiAgentQLearning(num_agents=3, state_size=12, action_size=4)
-    
-    # 训练
-    rewards = train_marl(env, marl, episodes=500)
-    
-    # 可视化
-    visualize_marl_results(env, marl)
-    
-    # 训练曲线
+def visualize_evolutionary_dynamics(history: np.ndarray, strategy_names: List[str]) -> None:
+    """可视化演化动力学"""
     plt.figure(figsize=(10, 6))
-    plt.plot(rewards)
-    plt.title('Multi-Agent Q-Learning Training')
-    plt.xlabel('Episode')
-    plt.ylabel('Total Reward')
+    
+    for i, name in enumerate(strategy_names):
+        plt.plot(history[:, i], label=name, linewidth=2)
+    
+    plt.title('Evolutionary Game Dynamics')
+    plt.xlabel('Generation')
+    plt.ylabel('Population Frequency')
+    plt.legend()
     plt.grid(True, alpha=0.3)
     plt.show()
 
-## 2. 博弈论应用 / Game Theory Applications
-
-### 2.1 博弈论理论 / Game Theory Theory
-
-#### 数学表示 / Mathematical Representation
-
-博弈论中的纳什均衡：
-
-Nash Equilibrium in Game Theory:
-
-$$\pi_i^* \in \arg\max_{\pi_i} \mathbb{E}_{s \sim \rho^\pi, a \sim \pi} [R_i(s, a)]$$
-
-其中：
-- $\pi_i^*$ 是智能体i的最优策略
-- $\rho^\pi$ 是策略π下的状态分布
-- $R_i$ 是智能体i的奖励函数
-
-where:
-- $\pi_i^*$ is the optimal strategy for agent i
-- $\rho^\pi$ is the state distribution under strategy π
-- $R_i$ is the reward function for agent i
-
-#### 可视化表示 / Visual Representation
-
-```mermaid
-graph TD
-    A[博弈矩阵] --> B[策略空间]
-    B --> C[收益函数]
-    C --> D[纳什均衡]
-    
-    E[囚徒困境] --> F[合作策略]
-    E --> G[背叛策略]
-    F --> H[收益矩阵]
-    G --> H
-    
-    subgraph "博弈类型"
-        I[零和博弈]
-        J[非零和博弈]
-        K[重复博弈]
-    end
-```
-
-#### 1Python实现 / Python Implementation
-
-```python
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import matplotlib.pyplot as plt
-from dataclasses import dataclass
-from typing import List, Tuple, Dict, Optional
-import itertools
-
-@dataclass
-class Game:
-    """博弈"""
-    num_players: int
-    num_actions: int
-    payoff_matrix: np.ndarray
-
-class PrisonersDilemma(Game):
-    """囚徒困境"""
-    
-    def __init__(self):
-        # 合作=0, 背叛=1
-        # 收益矩阵: (玩家1收益, 玩家2收益)
-        payoff_matrix = np.array([
-            [[3, 3], [0, 5]],  # 玩家1合作
-            [[5, 0], [1, 1]]   # 玩家1背叛
-        ])
-        
-        super().__init__(num_players=2, num_actions=2, payoff_matrix=payoff_matrix)
-
-class NashEquilibriumFinder:
-    """纳什均衡求解器"""
-    
-    def __init__(self, game: Game):
-        self.game = game
-    
-    def find_pure_nash_equilibrium(self) -> List[Tuple[int, ...]]:
-        """寻找纯策略纳什均衡"""
-        equilibria = []
-        
-        # 检查所有可能的策略组合
-        for strategy_profile in itertools.product(range(self.game.num_actions), 
-                                                repeat=self.game.num_players):
-            is_equilibrium = True
-            
-            # 检查每个玩家是否有更好的策略
-            for player in range(self.game.num_players):
-                current_payoff = self.game.payoff_matrix[strategy_profile][player]
-                
-                for alternative_action in range(self.game.num_actions):
-                    if alternative_action == strategy_profile[player]:
-                        continue
-                    
-                    # 构造替代策略组合
-                    alt_strategy = list(strategy_profile)
-                    alt_strategy[player] = alternative_action
-                    alt_strategy = tuple(alt_strategy)
-                    
-                    alt_payoff = self.game.payoff_matrix[alt_strategy][player]
-                    
-                    if alt_payoff > current_payoff:
-                        is_equilibrium = False
-                        break
-                
-                if not is_equilibrium:
-                    break
-            
-            if is_equilibrium:
-                equilibria.append(strategy_profile)
-        
-        return equilibria
-
-class EvolutionaryGame:
-    """演化博弈"""
-    
-    def __init__(self, game: Game, population_size: int = 100):
-        self.game = game
-        self.population_size = population_size
-        self.population = np.random.randint(0, game.num_actions, population_size)
-    
-    def play_round(self) -> np.ndarray:
-        """进行一轮博弈"""
-        payoffs = np.zeros(self.population_size)
-        
-        # 随机配对进行博弈
-        for i in range(0, self.population_size, 2):
-            if i + 1 < self.population_size:
-                player1_action = self.population[i]
-                player2_action = self.population[i + 1]
-                
-                payoff1 = self.game.payoff_matrix[player1_action, player2_action, 0]
-                payoff2 = self.game.payoff_matrix[player2_action, player1_action, 1]
-                
-                payoffs[i] = payoff1
-                payoffs[i + 1] = payoff2
-        
-        return payoffs
-    
-    def evolve(self, generations: int = 100) -> List[np.ndarray]:
-        """演化过程"""
-        history = []
-        
-        for generation in range(generations):
-            # 计算适应度
-            payoffs = self.play_round()
-            
-            # 记录当前种群分布
-            action_counts = np.bincount(self.population, minlength=self.game.num_actions)
-            history.append(action_counts / self.population_size)
-            
-            # 选择（轮盘赌选择）
-            fitness = payoffs - np.min(payoffs) + 1e-6  # 避免负值
-            probs = fitness / np.sum(fitness)
-            
-            # 生成新种群
-            new_population = np.random.choice(
-                self.population_size, 
-                size=self.population_size, 
-                p=probs
-            )
-            self.population = self.population[new_population]
-            
-            # 突变
-            mutation_rate = 0.01
-            mutations = np.random.random(self.population_size) < mutation_rate
-            self.population[mutations] = np.random.randint(
-                0, self.game.num_actions, np.sum(mutations)
-            )
-        
-        return history
-
-def visualize_game_theory_results(game: Game, nash_finder: NashEquilibriumFinder, 
-                                 evo_game: EvolutionaryGame) -> None:
-    """可视化博弈论结果"""
-    plt.figure(figsize=(15, 5))
-    
-    # 收益矩阵热图
-    plt.subplot(1, 3, 1)
-    payoff_heatmap = np.zeros((game.num_actions, game.num_actions))
-    for i in range(game.num_actions):
-        for j in range(game.num_actions):
-            payoff_heatmap[i, j] = game.payoff_matrix[i, j, 0]  # 玩家1收益
-    
-    plt.imshow(payoff_heatmap, cmap='RdYlBu')
-    plt.colorbar()
-    plt.title('Player 1 Payoff Matrix')
-    plt.xlabel('Player 2 Action')
-    plt.ylabel('Player 1 Action')
-    
-    # 纳什均衡
-    plt.subplot(1, 3, 2)
-    pure_equilibria = nash_finder.find_pure_nash_equilibrium()
-    
-    plt.text(0.1, 0.8, f'Pure Nash Equilibria: {pure_equilibria}', fontsize=10)
-    plt.title('Nash Equilibria')
-    plt.axis('off')
-    
-    # 演化过程
-    plt.subplot(1, 3, 3)
-    history = evo_game.evolve(generations=100)
-    history = np.array(history)
-    
-    for i in range(game.num_actions):
-        plt.plot(history[:, i], label=f'Action {i}')
-    
-    plt.title('Evolutionary Dynamics')
-    plt.xlabel('Generation')
-    plt.ylabel('Population Fraction')
-    plt.legend()
-    
-    plt.tight_layout()
-    plt.show()
-
-# 测试博弈论
+# 测试博弈论应用
 if __name__ == "__main__":
-    # 创建囚徒困境博弈
-    game = PrisonersDilemma()
-    nash_finder = NashEquilibriumFinder(game)
-    evo_game = EvolutionaryGame(game)
+    game = GameTheory()
     
-    # 可视化结果
-    visualize_game_theory_results(game, nash_finder, evo_game)
+    # 分析囚徒困境
+    pd_p1, pd_p2 = game.prisoner_dilemma()
+    analyze_game("囚徒困境", pd_p1, pd_p2)
     
-    # 打印纳什均衡
-    pure_equilibria = nash_finder.find_pure_nash_equilibrium()
-    print(f"Pure Nash Equilibria: {pure_equilibria}")
+    # 分析性别之战
+    bos_p1, bos_p2 = game.battle_of_sexes()
+    analyze_game("性别之战", bos_p1, bos_p2)
+    
+    # 演化博弈动力学
+    print("\n=== 演化博弈动力学 ===")
+    
+    # 囚徒困境的演化
+    payoff_matrix = np.array([
+        [3, 0],  # 合作策略
+        [5, 1]   # 背叛策略
+    ])
+    
+    initial_population = np.array([0.5, 0.5])  # 初始50%合作，50%背叛
+    history = game.evolutionary_game_dynamics(payoff_matrix, initial_population, 50)
+    
+    strategy_names = ['合作', '背叛']
+    visualize_evolutionary_dynamics(history, strategy_names)
+    
+    print(f"最终种群分布: 合作={history[-1, 0]:.3f}, 背叛={history[-1, 1]:.3f}")
+```
 
 ## 3. 分布式学习 / Distributed Learning
 
-### 3.1 分布式学习理论 / Distributed Learning Theory
+### 3.1 联邦学习算法 / Federated Learning Algorithm
 
 #### 数学表示 / Mathematical Representation
 
-联邦学习中的参数聚合：
+联邦学习的目标是最小化全局损失函数：
 
-Parameter Aggregation in Federated Learning:
+Federated Learning aims to minimize the global loss function:
 
-$$\theta_{global}^{t+1} = \frac{1}{N} \sum_{i=1}^{N} \theta_i^t$$
+$$\min_{w} F(w) = \sum_{k=1}^{K} \frac{n_k}{n} F_k(w)$$
 
 其中：
-- $\theta_{global}^{t+1}$ 是全局模型参数
-- $\theta_i^t$ 是第i个客户端的本地参数
-- $N$ 是客户端数量
+- $F_k(w)$ 是客户端$k$的本地损失函数
+- $n_k$ 是客户端$k$的数据量
+- $n = \sum_{k=1}^{K} n_k$ 是总数据量
 
 where:
-- $\theta_{global}^{t+1}$ is the global model parameters
-- $\theta_i^t$ is the local parameters of client i
-- $N$ is the number of clients
+- $F_k(w)$ is the local loss function of client $k$
+- $n_k$ is the data size of client $k$
+- $n = \sum_{k=1}^{K} n_k$ is the total data size
+
+联邦平均算法：
+
+Federated Averaging Algorithm:
+
+$$w_{t+1} = \sum_{k=1}^{K} \frac{n_k}{n} w_k^{(t)}$$
+
+其中：
+- $w_k^{(t)}$ 是客户端$k$在第$t$轮的模型参数
+- $w_{t+1}$ 是聚合后的全局模型参数
+
+where:
+- $w_k^{(t)}$ are the model parameters of client $k$ at round $t$
+- $w_{t+1}$ are the aggregated global model parameters
 
 #### 可视化表示 / Visual Representation
 
 ```mermaid
 graph TD
-    A[中央服务器] --> B[客户端1]
+    A[全局模型] --> B[客户端1]
     A --> C[客户端2]
-    A --> D[客户端3]
-    A --> E[客户端N]
-    
-    B --> F[本地训练]
-    C --> G[本地训练]
-    D --> H[本地训练]
-    E --> I[本地训练]
-    
-    F --> J[参数上传]
-    G --> J
-    H --> J
-    I --> J
-    
-    J --> K[参数聚合]
-    K --> L[全局模型更新]
+    A --> D[客户端N]
+    B --> E[本地训练]
+    C --> F[本地训练]
+    D --> G[本地训练]
+    E --> H[参数上传]
+    F --> I[参数上传]
+    G --> J[参数上传]
+    H --> K[参数聚合]
+    I --> K
+    J --> K
+    K --> L[全局更新]
     L --> A
     
-    subgraph "联邦学习流程"
-        M[初始化全局模型]
-        N[分发到客户端]
-        O[本地训练]
-        P[聚合参数]
-        Q[更新全局模型]
+    subgraph "联邦学习架构"
+        M[中央服务器]
+        N[客户端网络]
+        O[通信协议]
+        P[聚合算法]
+    end
+    
+    subgraph "训练流程"
+        Q[模型分发]
+        R[本地训练]
+        S[参数收集]
+        T[全局聚合]
     end
 ```
 
-#### 2Python实现 / Python Implementation
+#### Python实现 / Python Implementation
 
 ```python
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-from dataclasses import dataclass
-from typing import List, Tuple, Dict, Optional
-import copy
-import random
-
-@dataclass
-class Client:
+class FederatedClient:
     """联邦学习客户端"""
-    id: int
-    model: nn.Module
-    optimizer: optim.Optimizer
-    data: torch.Tensor
-    labels: torch.Tensor
-
-class FederatedLearning:
-    """联邦学习"""
     
-    def __init__(self, global_model: nn.Module, num_clients: int = 5, 
-                 local_epochs: int = 5, lr: float = 0.01):
-        self.global_model = global_model
-        self.num_clients = num_clients
-        self.local_epochs = local_epochs
-        self.lr = lr
+    def __init__(self, client_id: int, model: nn.Module, data: torch.Tensor, 
+                 labels: torch.Tensor, lr: float = 0.01):
+        self.client_id = client_id
+        self.model = model
+        self.data = data
+        self.labels = labels
+        self.optimizer = optim.SGD(self.model.parameters(), lr=lr)
+        self.criterion = nn.CrossEntropyLoss()
         
-        # 创建客户端
-        self.clients = []
-        self._create_clients()
-    
-    def _create_clients(self) -> None:
-        """创建客户端"""
-        # 生成模拟数据
-        num_samples_per_client = 100
-        input_dim = 10
+    def train_epoch(self) -> float:
+        """训练一个epoch"""
+        self.model.train()
+        total_loss = 0
         
-        for i in range(self.num_clients):
-            # 为每个客户端生成不同的数据分布
-            mean = np.random.normal(0, 1, input_dim)
-            data = torch.randn(num_samples_per_client, input_dim) + torch.tensor(mean, dtype=torch.float32)
-            labels = torch.randint(0, 2, (num_samples_per_client,))
+        # 批次训练
+        batch_size = 32
+        for i in range(0, len(self.data), batch_size):
+            batch_data = self.data[i:i+batch_size]
+            batch_labels = self.labels[i:i+batch_size]
             
-            # 创建客户端模型（复制全局模型）
-            client_model = copy.deepcopy(self.global_model)
-            client_optimizer = optim.SGD(client_model.parameters(), lr=self.lr)
-            
-            client = Client(
-                id=i,
-                model=client_model,
-                optimizer=client_optimizer,
-                data=data,
-                labels=labels
-            )
-            self.clients.append(client)
-    
-    def train_client(self, client: Client) -> Dict[str, float]:
-        """训练单个客户端"""
-        client.model.train()
-        total_loss = 0.0
-        
-        for epoch in range(self.local_epochs):
-            # 前向传播
-            outputs = client.model(client.data)
-            loss = F.cross_entropy(outputs, client.labels)
-            
-            # 反向传播
-            client.optimizer.zero_grad()
+            self.optimizer.zero_grad()
+            outputs = self.model(batch_data)
+            loss = self.criterion(outputs, batch_labels)
             loss.backward()
-            client.optimizer.step()
+            self.optimizer.step()
             
             total_loss += loss.item()
         
-        return {'loss': total_loss / self.local_epochs}
+        return total_loss / (len(self.data) // batch_size)
     
-    def aggregate_parameters(self) -> None:
-        """聚合客户端参数"""
-        # 获取全局模型参数
-        global_params = list(self.global_model.parameters())
+    def get_model_parameters(self) -> Dict[str, torch.Tensor]:
+        """获取模型参数"""
+        return {name: param.clone().detach() 
+                for name, param in self.model.named_parameters()}
+    
+    def set_model_parameters(self, parameters: Dict[str, torch.Tensor]):
+        """设置模型参数"""
+        for name, param in self.model.named_parameters():
+            if name in parameters:
+                param.data = parameters[name].clone()
+
+class FederatedServer:
+    """联邦学习服务器"""
+    
+    def __init__(self, global_model: nn.Module):
+        self.global_model = global_model
+        self.clients = []
+        
+    def add_client(self, client: FederatedClient):
+        """添加客户端"""
+        self.clients.append(client)
+    
+    def federated_averaging(self) -> Dict[str, torch.Tensor]:
+        """联邦平均聚合"""
+        # 计算总数据量
+        total_data_size = sum(len(client.data) for client in self.clients)
         
         # 初始化聚合参数
-        aggregated_params = [torch.zeros_like(param) for param in global_params]
+        aggregated_params = {}
+        for name, param in self.global_model.named_parameters():
+            aggregated_params[name] = torch.zeros_like(param)
         
-        # 聚合所有客户端的参数
+        # 加权平均
         for client in self.clients:
-            client_params = list(client.model.parameters())
-            for i, (global_param, client_param) in enumerate(zip(aggregated_params, client_params)):
-                aggregated_params[i] += client_param.data
-        
-        # 平均参数
-        for i, param in enumerate(aggregated_params):
-            aggregated_params[i] = param / self.num_clients
-        
-        # 更新全局模型
-        for global_param, aggregated_param in zip(global_params, aggregated_params):
-            global_param.data.copy_(aggregated_param)
-        
-        # 更新客户端模型
-        for client in self.clients:
-            client_params = list(client.model.parameters())
-            for client_param, aggregated_param in zip(client_params, aggregated_params):
-                client_param.data.copy_(aggregated_param)
-    
-    def train_round(self) -> Dict[str, float]:
-        """训练一轮联邦学习"""
-        # 训练所有客户端
-        client_losses = []
-        for client in self.clients:
-            loss_info = self.train_client(client)
-            client_losses.append(loss_info['loss'])
-        
-        # 聚合参数
-        self.aggregate_parameters()
-        
-        return {
-            'avg_client_loss': np.mean(client_losses),
-            'std_client_loss': np.std(client_losses)
-        }
-    
-    def train(self, num_rounds: int = 10) -> List[Dict[str, float]]:
-        """训练多轮联邦学习"""
-        training_history = []
-        
-        for round_idx in range(num_rounds):
-            round_info = self.train_round()
-            training_history.append(round_info)
+            client_params = client.get_model_parameters()
+            weight = len(client.data) / total_data_size
             
-            print(f"Round {round_idx + 1}/{num_rounds}: "
-                  f"Avg Loss = {round_info['avg_client_loss']:.4f}, "
-                  f"Std Loss = {round_info['std_client_loss']:.4f}")
+            for name, param in aggregated_params.items():
+                aggregated_params[name] += weight * client_params[name]
         
-        return training_history
-
-class AsynchronousLearning:
-    """异步学习"""
+        return aggregated_params
     
-    def __init__(self, global_model: nn.Module, num_workers: int = 3, 
-                 update_frequency: int = 2):
-        self.global_model = global_model
-        self.num_workers = num_workers
-        self.update_frequency = update_frequency
-        self.worker_models = [copy.deepcopy(global_model) for _ in range(num_workers)]
-        self.worker_optimizers = [optim.SGD(model.parameters(), lr=0.01) 
-                                for model in self.worker_models]
-        
-        # 模拟数据
-        self.worker_data = []
-        for i in range(num_workers):
-            data = torch.randn(50, 10) + i * 0.1  # 不同分布
-            labels = torch.randint(0, 2, (50,))
-            self.worker_data.append((data, labels))
+    def update_global_model(self, aggregated_params: Dict[str, torch.Tensor]):
+        """更新全局模型"""
+        for name, param in self.global_model.named_parameters():
+            param.data = aggregated_params[name].clone()
     
-    def worker_update(self, worker_id: int) -> float:
-        """单个工作节点更新"""
-        model = self.worker_models[worker_id]
-        optimizer = self.worker_optimizers[worker_id]
-        data, labels = self.worker_data[worker_id]
+    def distribute_model(self):
+        """分发全局模型到所有客户端"""
+        global_params = {name: param.clone().detach() 
+                        for name, param in self.global_model.named_parameters()}
         
-        model.train()
-        outputs = model(data)
-        loss = F.cross_entropy(outputs, labels)
-        
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        
-        return loss.item()
+        for client in self.clients:
+            client.set_model_parameters(global_params)
     
-    def global_update(self) -> None:
-        """全局模型更新"""
-        # 简单平均聚合
-        global_params = list(self.global_model.parameters())
-        aggregated_params = [torch.zeros_like(param) for param in global_params]
-        
-        for worker_model in self.worker_models:
-            worker_params = list(worker_model.parameters())
-            for i, (global_param, worker_param) in enumerate(zip(aggregated_params, worker_params)):
-                aggregated_params[i] += worker_param.data
-        
-        for i, param in enumerate(aggregated_params):
-            aggregated_params[i] = param / self.num_workers
-        
-        for global_param, aggregated_param in zip(global_params, aggregated_params):
-            global_param.data.copy_(aggregated_param)
-    
-    def train(self, num_iterations: int = 100) -> List[float]:
-        """异步训练"""
+    def train_federated(self, rounds: int = 10, local_epochs: int = 5) -> List[float]:
+        """联邦学习训练"""
         global_losses = []
         
-        for iteration in range(num_iterations):
-            # 随机选择工作节点进行更新
-            active_workers = random.sample(range(self.num_workers), 
-                                         min(2, self.num_workers))
+        for round_idx in range(rounds):
+            print(f"联邦学习轮次 {round_idx + 1}/{rounds}")
             
-            worker_losses = []
-            for worker_id in active_workers:
-                loss = self.worker_update(worker_id)
-                worker_losses.append(loss)
+            # 分发全局模型
+            self.distribute_model()
             
-            # 定期更新全局模型
-            if iteration % self.update_frequency == 0:
-                self.global_update()
+            # 客户端本地训练
+            client_losses = []
+            for client in self.clients:
+                for _ in range(local_epochs):
+                    loss = client.train_epoch()
+                client_losses.append(loss)
             
-            global_losses.append(np.mean(worker_losses))
+            # 聚合模型参数
+            aggregated_params = self.federated_averaging()
+            self.update_global_model(aggregated_params)
+            
+            # 计算全局损失
+            avg_loss = np.mean(client_losses)
+            global_losses.append(avg_loss)
+            
+            print(f"平均客户端损失: {avg_loss:.4f}")
         
         return global_losses
 
-def visualize_distributed_learning_results(fed_learning: FederatedLearning, 
-                                         async_learning: AsynchronousLearning) -> None:
-    """可视化分布式学习结果"""
-    plt.figure(figsize=(15, 5))
+def generate_federated_data(num_clients: int = 5, samples_per_client: int = 100, 
+                          input_dim: int = 10, num_classes: int = 3) -> List[Tuple[torch.Tensor, torch.Tensor]]:
+    """生成联邦学习数据"""
+    datasets = []
     
-    # 联邦学习训练历史
-    plt.subplot(1, 3, 1)
-    fed_history = fed_learning.train(num_rounds=10)
-    rounds = range(1, len(fed_history) + 1)
+    for i in range(num_clients):
+        # 为每个客户端生成不同的数据分布
+        np.random.seed(i)
+        
+        # 生成特征
+        features = torch.randn(samples_per_client, input_dim)
+        
+        # 生成标签（简单的线性分类）
+        weights = torch.randn(input_dim, num_classes)
+        logits = features @ weights
+        labels = torch.argmax(logits, dim=1)
+        
+        datasets.append((features, labels))
     
-    avg_losses = [info['avg_client_loss'] for info in fed_history]
-    std_losses = [info['std_client_loss'] for info in fed_history]
+    return datasets
+
+def visualize_federated_training(losses: List[float]) -> None:
+    """可视化联邦学习训练"""
+    plt.figure(figsize=(10, 6))
     
-    plt.plot(rounds, avg_losses, 'b-', label='Average Loss')
-    plt.fill_between(rounds, 
-                    [avg - std for avg, std in zip(avg_losses, std_losses)],
-                    [avg + std for avg, std in zip(avg_losses, std_losses)],
-                    alpha=0.3, label='±1 Std')
-    plt.title('Federated Learning Training')
-    plt.xlabel('Round')
-    plt.ylabel('Loss')
-    plt.legend()
+    plt.plot(losses, marker='o', linewidth=2, markersize=6)
+    plt.title('Federated Learning Training Progress')
+    plt.xlabel('Communication Round')
+    plt.ylabel('Average Client Loss')
     plt.grid(True, alpha=0.3)
     
-    # 异步学习训练历史
-    plt.subplot(1, 3, 2)
-    async_losses = async_learning.train(num_iterations=100)
-    iterations = range(1, len(async_losses) + 1)
-    
-    plt.plot(iterations, async_losses, 'r-', label='Global Loss')
-    plt.title('Asynchronous Learning Training')
-    plt.xlabel('Iteration')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    # 比较不同方法
-    plt.subplot(1, 3, 3)
-    plt.plot(rounds, avg_losses, 'b-', label='Federated Learning')
-    plt.plot(iterations[::10], async_losses[::10], 'r-', label='Async Learning')
-    plt.title('Method Comparison')
-    plt.xlabel('Training Step')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
+    # 添加趋势线
+    if len(losses) > 1:
+        z = np.polyfit(range(len(losses)), losses, 1)
+        p = np.poly1d(z)
+        plt.plot(range(len(losses)), p(range(len(losses))), 
+                "r--", alpha=0.8, label=f'Trend (slope: {z[0]:.4f})')
+        plt.legend()
     
     plt.tight_layout()
     plt.show()
 
-# 测试分布式学习
+# 测试联邦学习
 if __name__ == "__main__":
-    # 创建简单模型
+    # 创建简单的神经网络模型
     class SimpleModel(nn.Module):
-        def __init__(self, input_dim: int = 10, hidden_dim: int = 20, num_classes: int = 2):
+        def __init__(self, input_dim: int = 10, num_classes: int = 3):
             super(SimpleModel, self).__init__()
-            self.fc1 = nn.Linear(input_dim, hidden_dim)
-            self.fc2 = nn.Linear(hidden_dim, num_classes)
+            self.fc1 = nn.Linear(input_dim, 20)
+            self.fc2 = nn.Linear(20, num_classes)
+            self.relu = nn.ReLU()
         
-        def forward(self, x: torch.Tensor) -> torch.Tensor:
-            x = F.relu(self.fc1(x))
+        def forward(self, x):
+            x = self.relu(self.fc1(x))
             x = self.fc2(x)
             return x
     
-    # 联邦学习测试
+    # 生成数据
+    print("生成联邦学习数据...")
+    datasets = generate_federated_data(num_clients=5, samples_per_client=100)
+    
+    # 创建全局模型
     global_model = SimpleModel()
-    fed_learning = FederatedLearning(global_model, num_clients=5)
     
-    # 异步学习测试
-    async_model = SimpleModel()
-    async_learning = AsynchronousLearning(async_model, num_workers=3)
+    # 创建联邦学习服务器
+    server = FederatedServer(global_model)
     
-    # 可视化结果
-    visualize_distributed_learning_results(fed_learning, async_learning)
+    # 创建客户端
+    for i, (data, labels) in enumerate(datasets):
+        client_model = SimpleModel()
+        client = FederatedClient(i, client_model, data, labels)
+        server.add_client(client)
+    
+    # 训练联邦学习
+    print("开始联邦学习训练...")
+    losses = server.train_federated(rounds=10, local_epochs=3)
+    
+    # 可视化训练过程
+    visualize_federated_training(losses)
+    
+    print(f"联邦学习完成，最终平均损失: {losses[-1]:.4f}")
+```
 
 ## 总结 / Summary
 
-### 4.1 多智能体系统核心概念 / Core Concepts of Multi-Agent Systems
+本文档提供了多智能体系统扩展的完整多表征示例，包括：
 
-#### 4.1.1 多智能体强化学习 / Multi-Agent Reinforcement Learning
+1. **多智能体强化学习 (Multi-Agent Reinforcement Learning)**
+   - 独立Q学习算法和联合策略优化
+   - 多智能体环境建模和协调机制
+   - 经验回放和目标网络更新
 
-多智能体强化学习是多智能体系统的核心组成部分，它扩展了单智能体强化学习的概念，处理多个智能体在共享环境中的学习问题。
+2. **博弈论应用 (Game Theory Applications)**
+   - 纳什均衡计算和策略分析
+   - 囚徒困境和性别之战博弈
+   - 演化博弈动力学和种群演化
 
-**关键特点：**
-- **部分可观察性**：每个智能体只能观察到环境的部分信息
-- **非平稳性**：其他智能体的策略变化会影响环境动态
-- **维度灾难**：状态和动作空间随智能体数量指数增长
-- **协调与竞争**：智能体之间需要平衡合作与竞争
+3. **分布式学习 (Distributed Learning)**
+   - 联邦学习算法和参数聚合
+   - 客户端管理和通信协议
+   - 隐私保护和分布式训练
 
-**主要算法：**
-- **独立Q学习（IQL）**：每个智能体独立学习，忽略其他智能体的存在
-- **联合策略学习**：考虑所有智能体的联合策略空间
-- **经验回放**：存储和重用历史经验以提高学习效率
-
-#### 4.1.2 博弈论应用 / Game Theory Applications
-
-博弈论为多智能体系统提供了理论基础，用于分析智能体之间的策略互动。
-
-**核心概念：**
-- **纳什均衡**：在给定其他智能体策略的情况下，没有智能体能够通过单方面改变策略来获得更高收益
-- **策略空间**：所有可能的策略组合
-- **收益矩阵**：描述不同策略组合下各智能体的收益
-- **演化博弈**：研究策略在种群中的传播和演化
-
-**典型博弈：**
-- **囚徒困境**：经典的合作与背叛博弈
-- **零和博弈**：一方的收益等于另一方的损失
-- **重复博弈**：智能体进行多轮互动
-
-#### 4.1.3 分布式学习 / Distributed Learning
-
-分布式学习解决了多智能体系统中的数据分布和计算资源分散问题。
-
-**主要方法：**
-- **联邦学习**：在保护隐私的前提下，多个客户端协作训练全局模型
-- **异步学习**：允许不同工作节点以不同速度进行更新
-- **参数聚合**：将多个本地模型的参数合并为全局模型
-
-**技术挑战：**
-- **通信开销**：智能体之间的参数传输成本
-- **隐私保护**：保护本地数据不被泄露
-- **收敛性**：确保分布式训练的稳定性
-
-### 4.2 多表征方法的价值 / Value of Multi-Representation Methods
-
-#### 4.2.1 数学表示 / Mathematical Representation
-
-数学表示提供了精确的理论基础：
-- **形式化定义**：明确定义概念和算法
-- **理论分析**：提供收敛性和最优性保证
-- **算法设计**：指导实际实现
-
-#### 4.2.2 可视化表示 / Visual Representation
-
-可视化表示增强了理解：
-- **直观理解**：通过图表理解复杂概念
-- **流程展示**：清晰展示算法流程
-- **关系映射**：展示不同组件之间的关系
-
-#### 4.2.3 代码实现 / Code Implementation
-
-代码实现提供了实践指导：
-- **实际应用**：可直接运行的代码示例
-- **参数调优**：展示关键参数的影响
-- **性能评估**：提供评估指标和可视化
-
-### 4.3 应用前景 / Application Prospects
-
-#### 4.3.1 实际应用领域 / Real-World Applications
-
-**智能交通系统：**
-- 多车辆路径规划
-- 交通信号优化
-- 自动驾驶协调
-
-**智能电网：**
-- 分布式能源管理
-- 负载平衡
-- 故障检测
-
-**机器人协作：**
-- 多机器人任务分配
-- 协同操作
-- 群体智能
-
-#### 4.3.2 技术发展趋势 / Technical Development Trends
-
-**算法创新：**
-- 深度强化学习与多智能体结合
-- 注意力机制在多智能体中的应用
-- 元学习在多智能体系统中的应用
-
-**系统优化：**
-- 大规模多智能体系统的可扩展性
-- 实时性和延迟优化
-- 鲁棒性和容错性
-
-**理论发展：**
-- 多智能体博弈论的深化
-- 分布式优化的新理论
-- 多智能体学习的理论保证
-
-### 4.4 总结 / Conclusion
-
-多智能体系统作为人工智能的重要分支，通过多智能体强化学习、博弈论和分布式学习等核心技术，为解决复杂现实问题提供了强大的工具。多表征方法不仅增强了理论理解的深度，也为实际应用提供了全面的指导。
-
-随着技术的不断发展，多智能体系统将在更多领域发挥重要作用，推动人工智能向更高层次发展。通过持续的理论创新和实践应用，多智能体系统将为构建更智能、更协调的人工智能系统做出重要贡献。
+每种方法都包含了完整的数学表示、可视化图表和可运行的Python代码实现，为多智能体系统提供了全面的多表征框架。

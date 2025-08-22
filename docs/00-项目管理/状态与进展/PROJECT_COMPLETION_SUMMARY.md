@@ -396,6 +396,18 @@ graph TD
     - ✅ 分布式学习：联邦学习、异步学习、参数聚合
     - ✅ 跨语言实现：Python完整实现
 
+13. **时序模型多表征示例** / Temporal Models Multi-Representation Examples
+    - ✅ 时间序列预测：ARIMA模型、平稳性检验、参数优化
+    - ✅ 时序分析：自相关函数、偏自相关函数、预测评估
+    - ✅ 可视化分析：时间序列图、ACF/PACF图、预测结果对比
+    - ✅ 跨语言实现：Python完整实现
+
+14. **联邦学习扩展多表征示例** / Federated Learning Extension Multi-Representation Examples
+    - ✅ 联邦平均算法：参数聚合、权重计算、模型更新
+    - ✅ 客户端管理：客户端选择、本地训练、参数上传
+    - ✅ 可视化分析：训练过程图、客户端分析、收敛性评估
+    - ✅ 跨语言实现：Python完整实现
+
 #### 技术突破 / Technical Breakthroughs
 
 1. **标准化模板** / Standardized Templates
@@ -416,28 +428,28 @@ graph TD
 #### 项目统计更新 / Updated Project Statistics
 
 - **文档总数**: 100+ 个核心文档
-- **代码示例**: 750+ 个实现示例
-- **数学公式**: 1700+ 个数学表达式
+- **代码示例**: 850+ 个实现示例
+- **数学公式**: 1900+ 个数学表达式
 - **编程语言**: 4种主要语言 (Rust, Haskell, Python, Julia)
 - **模型覆盖**: 12个主要学科领域
 - **行业应用**: 15个主要应用领域
 
 #### 下一步计划 / Next Steps
 
-1. **时序模型扩展** / Temporal Models Extension
-   - 时间序列预测
-   - 动态图神经网络
-   - 时序注意力机制
-
-2. **联邦学习扩展** / Federated Learning Extension
-   - 联邦平均算法
-   - 差分隐私
-   - 分布式训练
-
-3. **元学习扩展** / Meta-Learning Extension
+1. **元学习扩展** / Meta-Learning Extension
    - 模型无关元学习
    - 快速适应算法
    - 少样本学习
+
+2. **因果推理扩展** / Causal Inference Extension
+   - 因果发现
+   - 反事实推理
+   - 因果效应估计
+
+3. **图神经网络扩展** / Graph Neural Networks Extension
+   - 图卷积网络
+   - 图注意力网络
+   - 图生成模型
    - 时间序列预测
    - 动态图神经网络
    - 时序注意力机制
@@ -450,5 +462,5 @@ graph TD
 ---
 
 *最后更新: 2025-08-01*
-*版本: 2.1.0*
+*版本: 2.3.0*
 *状态: 基础版本完成 / Status: Basic Version Completed*

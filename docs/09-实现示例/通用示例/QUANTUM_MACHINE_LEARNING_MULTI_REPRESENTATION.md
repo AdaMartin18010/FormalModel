@@ -545,3 +545,696 @@ def visualize_quantum_optimization():
 if __name__ == "__main__":
     print("量子优化算法示例 / Quantum Optimization Algorithms Example")
     qaoa, vqe, params_qaoa, params_vqe = visualize_quantum_optimization()
+
+## 3. 量子-经典混合计算 / Quantum-Classical Hybrid Computing
+
+### 3.1 数学表示 / Mathematical Representation
+
+#### 混合计算框架 / Hybrid Computing Framework
+```
+H_hybrid = H_quantum + H_classical
+|ψ_hybrid⟩ = U_quantum(θ)U_classical(x)|ψ_0⟩
+```
+
+#### 量子-经典接口 / Quantum-Classical Interface
+```
+f(x, θ) = ⟨ψ(θ)|O(x)|ψ(θ)⟩
+∇_θ f = ∂f/∂θ = ⟨ψ(θ)|∂O/∂θ|ψ(θ)⟩
+```
+
+#### 混合优化目标 / Hybrid Optimization Objective
+```
+L(θ, x) = L_quantum(θ) + λL_classical(x)
+θ*, x* = argmin L(θ, x)
+```
+
+### 3.2 流程图表示 / Flowchart Representation
+
+```mermaid
+flowchart TD
+    A[经典输入数据] --> B[经典预处理]
+    B --> C[量子编码]
+    C --> D[量子计算]
+    D --> E[量子测量]
+    E --> F[经典后处理]
+    F --> G[混合输出]
+    
+    H[经典优化器] --> I[参数更新]
+    I --> J[量子参数]
+    J --> D
+    I --> K[经典参数]
+    K --> B
+    
+    L[量子-经典接口] --> M[梯度计算]
+    M --> N[反向传播]
+    N --> I
+    
+    style A fill:#e1f5fe
+    style G fill:#c8e6c9
+    style L fill:#fff3e0
+```
+
+### 3.3 Python实现 / Python Implementation
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import minimize
+from typing import List, Tuple, Callable, Dict
+import warnings
+warnings.filterwarnings('ignore')
+
+class HybridQuantumClassical:
+    """量子-经典混合计算系统 / Quantum-Classical Hybrid Computing System"""
+    
+    def __init__(self, num_qubits: int, classical_dim: int):
+        self.num_qubits = num_qubits
+        self.classical_dim = classical_dim
+        self.quantum_params = np.random.randn(num_qubits, 3) * 0.1
+        self.classical_params = np.random.randn(classical_dim) * 0.1
+        self.gates = QuantumGates()
+    
+    def classical_preprocessing(self, input_data: np.ndarray) -> np.ndarray:
+        """经典预处理 / Classical preprocessing"""
+        # 线性变换 / Linear transformation
+        processed = input_data @ self.classical_params
+        # 非线性激活 / Nonlinear activation
+        processed = np.tanh(processed)
+        return processed
+    
+    def quantum_encoding(self, classical_data: np.ndarray) -> List[QuantumBit]:
+        """量子编码 / Quantum encoding"""
+        qubits = []
+        for i in range(self.num_qubits):
+            if i < len(classical_data):
+                # 将经典数据编码到量子态 / Encode classical data to quantum state
+                angle = classical_data[i] * np.pi
+                qubit = QuantumBit()
+                qubit = self.apply_gate(qubit, self.gates.rotation_y(angle))
+            else:
+                qubit = QuantumBit()
+            qubits.append(qubit)
+        return qubits
+    
+    def apply_gate(self, qubit: QuantumBit, gate: np.ndarray) -> QuantumBit:
+        """应用量子门 / Apply quantum gate"""
+        new_qubit = QuantumBit()
+        new_qubit.alpha = gate[0, 0] * qubit.alpha + gate[0, 1] * qubit.beta
+        new_qubit.beta = gate[1, 0] * qubit.alpha + gate[1, 1] * qubit.beta
+        return new_qubit
+    
+    def quantum_computation(self, qubits: List[QuantumBit]) -> List[QuantumBit]:
+        """量子计算 / Quantum computation"""
+        for i, qubit in enumerate(qubits):
+            # 应用参数化量子门 / Apply parameterized quantum gates
+            rx_gate = self.gates.rotation_x(self.quantum_params[i, 0])
+            ry_gate = self.gates.rotation_y(self.quantum_params[i, 1])
+            rz_gate = self.gates.rotation_z(self.quantum_params[i, 2])
+            
+            qubit = self.apply_gate(qubit, rx_gate)
+            qubit = self.apply_gate(qubit, ry_gate)
+            qubit = self.apply_gate(qubit, rz_gate)
+            qubits[i] = qubit
+        
+        return qubits
+    
+    def classical_postprocessing(self, quantum_measurements: np.ndarray) -> np.ndarray:
+        """经典后处理 / Classical postprocessing"""
+        # 线性组合 / Linear combination
+        output = quantum_measurements @ self.classical_params[:len(quantum_measurements)]
+        # 非线性变换 / Nonlinear transformation
+        output = np.tanh(output)
+        return output
+    
+    def hybrid_forward(self, input_data: np.ndarray) -> np.ndarray:
+        """混合前向传播 / Hybrid forward pass"""
+        # 经典预处理 / Classical preprocessing
+        classical_processed = self.classical_preprocessing(input_data)
+        
+        # 量子编码 / Quantum encoding
+        qubits = self.quantum_encoding(classical_processed)
+        
+        # 量子计算 / Quantum computation
+        qubits = self.quantum_computation(qubits)
+        
+        # 量子测量 / Quantum measurement
+        measurements = np.array([qubit.measure() for qubit in qubits])
+        
+        # 经典后处理 / Classical postprocessing
+        output = self.classical_postprocessing(measurements)
+        
+        return output
+    
+    def compute_hybrid_gradient(self, input_data: np.ndarray, target: np.ndarray) -> Dict[str, np.ndarray]:
+        """计算混合梯度 / Compute hybrid gradient"""
+        epsilon = 0.01
+        gradients = {}
+        
+        # 量子参数梯度 / Quantum parameter gradients
+        quantum_gradients = np.zeros_like(self.quantum_params)
+        for i in range(self.num_qubits):
+            for j in range(3):
+                # 参数偏移 / Parameter shift
+                self.quantum_params[i, j] += epsilon
+                output_plus = self.hybrid_forward(input_data)
+                self.quantum_params[i, j] -= 2 * epsilon
+                output_minus = self.hybrid_forward(input_data)
+                self.quantum_params[i, j] += epsilon
+                
+                loss_plus = np.mean((output_plus - target)**2)
+                loss_minus = np.mean((output_minus - target)**2)
+                quantum_gradients[i, j] = (loss_plus - loss_minus) / (2 * epsilon)
+        
+        # 经典参数梯度 / Classical parameter gradients
+        classical_gradients = np.zeros_like(self.classical_params)
+        for i in range(len(self.classical_params)):
+            # 参数偏移 / Parameter shift
+            self.classical_params[i] += epsilon
+            output_plus = self.hybrid_forward(input_data)
+            self.classical_params[i] -= 2 * epsilon
+            output_minus = self.hybrid_forward(input_data)
+            self.classical_params[i] += epsilon
+            
+            loss_plus = np.mean((output_plus - target)**2)
+            loss_minus = np.mean((output_minus - target)**2)
+            classical_gradients[i] = (loss_plus - loss_minus) / (2 * epsilon)
+        
+        gradients['quantum'] = quantum_gradients
+        gradients['classical'] = classical_gradients
+        return gradients
+    
+    def train_hybrid(self, input_data: np.ndarray, target: np.ndarray,
+                    learning_rate: float = 0.1, epochs: int = 100) -> List[float]:
+        """训练混合系统 / Train hybrid system"""
+        losses = []
+        
+        for epoch in range(epochs):
+            # 前向传播 / Forward pass
+            output = self.hybrid_forward(input_data)
+            loss = np.mean((output - target)**2)
+            losses.append(loss)
+            
+            # 计算梯度 / Compute gradients
+            gradients = self.compute_hybrid_gradient(input_data, target)
+            
+            # 更新参数 / Update parameters
+            self.quantum_params -= learning_rate * gradients['quantum']
+            self.classical_params -= learning_rate * gradients['classical']
+            
+            if epoch % 20 == 0:
+                print(f"Epoch {epoch}, Loss: {loss:.4f}")
+        
+        return losses
+
+class QuantumClassicalInterface:
+    """量子-经典接口 / Quantum-Classical Interface"""
+    
+    def __init__(self, quantum_system: HybridQuantumClassical):
+        self.quantum_system = quantum_system
+    
+    def quantum_expectation(self, observable: np.ndarray, num_shots: int = 1000) -> float:
+        """计算量子期望值 / Compute quantum expectation value"""
+        total_expectation = 0.0
+        
+        for _ in range(num_shots):
+            # 创建随机输入 / Create random input
+            input_data = np.random.randn(self.quantum_system.classical_dim)
+            
+            # 量子计算 / Quantum computation
+            qubits = self.quantum_system.quantum_encoding(
+                self.quantum_system.classical_preprocessing(input_data)
+            )
+            qubits = self.quantum_system.quantum_computation(qubits)
+            
+            # 计算期望值 / Compute expectation value
+            measurements = np.array([qubit.measure() for qubit in qubits])
+            expectation = measurements @ observable @ measurements
+            total_expectation += expectation
+        
+        return total_expectation / num_shots
+    
+    def classical_quantum_gradient(self, observable: np.ndarray) -> np.ndarray:
+        """计算经典-量子梯度 / Compute classical-quantum gradient"""
+        epsilon = 0.01
+        gradients = np.zeros_like(self.quantum_system.quantum_params)
+        
+        for i in range(self.quantum_system.num_qubits):
+            for j in range(3):
+                # 参数偏移 / Parameter shift
+                self.quantum_system.quantum_params[i, j] += epsilon
+                exp_plus = self.quantum_expectation(observable)
+                self.quantum_system.quantum_params[i, j] -= 2 * epsilon
+                exp_minus = self.quantum_expectation(observable)
+                self.quantum_system.quantum_params[i, j] += epsilon
+                
+                gradients[i, j] = (exp_plus - exp_minus) / (2 * epsilon)
+        
+        return gradients
+
+def visualize_hybrid_computing():
+    """可视化量子-经典混合计算 / Visualize quantum-classical hybrid computing"""
+    # 创建混合系统 / Create hybrid system
+    hybrid_system = HybridQuantumClassical(num_qubits=4, classical_dim=3)
+    interface = QuantumClassicalInterface(hybrid_system)
+    
+    # 生成训练数据 / Generate training data
+    input_data = np.random.randn(3)
+    target = np.array([0.5])
+    
+    # 训练混合系统 / Train hybrid system
+    losses = hybrid_system.train_hybrid(input_data, target, epochs=50)
+    
+    plt.figure(figsize=(15, 5))
+    
+    # 训练损失 / Training loss
+    plt.subplot(1, 3, 1)
+    plt.plot(losses)
+    plt.title('混合系统训练损失 / Hybrid System Training Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.grid(True)
+    
+    # 量子期望值 / Quantum expectation values
+    plt.subplot(1, 3, 2)
+    observables = [np.eye(4), np.random.randn(4, 4)]
+    observable_names = ['Identity', 'Random']
+    expectations = []
+    
+    for obs in observables:
+        exp_val = interface.quantum_expectation(obs)
+        expectations.append(exp_val)
+    
+    plt.bar(observable_names, expectations)
+    plt.title('量子期望值 / Quantum Expectation Values')
+    plt.ylabel('Expectation Value')
+    
+    # 参数分布 / Parameter distribution
+    plt.subplot(1, 3, 3)
+    quantum_params_flat = hybrid_system.quantum_params.flatten()
+    classical_params_flat = hybrid_system.classical_params
+    
+    plt.hist(quantum_params_flat, alpha=0.7, label='Quantum', bins=10)
+    plt.hist(classical_params_flat, alpha=0.7, label='Classical', bins=10)
+    plt.title('参数分布 / Parameter Distribution')
+    plt.xlabel('Parameter Value')
+    plt.ylabel('Frequency')
+    plt.legend()
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return hybrid_system, interface, losses
+
+if __name__ == "__main__":
+    print("量子-经典混合计算示例 / Quantum-Classical Hybrid Computing Example")
+    hybrid_system, interface, losses = visualize_hybrid_computing()
+```
+
+## 总结 / Summary
+
+### 主要特性 / Key Features
+
+1. **量子神经网络 / Quantum Neural Networks**
+   - 量子比特状态表示 / Quantum bit state representation
+   - 量子门操作 / Quantum gate operations
+   - 参数化量子电路 / Parameterized quantum circuits
+   - 量子测量和经典后处理 / Quantum measurement and classical postprocessing
+
+2. **量子优化算法 / Quantum Optimization Algorithms**
+   - QAOA算法实现 / QAOA algorithm implementation
+   - VQE算法实现 / VQE algorithm implementation
+   - 混合哈密顿量 / Hybrid Hamiltonians
+   - 经典优化器集成 / Classical optimizer integration
+
+3. **量子-经典混合计算 / Quantum-Classical Hybrid Computing**
+   - 混合计算框架 / Hybrid computing framework
+   - 量子-经典接口 / Quantum-classical interface
+   - 梯度计算和参数更新 / Gradient computation and parameter updates
+   - 端到端训练系统 / End-to-end training system
+
+### 技术亮点 / Technical Highlights
+
+- **多表征方法**: 数学公式、流程图、Python代码实现
+- **模块化设计**: 可扩展的量子计算组件
+- **混合优化**: 量子算法与经典优化器的结合
+- **可视化支持**: 训练过程和结果的可视化
+
+### 应用场景 / Application Scenarios
+
+- **量子机器学习**: 量子神经网络训练
+- **组合优化**: 使用QAOA解决优化问题
+- **量子化学**: 使用VQE计算分子能量
+- **混合计算**: 量子-经典协同计算系统
+
+### 扩展方向 / Extension Directions
+
+- **量子错误纠正**: 实现量子错误纠正码
+- **量子机器学习**: 更多量子机器学习算法
+- **量子-经典接口**: 更高效的接口设计
+- **实际量子硬件**: 与真实量子计算机的集成
+## 3. 量子-经典混合计算 / Quantum-Classical Hybrid Computing
+
+### 3.1 数学表示 / Mathematical Representation
+
+#### 混合计算框架 / Hybrid Computing Framework
+```
+H_hybrid = H_quantum + H_classical
+|ψ_hybrid⟩ = U_quantum(θ)U_classical(x)|ψ_0⟩
+```
+
+#### 量子-经典接口 / Quantum-Classical Interface
+```
+f(x, θ) = ⟨ψ(θ)|O(x)|ψ(θ)⟩
+∇_θ f = ∂f/∂θ = ⟨ψ(θ)|∂O/∂θ|ψ(θ)⟩
+```
+
+#### 混合优化目标 / Hybrid Optimization Objective
+```
+L(θ, x) = L_quantum(θ) + λL_classical(x)
+θ*, x* = argmin L(θ, x)
+```
+
+### 3.2 流程图表示 / Flowchart Representation
+
+```mermaid
+flowchart TD
+    A[经典输入数据] --> B[经典预处理]
+    B --> C[量子编码]
+    C --> D[量子计算]
+    D --> E[量子测量]
+    E --> F[经典后处理]
+    F --> G[混合输出]
+    
+    H[经典优化器] --> I[参数更新]
+    I --> J[量子参数]
+    J --> D
+    I --> K[经典参数]
+    K --> B
+    
+    L[量子-经典接口] --> M[梯度计算]
+    M --> N[反向传播]
+    N --> I
+    
+    style A fill:#e1f5fe
+    style G fill:#c8e6c9
+    style L fill:#fff3e0
+```
+
+### 3.3 Python实现 / Python Implementation
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import minimize
+from typing import List, Tuple, Callable, Dict
+import warnings
+warnings.filterwarnings('ignore')
+
+class HybridQuantumClassical:
+    """量子-经典混合计算系统 / Quantum-Classical Hybrid Computing System"""
+    
+    def __init__(self, num_qubits: int, classical_dim: int):
+        self.num_qubits = num_qubits
+        self.classical_dim = classical_dim
+        self.quantum_params = np.random.randn(num_qubits, 3) * 0.1
+        self.classical_params = np.random.randn(classical_dim) * 0.1
+        self.gates = QuantumGates()
+    
+    def classical_preprocessing(self, input_data: np.ndarray) -> np.ndarray:
+        """经典预处理 / Classical preprocessing"""
+        # 线性变换 / Linear transformation
+        processed = input_data @ self.classical_params
+        # 非线性激活 / Nonlinear activation
+        processed = np.tanh(processed)
+        return processed
+    
+    def quantum_encoding(self, classical_data: np.ndarray) -> List[QuantumBit]:
+        """量子编码 / Quantum encoding"""
+        qubits = []
+        for i in range(self.num_qubits):
+            if i < len(classical_data):
+                # 将经典数据编码到量子态 / Encode classical data to quantum state
+                angle = classical_data[i] * np.pi
+                qubit = QuantumBit()
+                qubit = self.apply_gate(qubit, self.gates.rotation_y(angle))
+            else:
+                qubit = QuantumBit()
+            qubits.append(qubit)
+        return qubits
+    
+    def apply_gate(self, qubit: QuantumBit, gate: np.ndarray) -> QuantumBit:
+        """应用量子门 / Apply quantum gate"""
+        new_qubit = QuantumBit()
+        new_qubit.alpha = gate[0, 0] * qubit.alpha + gate[0, 1] * qubit.beta
+        new_qubit.beta = gate[1, 0] * qubit.alpha + gate[1, 1] * qubit.beta
+        return new_qubit
+    
+    def quantum_computation(self, qubits: List[QuantumBit]) -> List[QuantumBit]:
+        """量子计算 / Quantum computation"""
+        for i, qubit in enumerate(qubits):
+            # 应用参数化量子门 / Apply parameterized quantum gates
+            rx_gate = self.gates.rotation_x(self.quantum_params[i, 0])
+            ry_gate = self.gates.rotation_y(self.quantum_params[i, 1])
+            rz_gate = self.gates.rotation_z(self.quantum_params[i, 2])
+            
+            qubit = self.apply_gate(qubit, rx_gate)
+            qubit = self.apply_gate(qubit, ry_gate)
+            qubit = self.apply_gate(qubit, rz_gate)
+            qubits[i] = qubit
+        
+        return qubits
+    
+    def classical_postprocessing(self, quantum_measurements: np.ndarray) -> np.ndarray:
+        """经典后处理 / Classical postprocessing"""
+        # 线性组合 / Linear combination
+        output = quantum_measurements @ self.classical_params[:len(quantum_measurements)]
+        # 非线性变换 / Nonlinear transformation
+        output = np.tanh(output)
+        return output
+    
+    def hybrid_forward(self, input_data: np.ndarray) -> np.ndarray:
+        """混合前向传播 / Hybrid forward pass"""
+        # 经典预处理 / Classical preprocessing
+        classical_processed = self.classical_preprocessing(input_data)
+        
+        # 量子编码 / Quantum encoding
+        qubits = self.quantum_encoding(classical_processed)
+        
+        # 量子计算 / Quantum computation
+        qubits = self.quantum_computation(qubits)
+        
+        # 量子测量 / Quantum measurement
+        measurements = np.array([qubit.measure() for qubit in qubits])
+        
+        # 经典后处理 / Classical postprocessing
+        output = self.classical_postprocessing(measurements)
+        
+        return output
+    
+    def compute_hybrid_gradient(self, input_data: np.ndarray, target: np.ndarray) -> Dict[str, np.ndarray]:
+        """计算混合梯度 / Compute hybrid gradient"""
+        epsilon = 0.01
+        gradients = {}
+        
+        # 量子参数梯度 / Quantum parameter gradients
+        quantum_gradients = np.zeros_like(self.quantum_params)
+        for i in range(self.num_qubits):
+            for j in range(3):
+                # 参数偏移 / Parameter shift
+                self.quantum_params[i, j] += epsilon
+                output_plus = self.hybrid_forward(input_data)
+                self.quantum_params[i, j] -= 2 * epsilon
+                output_minus = self.hybrid_forward(input_data)
+                self.quantum_params[i, j] += epsilon
+                
+                loss_plus = np.mean((output_plus - target)**2)
+                loss_minus = np.mean((output_minus - target)**2)
+                quantum_gradients[i, j] = (loss_plus - loss_minus) / (2 * epsilon)
+        
+        # 经典参数梯度 / Classical parameter gradients
+        classical_gradients = np.zeros_like(self.classical_params)
+        for i in range(len(self.classical_params)):
+            # 参数偏移 / Parameter shift
+            self.classical_params[i] += epsilon
+            output_plus = self.hybrid_forward(input_data)
+            self.classical_params[i] -= 2 * epsilon
+            output_minus = self.hybrid_forward(input_data)
+            self.classical_params[i] += epsilon
+            
+            loss_plus = np.mean((output_plus - target)**2)
+            loss_minus = np.mean((output_minus - target)**2)
+            classical_gradients[i] = (loss_plus - loss_minus) / (2 * epsilon)
+        
+        gradients['quantum'] = quantum_gradients
+        gradients['classical'] = classical_gradients
+        return gradients
+    
+    def train_hybrid(self, input_data: np.ndarray, target: np.ndarray,
+                    learning_rate: float = 0.1, epochs: int = 100) -> List[float]:
+        """训练混合系统 / Train hybrid system"""
+        losses = []
+        
+        for epoch in range(epochs):
+            # 前向传播 / Forward pass
+            output = self.hybrid_forward(input_data)
+            loss = np.mean((output - target)**2)
+            losses.append(loss)
+            
+            # 计算梯度 / Compute gradients
+            gradients = self.compute_hybrid_gradient(input_data, target)
+            
+            # 更新参数 / Update parameters
+            self.quantum_params -= learning_rate * gradients['quantum']
+            self.classical_params -= learning_rate * gradients['classical']
+            
+            if epoch % 20 == 0:
+                print(f"Epoch {epoch}, Loss: {loss:.4f}")
+        
+        return losses
+
+class QuantumClassicalInterface:
+    """量子-经典接口 / Quantum-Classical Interface"""
+    
+    def __init__(self, quantum_system: HybridQuantumClassical):
+        self.quantum_system = quantum_system
+    
+    def quantum_expectation(self, observable: np.ndarray, num_shots: int = 1000) -> float:
+        """计算量子期望值 / Compute quantum expectation value"""
+        total_expectation = 0.0
+        
+        for _ in range(num_shots):
+            # 创建随机输入 / Create random input
+            input_data = np.random.randn(self.quantum_system.classical_dim)
+            
+            # 量子计算 / Quantum computation
+            qubits = self.quantum_system.quantum_encoding(
+                self.quantum_system.classical_preprocessing(input_data)
+            )
+            qubits = self.quantum_system.quantum_computation(qubits)
+            
+            # 计算期望值 / Compute expectation value
+            measurements = np.array([qubit.measure() for qubit in qubits])
+            expectation = measurements @ observable @ measurements
+            total_expectation += expectation
+        
+        return total_expectation / num_shots
+    
+    def classical_quantum_gradient(self, observable: np.ndarray) -> np.ndarray:
+        """计算经典-量子梯度 / Compute classical-quantum gradient"""
+        epsilon = 0.01
+        gradients = np.zeros_like(self.quantum_system.quantum_params)
+        
+        for i in range(self.quantum_system.num_qubits):
+            for j in range(3):
+                # 参数偏移 / Parameter shift
+                self.quantum_system.quantum_params[i, j] += epsilon
+                exp_plus = self.quantum_expectation(observable)
+                self.quantum_system.quantum_params[i, j] -= 2 * epsilon
+                exp_minus = self.quantum_expectation(observable)
+                self.quantum_system.quantum_params[i, j] += epsilon
+                
+                gradients[i, j] = (exp_plus - exp_minus) / (2 * epsilon)
+        
+        return gradients
+
+def visualize_hybrid_computing():
+    """可视化量子-经典混合计算 / Visualize quantum-classical hybrid computing"""
+    # 创建混合系统 / Create hybrid system
+    hybrid_system = HybridQuantumClassical(num_qubits=4, classical_dim=3)
+    interface = QuantumClassicalInterface(hybrid_system)
+    
+    # 生成训练数据 / Generate training data
+    input_data = np.random.randn(3)
+    target = np.array([0.5])
+    
+    # 训练混合系统 / Train hybrid system
+    losses = hybrid_system.train_hybrid(input_data, target, epochs=50)
+    
+    plt.figure(figsize=(15, 5))
+    
+    # 训练损失 / Training loss
+    plt.subplot(1, 3, 1)
+    plt.plot(losses)
+    plt.title('混合系统训练损失 / Hybrid System Training Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.grid(True)
+    
+    # 量子期望值 / Quantum expectation values
+    plt.subplot(1, 3, 2)
+    observables = [np.eye(4), np.random.randn(4, 4)]
+    observable_names = ['Identity', 'Random']
+    expectations = []
+    
+    for obs in observables:
+        exp_val = interface.quantum_expectation(obs)
+        expectations.append(exp_val)
+    
+    plt.bar(observable_names, expectations)
+    plt.title('量子期望值 / Quantum Expectation Values')
+    plt.ylabel('Expectation Value')
+    
+    # 参数分布 / Parameter distribution
+    plt.subplot(1, 3, 3)
+    quantum_params_flat = hybrid_system.quantum_params.flatten()
+    classical_params_flat = hybrid_system.classical_params
+    
+    plt.hist(quantum_params_flat, alpha=0.7, label='Quantum', bins=10)
+    plt.hist(classical_params_flat, alpha=0.7, label='Classical', bins=10)
+    plt.title('参数分布 / Parameter Distribution')
+    plt.xlabel('Parameter Value')
+    plt.ylabel('Frequency')
+    plt.legend()
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return hybrid_system, interface, losses
+
+if __name__ == "__main__":
+    print("量子-经典混合计算示例 / Quantum-Classical Hybrid Computing Example")
+    hybrid_system, interface, losses = visualize_hybrid_computing()
+```
+
+## 总结 / Summary
+
+### 主要特性 / Key Features
+
+1. **量子神经网络 / Quantum Neural Networks**
+   - 量子比特状态表示 / Quantum bit state representation
+   - 量子门操作 / Quantum gate operations
+   - 参数化量子电路 / Parameterized quantum circuits
+   - 量子测量和经典后处理 / Quantum measurement and classical postprocessing
+
+2. **量子优化算法 / Quantum Optimization Algorithms**
+   - QAOA算法实现 / QAOA algorithm implementation
+   - VQE算法实现 / VQE algorithm implementation
+   - 混合哈密顿量 / Hybrid Hamiltonians
+   - 经典优化器集成 / Classical optimizer integration
+
+3. **量子-经典混合计算 / Quantum-Classical Hybrid Computing**
+   - 混合计算框架 / Hybrid computing framework
+   - 量子-经典接口 / Quantum-classical interface
+   - 梯度计算和参数更新 / Gradient computation and parameter updates
+   - 端到端训练系统 / End-to-end training system
+
+### 技术亮点 / Technical Highlights
+
+- **多表征方法**: 数学公式、流程图、Python代码实现
+- **模块化设计**: 可扩展的量子计算组件
+- **混合优化**: 量子算法与经典优化器的结合
+- **可视化支持**: 训练过程和结果的可视化
+
+### 应用场景 / Application Scenarios
+
+- **量子机器学习**: 量子神经网络训练
+- **组合优化**: 使用QAOA解决优化问题
+- **量子化学**: 使用VQE计算分子能量
+- **混合计算**: 量子-经典协同计算系统
+
+### 扩展方向 / Extension Directions
+
+- **量子错误纠正**: 实现量子错误纠正码
+- **量子机器学习**: 更多量子机器学习算法
+- **量子-经典接口**: 更高效的接口设计
+- **实际量子硬件**: 与真实量子计算机的集成

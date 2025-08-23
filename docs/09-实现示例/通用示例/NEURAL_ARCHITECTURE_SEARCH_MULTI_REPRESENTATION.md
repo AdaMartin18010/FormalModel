@@ -11,6 +11,7 @@ Neural Architecture Search (NAS) is a crucial branch of automated machine learni
 ### 1.1 数学表示 / Mathematical Representation
 
 #### 1.1.1 策略网络 / Policy Network
+
 策略网络定义搜索空间中的动作分布：
 
 The policy network defines the action distribution in the search space:
@@ -22,6 +23,7 @@ $$P(a_t|s_t; \theta) = \text{softmax}(f_\theta(s_t))$$
 where $s_t$ is the current state, $a_t$ is the selected action, and $\theta$ are the policy network parameters.
 
 #### 1.1.2 奖励函数 / Reward Function
+
 奖励基于验证性能：
 
 The reward is based on validation performance:
@@ -33,6 +35,7 @@ $$R(\tau) = \text{Accuracy}_{\text{val}}(\mathcal{A}_\tau) - \lambda \cdot \text
 where $\mathcal{A}_\tau$ is the architecture and $\lambda$ is the complexity penalty coefficient.
 
 #### 1.1.3 策略梯度 / Policy Gradient
+
 使用REINFORCE算法更新策略：
 
 Update policy using REINFORCE algorithm:
@@ -303,6 +306,7 @@ if __name__ == "__main__":
 ### 2.1 数学表示 / Mathematical Representation
 
 #### 2.1.1 种群表示 / Population Representation
+
 种群 $P_t$ 包含 $N$ 个个体（架构）：
 
 Population $P_t$ contains $N$ individuals (architectures):
@@ -310,6 +314,7 @@ Population $P_t$ contains $N$ individuals (architectures):
 $$P_t = \{\mathcal{A}_1^{(t)}, \mathcal{A}_2^{(t)}, ..., \mathcal{A}_N^{(t)}\}$$
 
 #### 2.1.2 适应度函数 / Fitness Function
+
 适应度基于验证准确率和复杂度：
 
 Fitness based on validation accuracy and complexity:
@@ -317,6 +322,7 @@ Fitness based on validation accuracy and complexity:
 $$f(\mathcal{A}) = \text{Accuracy}_{\text{val}}(\mathcal{A}) - \lambda \cdot \text{Complexity}(\mathcal{A})$$
 
 #### 2.1.3 选择操作 / Selection Operation
+
 使用锦标赛选择：
 
 Using tournament selection:
@@ -324,6 +330,7 @@ Using tournament selection:
 $$P(\mathcal{A}_i \text{ selected}) = \frac{f(\mathcal{A}_i)}{\sum_{j=1}^{N} f(\mathcal{A}_j)}$$
 
 #### 2.1.4 交叉操作 / Crossover Operation
+
 架构交叉：
 
 Architecture crossover:
@@ -331,6 +338,7 @@ Architecture crossover:
 $$\mathcal{A}_{\text{child}} = \text{Crossover}(\mathcal{A}_{\text{parent1}}, \mathcal{A}_{\text{parent2}})$$
 
 #### 2.1.5 变异操作 / Mutation Operation
+
 随机变异：
 
 Random mutation:
@@ -573,6 +581,7 @@ if __name__ == "__main__":
 ### 3.1 数学表示 / Mathematical Representation
 
 #### 3.1.1 超网络表示 / Supernet Representation
+
 超网络包含所有可能的操作：
 
 The supernet contains all possible operations:
@@ -584,6 +593,7 @@ $$\mathcal{N}(x) = \sum_{i=1}^{N} \alpha_i \cdot \mathcal{O}_i(x)$$
 where $\alpha_i$ are architecture weights and $\mathcal{O}_i$ are candidate operations.
 
 #### 3.1.2 架构权重 / Architecture Weights
+
 使用Gumbel-Softmax进行可微分采样：
 
 Using Gumbel-Softmax for differentiable sampling:
@@ -595,6 +605,7 @@ $$\alpha_i = \frac{\exp((\log \pi_i + g_i) / \tau)}{\sum_{j=1}^{N} \exp((\log \p
 where $g_i \sim \text{Gumbel}(0,1)$ and $\tau$ is the temperature parameter.
 
 #### 3.1.3 损失函数 / Loss Function
+
 联合优化架构权重和网络权重：
 
 Joint optimization of architecture weights and network weights:
@@ -602,6 +613,7 @@ Joint optimization of architecture weights and network weights:
 $$\mathcal{L} = \mathcal{L}_{\text{train}}(\theta, \alpha) + \lambda \cdot \mathcal{L}_{\text{val}}(\theta, \alpha)$$
 
 #### 3.1.4 梯度更新 / Gradient Update
+
 交替更新网络权重和架构权重：
 
 Alternating updates of network weights and architecture weights:

@@ -17,6 +17,7 @@ Independent Q-Learning where each agent learns its own Q-function independently:
 $$Q_i(s, a_i) \leftarrow Q_i(s, a_i) + \alpha[r_i + \gamma \max_{a_i'} Q_i(s', a_i') - Q_i(s, a_i)]$$
 
 其中：
+
 - $Q_i$ 是智能体$i$的Q函数
 - $s$ 是当前状态
 - $a_i$ 是智能体$i$的动作
@@ -25,6 +26,7 @@ $$Q_i(s, a_i) \leftarrow Q_i(s, a_i) + \alpha[r_i + \gamma \max_{a_i'} Q_i(s', a
 - $\gamma$ 是折扣因子
 
 where:
+
 - $Q_i$ is the Q-function of agent $i$
 - $s$ is the current state
 - $a_i$ is the action of agent $i$
@@ -39,10 +41,12 @@ Joint policy Q-value:
 $$Q^{\pi}(s, \vec{a}) = \sum_{i=1}^{n} Q_i^{\pi_i}(s, a_i)$$
 
 其中：
+
 - $\vec{a} = (a_1, a_2, ..., a_n)$ 是联合动作
 - $\pi = (\pi_1, \pi_2, ..., \pi_n)$ 是联合策略
 
 where:
+
 - $\vec{a} = (a_1, a_2, ..., a_n)$ is the joint action
 - $\pi = (\pi_1, \pi_2, ..., \pi_n)$ is the joint policy
 
@@ -439,7 +443,7 @@ if __name__ == "__main__":
 
 ### 2.1 纳什均衡计算 / Nash Equilibrium Computation
 
-#### 数学表示 / Mathematical Representation
+#### 2.1.1 数学表示 / Mathematical Representation
 
 纳什均衡是博弈论中的核心概念：
 
@@ -452,11 +456,13 @@ For strategy profile $\sigma^* = (\sigma_1^*, \sigma_2^*, ..., \sigma_n^*)$, if 
 $$u_i(\sigma_i^*, \sigma_{-i}^*) \geq u_i(\sigma_i, \sigma_{-i}^*) \quad \forall \sigma_i \in \Sigma_i$$
 
 其中：
+
 - $u_i$ 是玩家$i$的效用函数
 - $\sigma_{-i}^*$ 是其他玩家的策略
 - $\Sigma_i$ 是玩家$i$的策略空间
 
 where:
+
 - $u_i$ is the utility function of player $i$
 - $\sigma_{-i}^*$ are the strategies of other players
 - $\Sigma_i$ is the strategy space of player $i$
@@ -469,14 +475,16 @@ $$\sum_{s_i \in S_i} \sigma_i^*(s_i) = 1$$
 $$\sigma_i^*(s_i) \geq 0 \quad \forall s_i \in S_i$$
 
 其中：
+
 - $S_i$ 是玩家$i$的纯策略集
 - $\sigma_i^*(s_i)$ 是选择策略$s_i$的概率
 
 where:
+
 - $S_i$ is the pure strategy set of player $i$
 - $\sigma_i^*(s_i)$ is the probability of choosing strategy $s_i$
 
-#### 可视化表示 / Visual Representation
+#### 2.1.2 可视化表示 / Visual Representation
 
 ```mermaid
 graph TD
@@ -500,7 +508,7 @@ graph TD
     end
 ```
 
-#### Python实现 / Python Implementation
+#### 2.1.3 Python实现 / Python Implementation
 
 ```python
 import numpy as np
@@ -703,7 +711,7 @@ if __name__ == "__main__":
 
 ### 3.1 联邦学习算法 / Federated Learning Algorithm
 
-#### 数学表示 / Mathematical Representation
+#### 3.1.1 数学表示 / Mathematical Representation
 
 联邦学习的目标是最小化全局损失函数：
 
@@ -712,11 +720,13 @@ Federated Learning aims to minimize the global loss function:
 $$\min_{w} F(w) = \sum_{k=1}^{K} \frac{n_k}{n} F_k(w)$$
 
 其中：
+
 - $F_k(w)$ 是客户端$k$的本地损失函数
 - $n_k$ 是客户端$k$的数据量
 - $n = \sum_{k=1}^{K} n_k$ 是总数据量
 
 where:
+
 - $F_k(w)$ is the local loss function of client $k$
 - $n_k$ is the data size of client $k$
 - $n = \sum_{k=1}^{K} n_k$ is the total data size
@@ -728,14 +738,16 @@ Federated Averaging Algorithm:
 $$w_{t+1} = \sum_{k=1}^{K} \frac{n_k}{n} w_k^{(t)}$$
 
 其中：
+
 - $w_k^{(t)}$ 是客户端$k$在第$t$轮的模型参数
 - $w_{t+1}$ 是聚合后的全局模型参数
 
 where:
+
 - $w_k^{(t)}$ are the model parameters of client $k$ at round $t$
 - $w_{t+1}$ are the aggregated global model parameters
 
-#### 可视化表示 / Visual Representation
+#### 3.1.2 可视化表示 / Visual Representation
 
 ```mermaid
 graph TD
@@ -769,7 +781,7 @@ graph TD
     end
 ```
 
-#### Python实现 / Python Implementation
+#### 3.1.3 Python实现 / Python Implementation
 
 ```python
 class FederatedClient:

@@ -6,7 +6,14 @@
   - [目录 / Table of Contents](#目录--table-of-contents)
   - [1.1.1 模型定义与分类原则 / Model Definition and Classification Principles](#111-模型定义与分类原则--model-definition-and-classification-principles)
     - [模型定义 / Model Definition](#模型定义--model-definition)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition)
+      - [等价定义 / Equivalent Definitions](#等价定义--equivalent-definitions)
+      - [历史发展 / Historical Development](#历史发展--historical-development)
     - [分类原则 / Classification Principles](#分类原则--classification-principles)
+      - [形式化分类原则 / Formal Classification Principles](#形式化分类原则--formal-classification-principles)
+      - [分类定理 / Classification Theorems](#分类定理--classification-theorems)
+      - [分类算法 / Classification Algorithms](#分类算法--classification-algorithms)
   - [1.1.2 按学科领域分类 / Classification by Academic Disciplines](#112-按学科领域分类--classification-by-academic-disciplines)
     - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
       - [经典力学模型 / Classical Mechanics Models](#经典力学模型--classical-mechanics-models)
@@ -53,21 +60,100 @@
 
 ### 模型定义 / Model Definition
 
-**模型 (Model)** 是对现实世界或抽象概念系统的简化表示，具有以下特征：
+#### 形式化定义 / Formal Definition
 
-1. **抽象性 (Abstraction)**: 忽略非本质细节，突出核心特征
-2. **形式化 (Formality)**: 具有严格的数学或逻辑结构
-3. **可验证性 (Verifiability)**: 能够通过实验或推理验证
-4. **预测性 (Predictivity)**: 能够预测系统行为
-5. **解释性 (Explanatory)**: 能够解释现象背后的机制
+**模型 (Model)** 是一个四元组 $M = (S, F, I, V)$，其中：
+
+- $S$ 是**状态空间 (State Space)**，表示系统所有可能状态的集合
+- $F$ 是**形式化结构 (Formal Structure)**，包含数学或逻辑关系
+- $I$ 是**解释映射 (Interpretation Mapping)**，将形式化结构映射到现实世界
+- $V$ 是**验证标准 (Validation Criteria)**，用于验证模型的正确性
+
+#### 公理化定义 / Axiomatic Definition
+
+**公理1 (抽象性公理)**: 对于任意模型 $M$，存在一个抽象函数 $\alpha: \mathcal{R} \rightarrow S$，将现实世界 $\mathcal{R}$ 映射到状态空间 $S$。
+
+**公理2 (形式化公理)**: 模型的形式化结构 $F$ 必须满足某种数学或逻辑系统 $\mathcal{L}$ 的公理。
+
+**公理3 (可验证性公理)**: 对于任意模型 $M$，存在验证函数 $v: M \times \mathcal{E} \rightarrow \{0,1\}$，其中 $\mathcal{E}$ 是实验空间。
+
+**公理4 (预测性公理)**: 模型 $M$ 能够预测未来状态：$P: S \times T \rightarrow S$，其中 $T$ 是时间参数。
+
+**公理5 (解释性公理)**: 存在解释函数 $\epsilon: F \rightarrow \mathcal{P}$，将形式化结构映射到现象空间 $\mathcal{P}$。
+
+#### 等价定义 / Equivalent Definitions
+
+**定义1 (集合论定义)**: 模型是现实世界子集的数学表示
+
+**定义2 (函数论定义)**: 模型是从输入空间到输出空间的函数映射
+
+**定义3 (代数定义)**: 模型是满足特定代数结构的数学对象
+
+**定义4 (逻辑定义)**: 模型是满足特定逻辑公式的结构
+
+#### 历史发展 / Historical Development
+
+1. **古典时期 (1900年前)**: 模型主要是物理现象的数学描述
+2. **现代时期 (1900-1950)**: 形式化建模理论开始发展
+3. **当代时期 (1950-2000)**: 计算机科学推动模型理论发展
+4. **新兴时期 (2000年后)**: 人工智能和复杂系统建模兴起
 
 ### 分类原则 / Classification Principles
 
-**P1 (完备性)**: 分类体系应覆盖所有已知的成熟模型
-**P2 (互斥性)**: 不同类别之间应相互独立
-**P3 (层次性)**: 分类应具有清晰的层次结构
-**P4 (发展性)**: 分类应反映模型的历史发展脉络
-**P5 (实用性)**: 分类应便于实际应用和研究
+#### 形式化分类原则 / Formal Classification Principles
+
+**P1 (完备性公理)**: 对于任意模型 $M$，存在分类函数 $C: \mathcal{M} \rightarrow \mathcal{C}$，其中 $\mathcal{M}$ 是模型空间，$\mathcal{C}$ 是分类空间，使得 $\bigcup_{c \in \mathcal{C}} C^{-1}(c) = \mathcal{M}$。
+
+**P2 (互斥性公理)**: 对于任意两个不同类别 $c_1, c_2 \in \mathcal{C}$，有 $C^{-1}(c_1) \cap C^{-1}(c_2) = \emptyset$。
+
+**P3 (层次性公理)**: 分类空间 $\mathcal{C}$ 具有偏序关系 $\preceq$，形成层次结构 $(C, \preceq)$。
+
+**P4 (发展性公理)**: 存在时间映射 $T: \mathcal{M} \rightarrow \mathbb{R}$，使得分类反映历史发展。
+
+**P5 (实用性公理)**: 分类函数 $C$ 是计算可实现的，即存在算法 $\mathcal{A}$ 使得 $C = \mathcal{A}$。
+
+#### 分类定理 / Classification Theorems
+
+**定理1 (分类存在性)**: 对于任意模型集合 $\mathcal{M}$，存在至少一种满足P1-P5的分类。
+
+**证明**: 构造性证明，通过递归定义分类函数。
+
+**定理2 (分类唯一性)**: 在给定分类标准下，最优分类是唯一的。
+
+**证明**: 使用反证法，假设存在两个不同的最优分类，导出矛盾。
+
+**定理3 (分类完备性)**: 任何模型都可以被分类到某个类别中。
+
+**证明**: 根据P1公理，分类函数是满射的。
+
+#### 分类算法 / Classification Algorithms
+
+**算法1 (层次分类算法)**:
+
+```text
+输入: 模型集合 M
+输出: 层次分类树 T
+
+1. 初始化根节点
+2. 对于每个模型 m in M:
+   a. 计算特征向量 f(m)
+   b. 根据特征向量确定分类
+   c. 将模型插入到对应节点
+3. 递归构建子树
+4. 返回分类树 T
+```
+
+**算法2 (聚类分类算法)**:
+
+```text
+输入: 模型集合 M, 聚类数 k
+输出: k个分类 C1, C2, ..., Ck
+
+1. 计算模型间相似度矩阵 S
+2. 使用K-means算法聚类
+3. 为每个聚类分配类别标签
+4. 返回分类结果
+```
 
 ---
 

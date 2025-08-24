@@ -516,7 +516,7 @@ graph TD
      - ✅ 程序验证：Hoare逻辑、最弱前置条件、程序正确性
      - ✅ 跨语言实现：Python完整实现
 
-32. **多模态学习扩展多表征示例** / Multimodal Learning Extension Multi-Representation Examples
+33. **多模态学习扩展多表征示例** / Multimodal Learning Extension Multi-Representation Examples
     - ✅ 视觉-语言预训练模型：多模态编码器、跨模态注意力、预训练目标
     - ✅ 跨模态检索和生成：相似度计算、双向生成、检索-生成联合优化
     - ✅ 多模态推理和问答：多步推理、注意力融合、生成式和分类式答案

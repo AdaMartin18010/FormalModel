@@ -33,6 +33,7 @@ $$P(0) \wedge (\forall n. P(n) \rightarrow P(n+1)) \rightarrow \forall n. P(n)$$
 **结构归纳法**:
 
 对于数据类型 $T$，如果：
+
 1. $P$ 对所有基本构造函数成立
 2. 对于复合构造函数 $C(t_1, ..., t_n)$，如果 $P(t_i)$ 对所有 $i$ 成立，则 $P(C(t_1, ..., t_n))$ 成立
 

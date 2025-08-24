@@ -9,19 +9,13 @@
     - [电场 / Electric Field](#电场--electric-field)
     - [电势 / Electric Potential](#电势--electric-potential)
     - [高斯定律 / Gauss's Law](#高斯定律--gausss-law)
-  - [2.5.2 静磁学 / Magnetostatics](#252-静磁学--magnetostatics)
-    - [安培定律 / Ampère's Law](#安培定律--ampères-law)
     - [磁场 / Magnetic Field](#磁场--magnetic-field)
     - [磁矢势 / Magnetic Vector Potential](#磁矢势--magnetic-vector-potential)
     - [毕奥-萨伐尔定律 / Biot-Savart Law](#毕奥-萨伐尔定律--biot-savart-law)
-  - [2.5.3 电磁感应 / Electromagnetic Induction](#253-电磁感应--electromagnetic-induction)
-    - [法拉第定律 / Faraday's Law](#法拉第定律--faradays-law)
     - [楞次定律 / Lenz's Law](#楞次定律--lenzs-law)
     - [自感和互感 / Self and Mutual Inductance](#自感和互感--self-and-mutual-inductance)
   - [2.5.4 麦克斯韦方程组 / Maxwell's Equations](#254-麦克斯韦方程组--maxwells-equations)
     - [积分形式 / Integral Form](#积分形式--integral-form)
-    - [微分形式 / Differential Form](#微分形式--differential-form)
-    - [边界条件 / Boundary Conditions](#边界条件--boundary-conditions)
   - [2.5.5 电磁波 / Electromagnetic Waves](#255-电磁波--electromagnetic-waves)
     - [波动方程 / Wave Equation](#波动方程--wave-equation)
     - [平面波 / Plane Waves](#平面波--plane-waves)
@@ -4790,5 +4784,1556 @@ def doppler_effect_example():
 
 ---
 
+## 2.5.6 电磁辐射 / Electromagnetic Radiation
+
+### 偶极辐射 / Dipole Radiation
+
+**形式化定义**: 偶极辐射描述了振荡电偶极子产生的电磁辐射场，是电磁辐射理论的基础模型。
+
+**公理化定义**:
+设 $\mathcal{DR} = \langle \mathcal{P}, \mathcal{R}, \mathcal{E}, \mathcal{B}, \mathcal{S} \rangle$ 为偶极辐射系统，其中：
+
+1. **偶极矩集合**: $\mathcal{P}$ 为电偶极矩集合
+2. **辐射场集合**: $\mathcal{R}$ 为辐射电磁场集合
+3. **电场函数**: $\mathcal{E}: \mathcal{P} \times \mathbb{R}^3 \times \mathbb{R} \rightarrow \mathbb{R}^3$ 为辐射电场函数
+4. **磁场函数**: $\mathcal{B}: \mathcal{P} \times \mathbb{R}^3 \times \mathbb{R} \rightarrow \mathbb{R}^3$ 为辐射磁场函数
+5. **坡印廷矢量**: $\mathcal{S}: \mathcal{E} \times \mathcal{B} \rightarrow \mathbb{R}^3$ 为能流密度函数
+
+**等价定义**:
+
+1. **远场近似**: $\vec{E} = \frac{\mu_0 \ddot{\vec{p}}}{4\pi r} \sin\theta \hat{\theta}$
+2. **磁场关系**: $\vec{B} = \frac{1}{c} \hat{r} \times \vec{E}$
+3. **功率密度**: $S = \frac{\mu_0 \ddot{p}^2}{16\pi^2 c r^2} \sin^2\theta$
+
+**形式化定理**:
+
+**定理2.5.6.1 (偶极辐射远场性)**: 偶极辐射在远场区域为横波
+$$\vec{E} \cdot \hat{r} = 0, \quad \vec{B} \cdot \hat{r} = 0$$
+
+**定理2.5.6.2 (偶极辐射方向性)**: 偶极辐射具有方向性，最大辐射方向垂直于偶极矩
+$$S_{max} = \frac{\mu_0 \ddot{p}^2}{16\pi^2 c r^2}$$
+
+**定理2.5.6.3 (偶极辐射总功率)**: 偶极辐射的总功率为
+$$P = \frac{\mu_0 \ddot{p}^2}{6\pi c}$$
+
+**Python算法实现**:
+
+```python
+import numpy as np
+from typing import Callable, Tuple
+from scipy.constants import mu_0, c
+
+class DipoleRadiation:
+    """偶极辐射类"""
+    def __init__(self, dipole_moment: np.ndarray, frequency: float, 
+                 amplitude: float = 1.0):
+        self.dipole_moment = np.array(dipole_moment)
+        self.frequency = frequency
+        self.amplitude = amplitude
+        self.angular_frequency = 2 * np.pi * frequency
+        self.wavenumber = self.angular_frequency / c
+    
+    def get_dipole_moment(self) -> np.ndarray:
+        """获取偶极矩"""
+        return self.dipole_moment.copy()
+    
+    def get_frequency(self) -> float:
+        """获取频率"""
+        return self.frequency
+    
+    def get_angular_frequency(self) -> float:
+        """获取角频率"""
+        return self.angular_frequency
+    
+    def get_wavenumber(self) -> float:
+        """获取波数"""
+        return self.wavenumber
+
+def dipole_electric_field(dipole_moment: np.ndarray, position: np.ndarray, 
+                         time: float, frequency: float) -> np.ndarray:
+    """
+    计算偶极辐射电场
+    
+    参数:
+        dipole_moment: 偶极矩向量 (C·m)
+        position: 观察位置 (m)
+        time: 时间 (s)
+        frequency: 频率 (Hz)
+    
+    返回:
+        电场向量 (V/m)
+    """
+    r = np.linalg.norm(position)
+    if r == 0:
+        return np.zeros(3)
+    
+    r_hat = position / r
+    k = 2 * np.pi * frequency / c
+    phase = k * r - 2 * np.pi * frequency * time
+    
+    # 远场近似
+    if k * r >> 1:
+        # 横向电场
+        p_parallel = np.dot(dipole_moment, r_hat) * r_hat
+        p_perp = dipole_moment - p_parallel
+        
+        E_magnitude = mu_0 * (2 * np.pi * frequency)**2 * np.linalg.norm(p_perp) / (4 * np.pi * r)
+        E_direction = p_perp / np.linalg.norm(p_perp) if np.linalg.norm(p_perp) > 0 else np.array([0, 1, 0])
+        
+        return E_magnitude * np.cos(phase) * E_direction
+    else:
+        # 近场计算（简化）
+        return np.zeros(3)
+
+def dipole_magnetic_field(dipole_moment: np.ndarray, position: np.ndarray, 
+                         time: float, frequency: float) -> np.ndarray:
+    """
+    计算偶极辐射磁场
+    
+    参数:
+        dipole_moment: 偶极矩向量 (C·m)
+        position: 观察位置 (m)
+        time: 时间 (s)
+        frequency: 频率 (Hz)
+    
+    返回:
+        磁场向量 (T)
+    """
+    E_field = dipole_electric_field(dipole_moment, position, time, frequency)
+    r = np.linalg.norm(position)
+    
+    if r == 0:
+        return np.zeros(3)
+    
+    r_hat = position / r
+    
+    # 磁场与电场的关系
+    return np.cross(r_hat, E_field) / c
+
+def dipole_power_density(dipole_moment: np.ndarray, position: np.ndarray, 
+                        frequency: float) -> float:
+    """
+    计算偶极辐射功率密度
+    
+    参数:
+        dipole_moment: 偶极矩向量 (C·m)
+        position: 观察位置 (m)
+        frequency: 频率 (Hz)
+    
+    返回:
+        功率密度 (W/m²)
+    """
+    r = np.linalg.norm(position)
+    if r == 0:
+        return 0.0
+    
+    r_hat = position / r
+    p_parallel = np.dot(dipole_moment, r_hat) * r_hat
+    p_perp = dipole_moment - p_parallel
+    
+    # 功率密度公式
+    S = mu_0 * (2 * np.pi * frequency)**2 * np.linalg.norm(p_perp)**2 / (16 * np.pi**2 * c * r**2)
+    
+    return S
+
+def dipole_total_power(dipole_moment: np.ndarray, frequency: float) -> float:
+    """
+    计算偶极辐射总功率
+    
+    参数:
+        dipole_moment: 偶极矩向量 (C·m)
+        frequency: 频率 (Hz)
+    
+    返回:
+        总功率 (W)
+    """
+    # 总功率公式
+    P = mu_0 * (2 * np.pi * frequency)**2 * np.linalg.norm(dipole_moment)**2 / (6 * np.pi * c)
+    
+    return P
+
+def dipole_radiation_pattern(dipole_moment: np.ndarray, theta_values: np.ndarray, 
+                           phi_values: np.ndarray, frequency: float) -> np.ndarray:
+    """
+    计算偶极辐射方向图
+    
+    参数:
+        dipole_moment: 偶极矩向量 (C·m)
+        theta_values: 极角数组 (rad)
+        phi_values: 方位角数组 (rad)
+        frequency: 频率 (Hz)
+    
+    返回:
+        辐射强度数组 (W/sr)
+    """
+    pattern = np.zeros((len(theta_values), len(phi_values)))
+    
+    for i, theta in enumerate(theta_values):
+        for j, phi in enumerate(phi_values):
+            # 球坐标到直角坐标
+            x = np.sin(theta) * np.cos(phi)
+            y = np.sin(theta) * np.sin(phi)
+            z = np.cos(theta)
+            position = np.array([x, y, z])
+            
+            # 计算功率密度
+            S = dipole_power_density(dipole_moment, position, frequency)
+            pattern[i, j] = S * 1.0  # 假设单位距离
+    
+    return pattern
+
+def dipole_radiation_verification(dipole_moment: np.ndarray, position: np.ndarray, 
+                                time: float, frequency: float, tolerance: float = 1e-6) -> bool:
+    """
+    验证偶极辐射
+    
+    参数:
+        dipole_moment: 偶极矩向量 (C·m)
+        position: 观察位置 (m)
+        time: 时间 (s)
+        frequency: 频率 (Hz)
+        tolerance: 容差
+    
+    返回:
+        是否满足偶极辐射条件
+    """
+    E_field = dipole_electric_field(dipole_moment, position, time, frequency)
+    B_field = dipole_magnetic_field(dipole_moment, position, time, frequency)
+    
+    r = np.linalg.norm(position)
+    if r == 0:
+        return True
+    
+    r_hat = position / r
+    
+    # 验证横波性
+    E_transverse = abs(np.dot(E_field, r_hat))
+    B_transverse = abs(np.dot(B_field, r_hat))
+    
+    # 验证电场和磁场正交
+    E_B_orthogonal = abs(np.dot(E_field, B_field))
+    
+    return (E_transverse < tolerance and B_transverse < tolerance and 
+            E_B_orthogonal < tolerance)
+
+def dipole_radiation_example():
+    """偶极辐射示例"""
+    # 创建偶极辐射对象
+    dipole_moment = np.array([0, 0, 1e-12])  # 1 pC·m
+    frequency = 1e9  # 1 GHz
+    radiation = DipoleRadiation(dipole_moment, frequency)
+    
+    # 计算远场电场和磁场
+    position = np.array([1, 0, 0])  # 1米距离
+    time = 0.0
+    E_field = dipole_electric_field(dipole_moment, position, time, frequency)
+    B_field = dipole_magnetic_field(dipole_moment, position, time, frequency)
+    
+    # 计算功率密度和总功率
+    power_density = dipole_power_density(dipole_moment, position, frequency)
+    total_power = dipole_total_power(dipole_moment, frequency)
+    
+    # 计算辐射方向图
+    theta = np.linspace(0, np.pi, 50)
+    phi = np.linspace(0, 2*np.pi, 50)
+    pattern = dipole_radiation_pattern(dipole_moment, theta, phi, frequency)
+    
+    # 验证偶极辐射
+    verification = dipole_radiation_verification(dipole_moment, position, time, frequency)
+    
+    print(f"偶极矩: {dipole_moment} C·m")
+    print(f"频率: {frequency:.2e} Hz")
+    print(f"电场: {E_field} V/m")
+    print(f"磁场: {B_field} T")
+    print(f"功率密度: {power_density:.2e} W/m²")
+    print(f"总功率: {total_power:.2e} W")
+    print(f"偶极辐射验证: {'通过' if verification else '失败'}")
+    
+    return (radiation, E_field, B_field, power_density, total_power, pattern, verification)
+```
+
+### 天线理论 / Antenna Theory
+
+**形式化定义**: 天线理论描述了电磁辐射器的辐射特性，包括方向性、增益、阻抗等参数。
+
+**公理化定义**:
+设 $\mathcal{AT} = \langle \mathcal{A}, \mathcal{D}, \mathcal{G}, \mathcal{Z}, \mathcal{E} \rangle$ 为天线理论系统，其中：
+
+1. **天线集合**: $\mathcal{A}$ 为天线结构集合
+2. **方向性函数**: $\mathcal{D}: \mathcal{A} \times \mathbb{R}^3 \rightarrow \mathbb{R}$ 为方向性函数
+3. **增益函数**: $\mathcal{G}: \mathcal{A} \times \mathbb{R}^3 \rightarrow \mathbb{R}$ 为增益函数
+4. **阻抗函数**: $\mathcal{Z}: \mathcal{A} \times \mathbb{R} \rightarrow \mathbb{C}$ 为阻抗函数
+5. **效率函数**: $\mathcal{E}: \mathcal{A} \rightarrow [0,1]$ 为辐射效率函数
+
+**等价定义**:
+
+1. **方向性**: $D(\theta,\phi) = \frac{4\pi U(\theta,\phi)}{P_{rad}}$
+2. **增益**: $G(\theta,\phi) = \eta D(\theta,\phi)$
+3. **阻抗**: $Z = R + jX = \frac{V}{I}$
+
+**形式化定理**:
+
+**定理2.5.6.4 (天线方向性积分)**: 天线方向性满足积分约束
+$$\int_0^{2\pi} \int_0^{\pi} D(\theta,\phi) \sin\theta d\theta d\phi = 4\pi$$
+
+**定理2.5.6.5 (天线增益上限)**: 天线增益受物理尺寸限制
+$$G_{max} \leq \frac{4\pi A_{eff}}{\lambda^2}$$
+
+**定理2.5.6.6 (天线阻抗匹配)**: 最大功率传输条件为阻抗共轭匹配
+$$Z_L = Z_a^*$$
+
+**Python算法实现**:
+
+```python
+import numpy as np
+from typing import Callable, Tuple, Complex
+from scipy.constants import mu_0, c
+
+class Antenna:
+    """天线类"""
+    def __init__(self, length: float, frequency: float, 
+                 efficiency: float = 1.0, impedance: complex = 50+0j):
+        self.length = length
+        self.frequency = frequency
+        self.efficiency = efficiency
+        self.impedance = impedance
+        self.wavelength = c / frequency
+        self.wavenumber = 2 * np.pi / self.wavelength
+    
+    def get_length(self) -> float:
+        """获取天线长度"""
+        return self.length
+    
+    def get_frequency(self) -> float:
+        """获取工作频率"""
+        return self.frequency
+    
+    def get_wavelength(self) -> float:
+        """获取波长"""
+        return self.wavelength
+    
+    def get_impedance(self) -> complex:
+        """获取阻抗"""
+        return self.impedance
+
+def dipole_directivity(theta: float, phi: float) -> float:
+    """
+    计算偶极天线方向性
+    
+    参数:
+        theta: 极角 (rad)
+        phi: 方位角 (rad)
+    
+    返回:
+        方向性
+    """
+    # 偶极天线方向性函数
+    D = 1.5 * np.sin(theta)**2
+    return D
+
+def dipole_gain(theta: float, phi: float, efficiency: float = 1.0) -> float:
+    """
+    计算偶极天线增益
+    
+    参数:
+        theta: 极角 (rad)
+        phi: 方位角 (rad)
+        efficiency: 效率
+    
+    返回:
+        增益
+    """
+    directivity = dipole_directivity(theta, phi)
+    gain = efficiency * directivity
+    return gain
+
+def antenna_impedance(length: float, frequency: float, 
+                     wire_radius: float = 1e-3) -> complex:
+    """
+    计算天线阻抗
+    
+    参数:
+        length: 天线长度 (m)
+        frequency: 频率 (Hz)
+        wire_radius: 导线半径 (m)
+    
+    返回:
+        阻抗 (Ω)
+    """
+    wavelength = c / frequency
+    k = 2 * np.pi / wavelength
+    
+    # 半波偶极子阻抗近似
+    if abs(length - wavelength/2) < wavelength/20:
+        # 半波偶极子
+        R_rad = 73.0  # 辐射电阻
+        X_react = 42.5  # 电抗
+    else:
+        # 一般情况
+        R_rad = 20 * (np.pi * length / wavelength)**2
+        X_react = 120 * (np.log(length / (2 * wire_radius)) - 1) * np.tan(np.pi * length / wavelength)
+    
+    return complex(R_rad, X_react)
+
+def antenna_efficiency(radiation_resistance: float, loss_resistance: float) -> float:
+    """
+    计算天线效率
+    
+    参数:
+        radiation_resistance: 辐射电阻 (Ω)
+        loss_resistance: 损耗电阻 (Ω)
+    
+    返回:
+        效率
+    """
+    total_resistance = radiation_resistance + loss_resistance
+    efficiency = radiation_resistance / total_resistance
+    return efficiency
+
+def antenna_beamwidth(directivity_pattern: np.ndarray, 
+                     theta_values: np.ndarray, phi_values: np.ndarray) -> Tuple[float, float]:
+    """
+    计算天线波束宽度
+    
+    参数:
+        directivity_pattern: 方向性图
+        theta_values: 极角数组 (rad)
+        phi_values: 方位角数组 (rad)
+    
+    返回:
+        (E面波束宽度, H面波束宽度) (度)
+    """
+    # 找到最大值位置
+    max_idx = np.unravel_index(np.argmax(directivity_pattern), directivity_pattern.shape)
+    max_theta = theta_values[max_idx[0]]
+    max_phi = phi_values[max_idx[1]]
+    
+    # 计算半功率点
+    max_value = directivity_pattern[max_idx]
+    half_power = max_value / 2
+    
+    # E面波束宽度 (theta方向)
+    e_plane_width = 0
+    for i, theta in enumerate(theta_values):
+        if directivity_pattern[i, max_idx[1]] >= half_power:
+            e_plane_width = max(e_plane_width, abs(theta - max_theta))
+    
+    # H面波束宽度 (phi方向)
+    h_plane_width = 0
+    for j, phi in enumerate(phi_values):
+        if directivity_pattern[max_idx[0], j] >= half_power:
+            h_plane_width = max(h_plane_width, abs(phi - max_phi))
+    
+    return (np.degrees(2 * e_plane_width), np.degrees(2 * h_plane_width))
+
+def antenna_array_factor(positions: np.ndarray, phases: np.ndarray, 
+                        theta: float, phi: float, frequency: float) -> complex:
+    """
+    计算天线阵列因子
+    
+    参数:
+        positions: 天线位置数组 (m)
+        phases: 相位数组 (rad)
+        theta: 极角 (rad)
+        phi: 方位角 (rad)
+        frequency: 频率 (Hz)
+    
+    返回:
+        阵列因子
+    """
+    k = 2 * np.pi * frequency / c
+    
+    # 观察方向单位向量
+    r_hat = np.array([np.sin(theta) * np.cos(phi),
+                      np.sin(theta) * np.sin(phi),
+                      np.cos(theta)])
+    
+    array_factor = 0j
+    for i, pos in enumerate(positions):
+        # 相位差
+        phase_diff = k * np.dot(pos, r_hat) + phases[i]
+        array_factor += np.exp(1j * phase_diff)
+    
+    return array_factor
+
+def antenna_theory_verification(antenna: Antenna, theta: float, phi: float, 
+                              tolerance: float = 1e-6) -> bool:
+    """
+    验证天线理论
+    
+    参数:
+        antenna: 天线对象
+        theta: 极角 (rad)
+        phi: 方位角 (rad)
+        tolerance: 容差
+    
+    返回:
+        是否满足天线理论
+    """
+    # 计算方向性和增益
+    directivity = dipole_directivity(theta, phi)
+    gain = dipole_gain(theta, phi, antenna.efficiency)
+    
+    # 验证增益与方向性关系
+    gain_directivity_ratio = gain / directivity
+    efficiency_check = abs(gain_directivity_ratio - antenna.efficiency) < tolerance
+    
+    # 验证方向性积分
+    theta_values = np.linspace(0, np.pi, 100)
+    phi_values = np.linspace(0, 2*np.pi, 100)
+    integral = 0
+    
+    for t in theta_values:
+        for p in phi_values:
+            D = dipole_directivity(t, p)
+            integral += D * np.sin(t) * (np.pi/100) * (2*np.pi/100)
+    
+    integral_check = abs(integral - 4*np.pi) < tolerance
+    
+    return efficiency_check and integral_check
+
+def antenna_theory_example():
+    """天线理论示例"""
+    # 创建天线对象
+    length = 0.15  # 半波长天线
+    frequency = 1e9  # 1 GHz
+    antenna = Antenna(length, frequency)
+    
+    # 计算阻抗
+    impedance = antenna_impedance(length, frequency)
+    
+    # 计算方向性和增益
+    theta = np.pi/2  # 水平方向
+    phi = 0
+    directivity = dipole_directivity(theta, phi)
+    gain = dipole_gain(theta, phi, antenna.efficiency)
+    
+    # 计算效率
+    radiation_resistance = impedance.real
+    loss_resistance = 1.0  # 假设损耗电阻
+    efficiency = antenna_efficiency(radiation_resistance, loss_resistance)
+    
+    # 计算波束宽度
+    theta_values = np.linspace(0, np.pi, 50)
+    phi_values = np.linspace(0, 2*np.pi, 50)
+    pattern = np.zeros((len(theta_values), len(phi_values)))
+    
+    for i, t in enumerate(theta_values):
+        for j, p in enumerate(phi_values):
+            pattern[i, j] = dipole_directivity(t, p)
+    
+    beamwidth_e, beamwidth_h = antenna_beamwidth(pattern, theta_values, phi_values)
+    
+    # 计算阵列因子
+    positions = np.array([[0, 0, 0], [0.1, 0, 0]])  # 两个天线
+    phases = np.array([0, np.pi/2])  # 90度相位差
+    array_factor = antenna_array_factor(positions, phases, theta, phi, frequency)
+    
+    # 验证天线理论
+    verification = antenna_theory_verification(antenna, theta, phi)
+    
+    print(f"天线长度: {length:.3f} m")
+    print(f"工作频率: {frequency:.2e} Hz")
+    print(f"阻抗: {impedance:.1f} Ω")
+    print(f"方向性: {directivity:.2f}")
+    print(f"增益: {gain:.2f}")
+    print(f"效率: {efficiency:.3f}")
+    print(f"E面波束宽度: {beamwidth_e:.1f}°")
+    print(f"H面波束宽度: {beamwidth_h:.1f}°")
+    print(f"阵列因子幅度: {abs(array_factor):.2f}")
+    print(f"天线理论验证: {'通过' if verification else '失败'}")
+    
+    return (antenna, impedance, directivity, gain, efficiency, 
+            beamwidth_e, beamwidth_h, array_factor, verification)
+```
+
+### 辐射功率 / Radiated Power
+
+**形式化定义**: 辐射功率描述了电磁辐射器向空间辐射的总功率，是天线性能的重要指标。
+
+**公理化定义**:
+设 $\mathcal{RP} = \langle \mathcal{P}, \mathcal{S}, \mathcal{U}, \mathcal{I} \rangle$ 为辐射功率系统，其中：
+
+1. **功率集合**: $\mathcal{P}$ 为辐射功率集合
+2. **功率密度**: $\mathcal{S}: \mathbb{R}^3 \rightarrow \mathbb{R}$ 为功率密度函数
+3. **辐射强度**: $\mathcal{U}: \mathbb{S}^2 \rightarrow \mathbb{R}$ 为辐射强度函数
+4. **功率积分**: $\mathcal{I}: \mathcal{S} \times \mathbb{S}^2 \rightarrow \mathbb{R}$ 为功率积分函数
+
+**等价定义**:
+
+1. **总功率**: $P = \oint \vec{S} \cdot d\vec{A}$
+2. **辐射强度**: $U = r^2 S$
+3. **功率密度**: $S = \frac{1}{2} \text{Re}(\vec{E} \times \vec{H}^*)$
+
+**形式化定理**:
+
+**定理2.5.6.7 (功率守恒)**: 辐射功率满足能量守恒定律
+$$\frac{dP}{dt} = -\oint \vec{S} \cdot d\vec{A}$$
+
+**定理2.5.6.8 (功率方向性)**: 辐射功率与方向性相关
+$$P = \frac{1}{4\pi} \int_0^{2\pi} \int_0^{\pi} D(\theta,\phi) P_0 \sin\theta d\theta d\phi$$
+
+**定理2.5.6.9 (功率增益关系)**: 辐射功率与增益成正比
+$$P = \frac{G(\theta,\phi) P_0}{4\pi r^2}$$
+
+**Python算法实现**:
+
+```python
+import numpy as np
+from typing import Callable, Tuple
+from scipy.constants import mu_0, c
+from scipy.integrate import dblquad
+
+class RadiatedPower:
+    """辐射功率类"""
+    def __init__(self, power_density: Callable, frequency: float):
+        self.power_density = power_density
+        self.frequency = frequency
+        self.wavelength = c / frequency
+    
+    def get_power_density(self) -> Callable:
+        """获取功率密度函数"""
+        return self.power_density
+    
+    def get_frequency(self) -> float:
+        """获取频率"""
+        return self.frequency
+    
+    def get_wavelength(self) -> float:
+        """获取波长"""
+        return self.wavelength
+
+def total_radiated_power(power_density_func: Callable, radius: float = 1.0) -> float:
+    """
+    计算总辐射功率
+    
+    参数:
+        power_density_func: 功率密度函数
+        radius: 积分半径 (m)
+    
+    返回:
+        总功率 (W)
+    """
+    def integrand(theta, phi):
+        # 球坐标到直角坐标
+        x = radius * np.sin(theta) * np.cos(phi)
+        y = radius * np.sin(theta) * np.sin(phi)
+        z = radius * np.cos(theta)
+        position = np.array([x, y, z])
+        
+        # 功率密度
+        S = power_density_func(position)
+        
+        # 球面面积元
+        dA = radius**2 * np.sin(theta)
+        
+        return S * dA
+    
+    # 球面积分
+    power, error = dblquad(integrand, 0, 2*np.pi, lambda phi: 0, lambda phi: np.pi)
+    
+    return power
+
+def radiation_intensity(power_density_func: Callable, direction: np.ndarray, 
+                       radius: float = 1.0) -> float:
+    """
+    计算辐射强度
+    
+    参数:
+        power_density_func: 功率密度函数
+        direction: 方向向量
+        radius: 距离 (m)
+    
+    返回:
+        辐射强度 (W/sr)
+    """
+    # 归一化方向向量
+    direction = direction / np.linalg.norm(direction)
+    position = radius * direction
+    
+    # 功率密度
+    S = power_density_func(position)
+    
+    # 辐射强度
+    U = radius**2 * S
+    
+    return U
+
+def power_density_from_fields(E_field: np.ndarray, H_field: np.ndarray) -> float:
+    """
+    从电磁场计算功率密度
+    
+    参数:
+        E_field: 电场向量 (V/m)
+        H_field: 磁场向量 (A/m)
+    
+    返回:
+        功率密度 (W/m²)
+    """
+    # 坡印廷矢量
+    S_vector = np.cross(E_field, np.conj(H_field))
+    S = 0.5 * np.real(S_vector)
+    
+    return np.linalg.norm(S)
+
+def power_efficiency(input_power: float, radiated_power: float) -> float:
+    """
+    计算功率效率
+    
+    参数:
+        input_power: 输入功率 (W)
+        radiated_power: 辐射功率 (W)
+    
+    返回:
+        效率
+    """
+    efficiency = radiated_power / input_power
+    return max(0.0, min(1.0, efficiency))
+
+def power_density_pattern(power_density_func: Callable, 
+                         theta_values: np.ndarray, phi_values: np.ndarray, 
+                         radius: float = 1.0) -> np.ndarray:
+    """
+    计算功率密度方向图
+    
+    参数:
+        power_density_func: 功率密度函数
+        theta_values: 极角数组 (rad)
+        phi_values: 方位角数组 (rad)
+        radius: 距离 (m)
+    
+    返回:
+        功率密度图 (W/m²)
+    """
+    pattern = np.zeros((len(theta_values), len(phi_values)))
+    
+    for i, theta in enumerate(theta_values):
+        for j, phi in enumerate(phi_values):
+            # 球坐标到直角坐标
+            x = radius * np.sin(theta) * np.cos(phi)
+            y = radius * np.sin(theta) * np.sin(phi)
+            z = radius * np.cos(theta)
+            position = np.array([x, y, z])
+            
+            # 功率密度
+            pattern[i, j] = power_density_func(position)
+    
+    return pattern
+
+def power_beamwidth(power_pattern: np.ndarray, 
+                   theta_values: np.ndarray, phi_values: np.ndarray) -> Tuple[float, float]:
+    """
+    计算功率波束宽度
+    
+    参数:
+        power_pattern: 功率方向图
+        theta_values: 极角数组 (rad)
+        phi_values: 方位角数组 (rad)
+    
+    返回:
+        (E面波束宽度, H面波束宽度) (度)
+    """
+    # 找到最大值位置
+    max_idx = np.unravel_index(np.argmax(power_pattern), power_pattern.shape)
+    max_theta = theta_values[max_idx[0]]
+    max_phi = phi_values[max_idx[1]]
+    
+    # 计算半功率点
+    max_value = power_pattern[max_idx]
+    half_power = max_value / 2
+    
+    # E面波束宽度 (theta方向)
+    e_plane_width = 0
+    for i, theta in enumerate(theta_values):
+        if power_pattern[i, max_idx[1]] >= half_power:
+            e_plane_width = max(e_plane_width, abs(theta - max_theta))
+    
+    # H面波束宽度 (phi方向)
+    h_plane_width = 0
+    for j, phi in enumerate(phi_values):
+        if power_pattern[max_idx[0], j] >= half_power:
+            h_plane_width = max(h_plane_width, abs(phi - max_phi))
+    
+    return (np.degrees(2 * e_plane_width), np.degrees(2 * h_plane_width))
+
+def power_verification(power_density_func: Callable, tolerance: float = 1e-6) -> bool:
+    """
+    验证辐射功率
+    
+    参数:
+        power_density_func: 功率密度函数
+        tolerance: 容差
+    
+    返回:
+        是否满足功率守恒
+    """
+    # 计算不同半径的总功率
+    radius1 = 1.0
+    radius2 = 2.0
+    
+    power1 = total_radiated_power(power_density_func, radius1)
+    power2 = total_radiated_power(power_density_func, radius2)
+    
+    # 功率应该与半径无关（在远场）
+    power_ratio = power1 / power2
+    expected_ratio = 1.0  # 理想情况下应该相等
+    
+    return abs(power_ratio - expected_ratio) < tolerance
+
+def radiated_power_example():
+    """辐射功率示例"""
+    # 定义功率密度函数（偶极子辐射）
+    def dipole_power_density(position):
+        r = np.linalg.norm(position)
+        if r == 0:
+            return 0.0
+        
+        r_hat = position / r
+        dipole_moment = np.array([0, 0, 1e-12])  # 1 pC·m
+        frequency = 1e9  # 1 GHz
+        
+        p_parallel = np.dot(dipole_moment, r_hat) * r_hat
+        p_perp = dipole_moment - p_parallel
+        
+        S = mu_0 * (2 * np.pi * frequency)**2 * np.linalg.norm(p_perp)**2 / (16 * np.pi**2 * c * r**2)
+        return S
+    
+    # 创建辐射功率对象
+    frequency = 1e9
+    power_obj = RadiatedPower(dipole_power_density, frequency)
+    
+    # 计算总辐射功率
+    total_power = total_radiated_power(dipole_power_density)
+    
+    # 计算辐射强度
+    direction = np.array([1, 0, 0])
+    intensity = radiation_intensity(dipole_power_density, direction)
+    
+    # 计算功率效率
+    input_power = 1e-6  # 1 μW输入功率
+    efficiency = power_efficiency(input_power, total_power)
+    
+    # 计算功率方向图
+    theta_values = np.linspace(0, np.pi, 50)
+    phi_values = np.linspace(0, 2*np.pi, 50)
+    power_pattern = power_density_pattern(dipole_power_density, theta_values, phi_values)
+    
+    # 计算波束宽度
+    beamwidth_e, beamwidth_h = power_beamwidth(power_pattern, theta_values, phi_values)
+    
+    # 验证功率守恒
+    verification = power_verification(dipole_power_density)
+    
+    print(f"总辐射功率: {total_power:.2e} W")
+    print(f"辐射强度: {intensity:.2e} W/sr")
+    print(f"功率效率: {efficiency:.3f}")
+    print(f"E面波束宽度: {beamwidth_e:.1f}°")
+    print(f"H面波束宽度: {beamwidth_h:.1f}°")
+    print(f"功率守恒验证: {'通过' if verification else '失败'}")
+    
+    return (power_obj, total_power, intensity, efficiency, 
+            beamwidth_e, beamwidth_h, verification)
+```
+
+---
+
+## 2.5.7 电磁介质 / Electromagnetic Media
+
+### 电介质 / Dielectrics
+
+**形式化定义**: 电介质是能够在外电场作用下产生极化现象的介质，其内部电荷分布发生重新排列，形成电偶极矩。
+
+**公理化定义**:
+设 $\mathcal{D} = \langle \mathcal{E}, \mathcal{P}, \mathcal{D}, \mathcal{\chi}, \mathcal{\epsilon} \rangle$ 为电介质系统，其中：
+
+1. **外电场**: $\mathcal{E}$ 为外加电场集合
+2. **极化矢量**: $\mathcal{P}$ 为电极化强度集合
+3. **电位移**: $\mathcal{D}$ 为电位移矢量集合
+4. **电极化率**: $\mathcal{\chi}$ 为电极化率张量集合
+5. **介电常数**: $\mathcal{\epsilon}$ 为相对介电常数集合
+
+**等价定义**:
+
+1. **极化关系**: $\vec{P} = \epsilon_0 \chi_e \vec{E}$
+2. **电位移关系**: $\vec{D} = \epsilon_0 \vec{E} + \vec{P} = \epsilon_0 \epsilon_r \vec{E}$
+3. **介电常数关系**: $\epsilon_r = 1 + \chi_e$
+
+**形式化定理**:
+
+**定理2.5.7.1 (电介质高斯定律)**: 电介质中的高斯定律
+$$\oint_S \vec{D} \cdot d\vec{S} = Q_{free}$$
+
+**定理2.5.7.2 (电介质边界条件)**: 电介质界面上的边界条件
+$$\vec{D}_{1n} - \vec{D}_{2n} = \sigma_{free}, \quad \vec{E}_{1t} = \vec{E}_{2t}$$
+
+**定理2.5.7.3 (电介质能量密度)**: 电介质中的电场能量密度
+$$u_e = \frac{1}{2} \vec{D} \cdot \vec{E} = \frac{1}{2} \epsilon_0 \epsilon_r E^2$$
+
+**Python算法实现**:
+
+```python
+import numpy as np
+from typing import Callable, Tuple, Optional
+from scipy.constants import epsilon_0
+
+class Dielectric:
+    """电介质类"""
+    def __init__(self, relative_permittivity: float, 
+                 susceptibility: Optional[float] = None):
+        self.epsilon_r = relative_permittivity
+        if susceptibility is None:
+            self.chi_e = self.epsilon_r - 1
+        else:
+            self.chi_e = susceptibility
+            self.epsilon_r = 1 + self.chi_e
+    
+    def get_permittivity(self) -> float:
+        """获取相对介电常数"""
+        return self.epsilon_r
+    
+    def get_susceptibility(self) -> float:
+        """获取电极化率"""
+        return self.chi_e
+    
+    def get_absolute_permittivity(self) -> float:
+        """获取绝对介电常数"""
+        return epsilon_0 * self.epsilon_r
+
+def polarization_vector(electric_field: np.ndarray, 
+                       susceptibility: float) -> np.ndarray:
+    """
+    计算电极化矢量
+    
+    参数:
+        electric_field: 电场矢量 (V/m)
+        susceptibility: 电极化率
+    
+    返回:
+        电极化矢量 (C/m²)
+    """
+    return epsilon_0 * susceptibility * electric_field
+
+def displacement_vector(electric_field: np.ndarray, 
+                       relative_permittivity: float) -> np.ndarray:
+    """
+    计算电位移矢量
+    
+    参数:
+        electric_field: 电场矢量 (V/m)
+        relative_permittivity: 相对介电常数
+    
+    返回:
+        电位移矢量 (C/m²)
+    """
+    return epsilon_0 * relative_permittivity * electric_field
+
+def electric_field_from_displacement(displacement: np.ndarray, 
+                                   relative_permittivity: float) -> np.ndarray:
+    """
+    从电位移计算电场
+    
+    参数:
+        displacement: 电位移矢量 (C/m²)
+        relative_permittivity: 相对介电常数
+    
+    返回:
+        电场矢量 (V/m)
+    """
+    return displacement / (epsilon_0 * relative_permittivity)
+
+def dielectric_energy_density(electric_field: np.ndarray, 
+                            relative_permittivity: float) -> float:
+    """
+    计算电介质中的电场能量密度
+    
+    参数:
+        electric_field: 电场矢量 (V/m)
+        relative_permittivity: 相对介电常数
+    
+    返回:
+        能量密度 (J/m³)
+    """
+    return 0.5 * epsilon_0 * relative_permittivity * np.dot(electric_field, electric_field)
+
+def dielectric_boundary_conditions(e_field1: np.ndarray, e_field2: np.ndarray,
+                                 d_field1: np.ndarray, d_field2: np.ndarray,
+                                 normal: np.ndarray, surface_charge: float = 0.0) -> Tuple[bool, bool]:
+    """
+    验证电介质边界条件
+    
+    参数:
+        e_field1, e_field2: 两侧电场 (V/m)
+        d_field1, d_field2: 两侧电位移 (C/m²)
+        normal: 法向量
+        surface_charge: 自由面电荷密度 (C/m²)
+    
+    返回:
+        (法向条件满足, 切向条件满足)
+    """
+    # 法向条件: D1n - D2n = σ_free
+    d1n = np.dot(d_field1, normal)
+    d2n = np.dot(d_field2, normal)
+    normal_condition = abs(d1n - d2n - surface_charge) < 1e-12
+    
+    # 切向条件: E1t = E2t
+    e1_tangential = e_field1 - np.dot(e_field1, normal) * normal
+    e2_tangential = e_field2 - np.dot(e_field2, normal) * normal
+    tangential_condition = np.allclose(e1_tangential, e2_tangential)
+    
+    return normal_condition, tangential_condition
+
+def dielectric_gauss_law(displacement_field: Callable, surface: np.ndarray,
+                        free_charge: float) -> bool:
+    """
+    验证电介质中的高斯定律
+    
+    参数:
+        displacement_field: 电位移场函数
+        surface: 闭合曲面点集
+        free_charge: 自由电荷 (C)
+    
+    返回:
+        是否满足高斯定律
+    """
+    # 简化验证：计算电位移通量
+    total_flux = 0.0
+    for i in range(len(surface) - 1):
+        point = surface[i]
+        next_point = surface[i + 1]
+        d_field = displacement_field(point)
+        
+        # 计算面元
+        ds = next_point - point
+        flux = np.dot(d_field, ds)
+        total_flux += flux
+    
+    # 闭合曲面
+    if len(surface) > 0:
+        d_field = displacement_field(surface[-1])
+        ds = surface[0] - surface[-1]
+        flux = np.dot(d_field, ds)
+        total_flux += flux
+    
+    return abs(total_flux - free_charge) < 1e-12
+
+def dielectric_example():
+    """电介质示例"""
+    # 创建电介质
+    dielectric = Dielectric(relative_permittivity=2.5)
+    
+    # 定义电场
+    electric_field = np.array([1000, 0, 0])  # 1 kV/m
+    
+    # 计算电极化矢量
+    polarization = polarization_vector(electric_field, dielectric.get_susceptibility())
+    
+    # 计算电位移矢量
+    displacement = displacement_vector(electric_field, dielectric.get_permittivity())
+    
+    # 计算能量密度
+    energy_density = dielectric_energy_density(electric_field, dielectric.get_permittivity())
+    
+    # 验证边界条件
+    e_field1 = np.array([1000, 500, 0])
+    e_field2 = np.array([400, 500, 0])  # 切向分量相同
+    d_field1 = displacement_vector(e_field1, 2.5)
+    d_field2 = displacement_vector(e_field2, 1.0)
+    normal = np.array([1, 0, 0])
+    
+    normal_condition, tangential_condition = dielectric_boundary_conditions(
+        e_field1, e_field2, d_field1, d_field2, normal)
+    
+    print(f"相对介电常数: {dielectric.get_permittivity()}")
+    print(f"电极化率: {dielectric.get_susceptibility()}")
+    print(f"电极化矢量: {polarization} C/m²")
+    print(f"电位移矢量: {displacement} C/m²")
+    print(f"能量密度: {energy_density:.2e} J/m³")
+    print(f"法向边界条件: {'满足' if normal_condition else '不满足'}")
+    print(f"切向边界条件: {'满足' if tangential_condition else '不满足'}")
+    
+    return (dielectric, polarization, displacement, energy_density, 
+            normal_condition, tangential_condition)
+```
+
+### 磁介质 / Magnetic Media
+
+**形式化定义**: 磁介质是能够在外磁场作用下产生磁化现象的介质，其内部磁矩发生重新排列，形成磁化强度。
+
+**公理化定义**:
+设 $\mathcal{M} = \langle \mathcal{H}, \mathcal{M}, \mathcal{B}, \mathcal{\chi_m}, \mathcal{\mu} \rangle$ 为磁介质系统，其中：
+
+1. **外磁场**: $\mathcal{H}$ 为外加磁场集合
+2. **磁化矢量**: $\mathcal{M}$ 为磁化强度集合
+3. **磁感应强度**: $\mathcal{B}$ 为磁感应强度集合
+4. **磁化率**: $\mathcal{\chi_m}$ 为磁化率张量集合
+5. **磁导率**: $\mathcal{\mu}$ 为相对磁导率集合
+
+**等价定义**:
+
+1. **磁化关系**: $\vec{M} = \chi_m \vec{H}$
+2. **磁感应关系**: $\vec{B} = \mu_0(\vec{H} + \vec{M}) = \mu_0 \mu_r \vec{H}$
+3. **磁导率关系**: $\mu_r = 1 + \chi_m$
+
+**形式化定理**:
+
+**定理2.5.7.4 (磁介质安培定律)**: 磁介质中的安培定律
+$$\oint_C \vec{H} \cdot d\vec{l} = I_{free}$$
+
+**定理2.5.7.5 (磁介质边界条件)**: 磁介质界面上的边界条件
+$$\vec{B}_{1n} = \vec{B}_{2n}, \quad \vec{H}_{1t} - \vec{H}_{2t} = \vec{K}_{free}$$
+
+**定理2.5.7.6 (磁介质能量密度)**: 磁介质中的磁场能量密度
+$$u_m = \frac{1}{2} \vec{B} \cdot \vec{H} = \frac{1}{2} \mu_0 \mu_r H^2$$
+
+**Python算法实现**:
+
+```python
+import numpy as np
+from typing import Callable, Tuple, Optional
+from scipy.constants import mu_0
+
+class MagneticMedia:
+    """磁介质类"""
+    def __init__(self, relative_permeability: float, 
+                 susceptibility: Optional[float] = None):
+        self.mu_r = relative_permeability
+        if susceptibility is None:
+            self.chi_m = self.mu_r - 1
+        else:
+            self.chi_m = susceptibility
+            self.mu_r = 1 + self.chi_m
+    
+    def get_permeability(self) -> float:
+        """获取相对磁导率"""
+        return self.mu_r
+    
+    def get_susceptibility(self) -> float:
+        """获取磁化率"""
+        return self.chi_m
+    
+    def get_absolute_permeability(self) -> float:
+        """获取绝对磁导率"""
+        return mu_0 * self.mu_r
+
+def magnetization_vector(magnetic_field: np.ndarray, 
+                        susceptibility: float) -> np.ndarray:
+    """
+    计算磁化矢量
+    
+    参数:
+        magnetic_field: 磁场矢量 (A/m)
+        susceptibility: 磁化率
+    
+    返回:
+        磁化矢量 (A/m)
+    """
+    return susceptibility * magnetic_field
+
+def magnetic_induction(magnetic_field: np.ndarray, 
+                      relative_permeability: float) -> np.ndarray:
+    """
+    计算磁感应强度
+    
+    参数:
+        magnetic_field: 磁场矢量 (A/m)
+        relative_permeability: 相对磁导率
+    
+    返回:
+        磁感应强度 (T)
+    """
+    return mu_0 * relative_permeability * magnetic_field
+
+def magnetic_field_from_induction(induction: np.ndarray, 
+                                relative_permeability: float) -> np.ndarray:
+    """
+    从磁感应强度计算磁场
+    
+    参数:
+        induction: 磁感应强度 (T)
+        relative_permeability: 相对磁导率
+    
+    返回:
+        磁场矢量 (A/m)
+    """
+    return induction / (mu_0 * relative_permeability)
+
+def magnetic_energy_density(magnetic_field: np.ndarray, 
+                          relative_permeability: float) -> float:
+    """
+    计算磁介质中的磁场能量密度
+    
+    参数:
+        magnetic_field: 磁场矢量 (A/m)
+        relative_permeability: 相对磁导率
+    
+    返回:
+        能量密度 (J/m³)
+    """
+    return 0.5 * mu_0 * relative_permeability * np.dot(magnetic_field, magnetic_field)
+
+def magnetic_boundary_conditions(h_field1: np.ndarray, h_field2: np.ndarray,
+                               b_field1: np.ndarray, b_field2: np.ndarray,
+                               normal: np.ndarray, surface_current: np.ndarray = np.zeros(3)) -> Tuple[bool, bool]:
+    """
+    验证磁介质边界条件
+    
+    参数:
+        h_field1, h_field2: 两侧磁场 (A/m)
+        b_field1, b_field2: 两侧磁感应强度 (T)
+        normal: 法向量
+        surface_current: 自由面电流密度 (A/m)
+    
+    返回:
+        (法向条件满足, 切向条件满足)
+    """
+    # 法向条件: B1n = B2n
+    b1n = np.dot(b_field1, normal)
+    b2n = np.dot(b_field2, normal)
+    normal_condition = abs(b1n - b2n) < 1e-12
+    
+    # 切向条件: H1t - H2t = K_free
+    h1_tangential = h_field1 - np.dot(h_field1, normal) * normal
+    h2_tangential = h_field2 - np.dot(h_field2, normal) * normal
+    tangential_difference = h1_tangential - h2_tangential
+    tangential_condition = np.allclose(tangential_difference, surface_current)
+    
+    return normal_condition, tangential_condition
+
+def magnetic_ampere_law(magnetic_field: Callable, path: np.ndarray,
+                       free_current: float) -> bool:
+    """
+    验证磁介质中的安培定律
+    
+    参数:
+        magnetic_field: 磁场函数
+        path: 闭合路径点集
+        free_current: 自由电流 (A)
+    
+    返回:
+        是否满足安培定律
+    """
+    # 简化验证：计算磁场环流
+    total_circulation = 0.0
+    for i in range(len(path) - 1):
+        point = path[i]
+        next_point = path[i + 1]
+        h_field = magnetic_field(point)
+        
+        # 计算路径元
+        dl = next_point - point
+        circulation = np.dot(h_field, dl)
+        total_circulation += circulation
+    
+    # 闭合路径
+    if len(path) > 0:
+        h_field = magnetic_field(path[-1])
+        dl = path[0] - path[-1]
+        circulation = np.dot(h_field, dl)
+        total_circulation += circulation
+    
+    return abs(total_circulation - free_current) < 1e-12
+
+def magnetic_media_example():
+    """磁介质示例"""
+    # 创建磁介质
+    magnetic_media = MagneticMedia(relative_permeability=1000)  # 铁磁材料
+    
+    # 定义磁场
+    magnetic_field = np.array([100, 0, 0])  # 100 A/m
+    
+    # 计算磁化矢量
+    magnetization = magnetization_vector(magnetic_field, magnetic_media.get_susceptibility())
+    
+    # 计算磁感应强度
+    induction = magnetic_induction(magnetic_field, magnetic_media.get_permeability())
+    
+    # 计算能量密度
+    energy_density = magnetic_energy_density(magnetic_field, magnetic_media.get_permeability())
+    
+    # 验证边界条件
+    h_field1 = np.array([100, 50, 0])
+    h_field2 = np.array([0.1, 50, 0])  # 切向分量相同
+    b_field1 = magnetic_induction(h_field1, 1000)
+    b_field2 = magnetic_induction(h_field2, 1.0)
+    normal = np.array([1, 0, 0])
+    
+    normal_condition, tangential_condition = magnetic_boundary_conditions(
+        h_field1, h_field2, b_field1, b_field2, normal)
+    
+    print(f"相对磁导率: {magnetic_media.get_permeability()}")
+    print(f"磁化率: {magnetic_media.get_susceptibility()}")
+    print(f"磁化矢量: {magnetization} A/m")
+    print(f"磁感应强度: {induction} T")
+    print(f"能量密度: {energy_density:.2e} J/m³")
+    print(f"法向边界条件: {'满足' if normal_condition else '不满足'}")
+    print(f"切向边界条件: {'满足' if tangential_condition else '不满足'}")
+    
+    return (magnetic_media, magnetization, induction, energy_density, 
+            normal_condition, tangential_condition)
+```
+
+### 色散关系 / Dispersion Relations
+
+**形式化定义**: 色散关系描述了电磁波在介质中传播时，频率与波数之间的函数关系，反映了介质的频率响应特性。
+
+**公理化定义**:
+设 $\mathcal{DR} = \langle \mathcal{\omega}, \mathcal{k}, \mathcal{n}, \mathcal{v}, \mathcal{\alpha} \rangle$ 为色散关系系统，其中：
+
+1. **角频率**: $\mathcal{\omega}$ 为角频率集合
+2. **波数**: $\mathcal{k}$ 为波数集合
+3. **折射率**: $\mathcal{n}$ 为复折射率集合
+4. **相速度**: $\mathcal{v}$ 为相速度集合
+5. **衰减系数**: $\mathcal{\alpha}$ 为衰减系数集合
+
+**等价定义**:
+
+1. **色散关系**: $\omega = \omega(k)$ 或 $k = k(\omega)$
+2. **折射率关系**: $n(\omega) = \sqrt{\epsilon_r(\omega) \mu_r(\omega)}$
+3. **相速度关系**: $v_p(\omega) = \frac{c}{n(\omega)}$
+
+**形式化定理**:
+
+**定理2.5.7.7 (色散关系因果性)**: 色散关系满足因果性条件
+$$\text{Im}[n(\omega)] \geq 0 \quad \text{for} \quad \text{Im}[\omega] > 0$$
+
+**定理2.5.7.8 (克拉默-克朗尼关系)**: 折射率的实部和虚部满足克拉默-克朗尼关系
+$$\text{Re}[n(\omega)] = 1 + \frac{2}{\pi} P \int_0^{\infty} \frac{\omega' \text{Im}[n(\omega')]}{\omega'^2 - \omega^2} d\omega'$$
+
+**定理2.5.7.9 (群速度关系)**: 群速度与相速度的关系
+$$v_g = \frac{d\omega}{dk} = v_p + k \frac{dv_p}{dk}$$
+
+**Python算法实现**:
+
+```python
+import numpy as np
+from typing import Callable, Tuple, Complex
+from scipy.constants import c
+from scipy.integrate import quad
+
+class DispersionRelation:
+    """色散关系类"""
+    def __init__(self, epsilon_func: Callable, mu_func: Callable):
+        self.epsilon_func = epsilon_func
+        self.mu_func = mu_func
+    
+    def refractive_index(self, frequency: float) -> complex:
+        """
+        计算复折射率
+        
+        参数:
+            frequency: 频率 (Hz)
+        
+        返回:
+            复折射率
+        """
+        omega = 2 * np.pi * frequency
+        epsilon_r = self.epsilon_func(omega)
+        mu_r = self.mu_func(omega)
+        return np.sqrt(epsilon_r * mu_r)
+    
+    def phase_velocity(self, frequency: float) -> complex:
+        """
+        计算相速度
+        
+        参数:
+            frequency: 频率 (Hz)
+        
+        返回:
+            相速度 (m/s)
+        """
+        n = self.refractive_index(frequency)
+        return c / n
+    
+    def group_velocity(self, frequency: float, delta_f: float = 1e6) -> complex:
+        """
+        计算群速度
+        
+        参数:
+            frequency: 频率 (Hz)
+            delta_f: 频率差 (Hz)
+        
+        返回:
+            群速度 (m/s)
+        """
+        omega = 2 * np.pi * frequency
+        delta_omega = 2 * np.pi * delta_f
+        
+        # 数值微分
+        k1 = omega * self.refractive_index(frequency) / c
+        k2 = (omega + delta_omega) * self.refractive_index(frequency + delta_f) / c
+        
+        dk_domega = (k2 - k1) / delta_omega
+        return 1 / dk_domega
+
+def dispersion_relation_omega_k(omega: float, medium_params: dict) -> float:
+    """
+    计算色散关系 ω(k)
+    
+    参数:
+        omega: 角频率 (rad/s)
+        medium_params: 介质参数字典
+    
+    返回:
+        波数 k (rad/m)
+    """
+    # 简化的色散关系：k = ω/v
+    phase_velocity = medium_params.get('phase_velocity', c)
+    return omega / phase_velocity
+
+def dispersion_relation_k_omega(k: float, medium_params: dict) -> float:
+    """
+    计算色散关系 k(ω)
+    
+    参数:
+        k: 波数 (rad/m)
+        medium_params: 介质参数字典
+    
+    返回:
+        角频率 ω (rad/s)
+    """
+    # 简化的色散关系：ω = kv
+    phase_velocity = medium_params.get('phase_velocity', c)
+    return k * phase_velocity
+
+def attenuation_coefficient(refractive_index: complex, frequency: float) -> float:
+    """
+    计算衰减系数
+    
+    参数:
+        refractive_index: 复折射率
+        frequency: 频率 (Hz)
+    
+    返回:
+        衰减系数 (m⁻¹)
+    """
+    omega = 2 * np.pi * frequency
+    k_imag = omega * np.imag(refractive_index) / c
+    return k_imag
+
+def propagation_constant(refractive_index: complex, frequency: float) -> complex:
+    """
+    计算传播常数
+    
+    参数:
+        refractive_index: 复折射率
+        frequency: 频率 (Hz)
+    
+    返回:
+        传播常数 (m⁻¹)
+    """
+    omega = 2 * np.pi * frequency
+    return omega * refractive_index / c
+
+def kramers_kronig_relation(imaginary_part: Callable, omega: float, 
+                           omega_max: float = 1e15) -> float:
+    """
+    计算克拉默-克朗尼关系
+    
+    参数:
+        imaginary_part: 虚部函数
+        omega: 角频率 (rad/s)
+        omega_max: 积分上限
+    
+    返回:
+        实部值
+    """
+    def integrand(omega_prime):
+        if abs(omega_prime**2 - omega**2) < 1e-12:
+            return 0.0
+        return omega_prime * imaginary_part(omega_prime) / (omega_prime**2 - omega**2)
+    
+    result, _ = quad(integrand, 0, omega_max)
+    return 1 + (2 / np.pi) * result
+
+def causality_condition(refractive_index: complex) -> bool:
+    """
+    验证因果性条件
+    
+    参数:
+        refractive_index: 复折射率
+    
+    返回:
+        是否满足因果性
+    """
+    # 简化验证：检查虚部是否非负
+    return np.imag(refractive_index) >= 0
+
+def dispersion_verification(dispersion_obj: DispersionRelation, 
+                          frequency_range: np.ndarray) -> bool:
+    """
+    验证色散关系
+    
+    参数:
+        dispersion_obj: 色散关系对象
+        frequency_range: 频率范围 (Hz)
+    
+    返回:
+        是否满足色散关系
+    """
+    for freq in frequency_range:
+        n = dispersion_obj.refractive_index(freq)
+        v_p = dispersion_obj.phase_velocity(freq)
+        v_g = dispersion_obj.group_velocity(freq)
+        
+        # 基本关系验证
+        if abs(v_p - c / n) > 1e-12:
+            return False
+        
+        # 因果性验证
+        if not causality_condition(n):
+            return False
+    
+    return True
+
+def dispersion_example():
+    """色散关系示例"""
+    # 定义介电常数函数（德鲁德模型）
+    def epsilon_drude(omega):
+        omega_p = 2e15  # 等离子体频率
+        gamma = 1e13    # 碰撞频率
+        return 1 - omega_p**2 / (omega**2 + 1j * omega * gamma)
+    
+    # 定义磁导率函数（常数）
+    def mu_constant(omega):
+        return 1.0
+    
+    # 创建色散关系对象
+    dispersion = DispersionRelation(epsilon_drude, mu_constant)
+    
+    # 计算不同频率的折射率
+    frequencies = np.array([1e14, 2e14, 5e14, 1e15])
+    refractive_indices = [dispersion.refractive_index(f) for f in frequencies]
+    
+    # 计算相速度和群速度
+    phase_velocities = [dispersion.phase_velocity(f) for f in frequencies]
+    group_velocities = [dispersion.group_velocity(f) for f in frequencies]
+    
+    # 计算衰减系数
+    attenuation_coeffs = [attenuation_coefficient(n, f) for n, f in zip(refractive_indices, frequencies)]
+    
+    # 验证因果性
+    causality_check = [causality_condition(n) for n in refractive_indices]
+    
+    # 验证色散关系
+    verification = dispersion_verification(dispersion, frequencies)
+    
+    print("色散关系分析:")
+    for i, freq in enumerate(frequencies):
+        print(f"频率: {freq:.1e} Hz")
+        print(f"  折射率: {refractive_indices[i]:.3f}")
+        print(f"  相速度: {phase_velocities[i]:.2e} m/s")
+        print(f"  群速度: {group_velocities[i]:.2e} m/s")
+        print(f"  衰减系数: {attenuation_coeffs[i]:.2e} m⁻¹")
+        print(f"  因果性: {'满足' if causality_check[i] else '不满足'}")
+        print()
+    
+    print(f"色散关系验证: {'通过' if verification else '失败'}")
+    
+    return (dispersion, refractive_indices, phase_velocities, 
+            group_velocities, attenuation_coeffs, causality_check, verification)
+```
+
+---
+
 *最后更新: 2025-08-01*
-*版本: 4.0.0*
+*版本: 6.0.0*

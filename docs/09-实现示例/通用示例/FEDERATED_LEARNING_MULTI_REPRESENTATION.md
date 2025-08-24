@@ -1,18 +1,17 @@
-# 联邦学习扩展多表征示例 / Federated Learning Extension Multi-Representation Examples
+# 联邦学习多表示示例 / Federated Learning Multi-Representation Examples
 
 ## 概述 / Overview
 
-本文档提供联邦学习扩展的完整多表征实现，包括：
+联邦学习是一种分布式机器学习范式，允许多个客户端在保持数据本地化的同时协作训练模型。本文档提供了联邦学习的多表示示例，包括数学表示、可视化流程图和代码实现。
 
-- 联邦平均算法（FedAvg）
-- 差分隐私机制
-- 分布式训练框架
+Federated Learning is a distributed machine learning paradigm that allows multiple clients to collaboratively train models while keeping data localized. This document provides multi-representation examples for federated learning, including mathematical representations, visual flowcharts, and code implementations.
 
 ## 1. 联邦平均算法 / Federated Averaging Algorithm
 
-### 数学表示 / Mathematical Representation
+### 1.1 数学表示 / Mathematical Representation
 
-**联邦平均目标函数**：
+#### 联邦平均目标函数 / Federated Averaging Objective
+
 $$\min_{w} \sum_{k=1}^{K} \frac{n_k}{n} F_k(w)$$
 
 其中：
@@ -21,929 +20,673 @@ $$\min_{w} \sum_{k=1}^{K} \frac{n_k}{n} F_k(w)$$
 - $K$ 是客户端数量
 - $n_k$ 是客户端 $k$ 的数据量
 - $n = \sum_{k=1}^{K} n_k$ 是总数据量
-- $F_k(w)$ 是客户端 $k$ 的局部目标函数
+- $F_k(w)$ 是客户端 $k$ 的局部损失函数
 
-**联邦平均更新规则**：
+#### 联邦平均更新规则 / Federated Averaging Update Rule
+
 $$w_{t+1} = \sum_{k=1}^{K} \frac{n_k}{n} w_{t+1}^{(k)}$$
 
-其中 $w_{t+1}^{(k)}$ 是客户端 $k$ 在第 $t$ 轮训练后的参数。
+其中 $w_{t+1}^{(k)}$ 是客户端 $k$ 在时间步 $t+1$ 的局部模型参数。
 
-### 可视化表示 / Visual Representation
+#### 局部训练过程 / Local Training Process
+
+对于每个客户端 $k$，局部训练过程为：
+
+$$w_{t+1}^{(k)} = w_t - \eta \nabla F_k(w_t)$$
+
+其中 $\eta$ 是学习率。
+
+### 1.2 流程图 / Flowchart
 
 ```mermaid
-graph TD
-    A[全局模型初始化] --> B[分发模型到客户端]
-    B --> C[客户端本地训练]
-    C --> D[收集客户端模型]
-    D --> E[联邦平均聚合]
-    E --> F[更新全局模型]
-    F --> G{是否收敛?}
-    G -->|否| B
-    G -->|是| H[训练完成]
-    
-    subgraph "客户端1"
-        C1[本地数据训练]
-        C2[梯度更新]
-    end
-    
-    subgraph "客户端2"
-        C3[本地数据训练]
-        C4[梯度更新]
-    end
-    
-    subgraph "客户端K"
-        C5[本地数据训练]
-        C6[梯度更新]
-    end
+flowchart TD
+    A[初始化全局模型] --> B[选择客户端子集]
+    B --> C[分发全局模型到客户端]
+    C --> D[客户端本地训练]
+    D --> E[计算局部梯度]
+    E --> F[更新局部模型]
+    F --> G{训练完成?}
+    G -->|否| D
+    G -->|是| H[上传局部模型]
+    H --> I[服务器聚合模型]
+    I --> J[更新全局模型]
+    J --> K{达到收敛?}
+    K -->|否| B
+    K -->|是| L[返回最终模型]
 ```
 
-### Python实现 / Python Implementation
+### 1.3 代码实现 / Code Implementation
 
 ```python
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import numpy as np
 from typing import List, Dict, Tuple
 import copy
-import matplotlib.pyplot as plt
-from collections import defaultdict
-import warnings
-warnings.filterwarnings('ignore')
 
-class SimpleNN(nn.Module):
-    """简单的神经网络模型"""
-    def __init__(self, input_size: int = 10, hidden_size: int = 20, output_size: int = 2):
-        super(SimpleNN, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.fc3 = nn.Linear(hidden_size, output_size)
-        self.relu = nn.ReLU()
-        self.softmax = nn.Softmax(dim=1)
-        
-    def forward(self, x):
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.fc3(x)
-        return self.softmax(x)
-
-class FederatedAveraging:
-    """联邦平均算法实现"""
+class FederatedClient:
+    """联邦学习客户端 / Federated Learning Client"""
     
-    def __init__(self, global_model: nn.Module, num_clients: int = 5):
-        self.global_model = global_model
-        self.num_clients = num_clients
-        self.client_models = [copy.deepcopy(global_model) for _ in range(num_clients)]
-        self.client_data_sizes = []
-        self.training_history = defaultdict(list)
-        
-    def generate_client_data(self, client_id: int, num_samples: int = 100) -> Tuple[torch.Tensor, torch.Tensor]:
-        """为客户端生成模拟数据"""
-        np.random.seed(client_id)
-        
-        # 为每个客户端生成不同的数据分布
-        bias = client_id * 0.5
-        X = torch.randn(num_samples, 10) + bias
-        y = torch.randint(0, 2, (num_samples,))
-        
-        return X, y
-    
-    def train_client(self, client_id: int, epochs: int = 5) -> Dict:
-        """训练单个客户端"""
-        model = self.client_models[client_id]
-        X, y = self.generate_client_data(client_id)
-        
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(model.parameters(), lr=0.01)
-        
-        losses = []
-        for epoch in range(epochs):
-            optimizer.zero_grad()
-            outputs = model(X)
-            loss = criterion(outputs, y)
-            loss.backward()
-            optimizer.step()
-            losses.append(loss.item())
-            
-        return {
-            'model': copy.deepcopy(model),
-            'data_size': len(X),
-            'losses': losses
-        }
-    
-    def federated_average(self, client_results: List[Dict]) -> None:
-        """执行联邦平均聚合"""
-        total_data_size = sum(result['data_size'] for result in client_results)
-        
-        # 初始化聚合参数
-        aggregated_params = {}
-        for name, param in self.global_model.named_parameters():
-            aggregated_params[name] = torch.zeros_like(param.data)
-        
-        # 加权平均
-        for result in client_results:
-            model = result['model']
-            weight = result['data_size'] / total_data_size
-            
-            for name, param in model.named_parameters():
-                aggregated_params[name] += weight * param.data
-        
-        # 更新全局模型
-        for name, param in self.global_model.named_parameters():
-            param.data = aggregated_params[name]
-    
-    def train_federated(self, rounds: int = 10, client_epochs: int = 5) -> Dict:
-        """执行联邦学习训练"""
-        print("开始联邦学习训练...")
-        
-        for round_idx in range(rounds):
-            print(f"第 {round_idx + 1} 轮训练")
-            
-            # 分发全局模型到客户端
-            for i in range(self.num_clients):
-                self.client_models[i].load_state_dict(self.global_model.state_dict())
-            
-            # 客户端并行训练
-            client_results = []
-            for client_id in range(self.num_clients):
-                result = self.train_client(client_id, client_epochs)
-                client_results.append(result)
-                
-                # 记录训练历史
-                self.training_history[f'client_{client_id}_loss'].extend(result['losses'])
-            
-            # 联邦平均聚合
-            self.federated_average(client_results)
-            
-            # 计算全局模型在测试集上的性能
-            test_loss = self.evaluate_global_model()
-            self.training_history['global_test_loss'].append(test_loss)
-            
-            print(f"第 {round_idx + 1} 轮完成，全局测试损失: {test_loss:.4f}")
-        
-        return self.training_history
-    
-    def evaluate_global_model(self) -> float:
-        """评估全局模型性能"""
-        self.global_model.eval()
-        X_test, y_test = self.generate_client_data(999, 200)  # 使用不同的种子生成测试数据
-        
-        criterion = nn.CrossEntropyLoss()
-        with torch.no_grad():
-            outputs = self.global_model(X_test)
-            loss = criterion(outputs, y_test)
-        
-        return loss.item()
-
-def visualize_federated_training(training_history: Dict):
-    """可视化联邦学习训练过程"""
-    plt.figure(figsize=(15, 10))
-    
-    # 客户端损失
-    plt.subplot(2, 2, 1)
-    for i in range(5):
-        client_losses = training_history[f'client_{i}_loss']
-        plt.plot(client_losses, label=f'客户端 {i+1}')
-    plt.title('客户端训练损失')
-    plt.xlabel('训练步数')
-    plt.ylabel('损失')
-    plt.legend()
-    plt.grid(True)
-    
-    # 全局测试损失
-    plt.subplot(2, 2, 2)
-    global_losses = training_history['global_test_loss']
-    plt.plot(global_losses, 'r-', linewidth=2, label='全局模型')
-    plt.title('全局模型测试损失')
-    plt.xlabel('联邦学习轮数')
-    plt.ylabel('测试损失')
-    plt.legend()
-    plt.grid(True)
-    
-    # 损失分布
-    plt.subplot(2, 2, 3)
-    final_client_losses = [training_history[f'client_{i}_loss'][-1] for i in range(5)]
-    plt.bar(range(1, 6), final_client_losses)
-    plt.title('最终客户端损失分布')
-    plt.xlabel('客户端')
-    plt.ylabel('最终损失')
-    plt.grid(True)
-    
-    # 训练进度
-    plt.subplot(2, 2, 4)
-    avg_client_losses = []
-    for i in range(len(training_history['client_0_loss'])):
-        avg_loss = np.mean([training_history[f'client_{j}_loss'][i] for j in range(5)])
-        avg_client_losses.append(avg_loss)
-    
-    plt.plot(avg_client_losses, 'g-', label='平均客户端损失')
-    plt.plot(global_losses, 'r-', label='全局模型损失')
-    plt.title('训练进度对比')
-    plt.xlabel('训练步数')
-    plt.ylabel('损失')
-    plt.legend()
-    plt.grid(True)
-    
-    plt.tight_layout()
-    plt.show()
-
-# 主函数
-def main():
-    """主函数：演示联邦平均算法"""
-    print("=== 联邦平均算法演示 ===")
-    
-    # 初始化全局模型
-    global_model = SimpleNN()
-    
-    # 创建联邦学习实例
-    fed_avg = FederatedAveraging(global_model, num_clients=5)
-    
-    # 执行联邦学习训练
-    training_history = fed_avg.train_federated(rounds=10, client_epochs=5)
-    
-    # 可视化训练过程
-    visualize_federated_training(training_history)
-    
-    print("联邦学习训练完成！")
-
-if __name__ == "__main__":
-    main()
-
-## 2. 差分隐私机制 / Differential Privacy Mechanism
-
-### 数学表示 / Mathematical Representation
-
-**差分隐私定义**：
-对于任意相邻数据集 $D$ 和 $D'$，以及任意输出 $S$：
-$$P[M(D) \in S] \leq e^{\epsilon} \cdot P[M(D') \in S] + \delta$$
-
-**高斯噪声机制**：
-$$\tilde{f}(D) = f(D) + \mathcal{N}(0, \sigma^2 I)$$
-
-其中噪声标准差 $\sigma$ 满足：
-$$\sigma \geq \frac{\Delta f \sqrt{2 \ln(1.25/\delta)}}{\epsilon}$$
-
-**梯度裁剪**：
-$$\bar{g} = \frac{g}{\max(1, \frac{\|g\|_2}{C})}$$
-
-### 可视化表示 / Visual Representation
-
-```mermaid
-graph LR
-    A[原始梯度] --> B[梯度裁剪]
-    B --> C[添加高斯噪声]
-    C --> D[差分隐私梯度]
-    
-    subgraph "隐私保护"
-        E[ε-差分隐私]
-        F[δ-近似差分隐私]
-    end
-    
-    D --> E
-    D --> F
-```
-
-### 2Python实现 / Python Implementation
-
-```python
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import numpy as np
-from typing import Tuple, List
-import matplotlib.pyplot as plt
-from scipy.stats import norm
-import warnings
-warnings.filterwarnings('ignore')
-
-class DifferentialPrivacy:
-    """差分隐私机制实现"""
-    
-    def __init__(self, epsilon: float = 1.0, delta: float = 1e-5, clip_norm: float = 1.0):
-        self.epsilon = epsilon
-        self.delta = delta
-        self.clip_norm = clip_norm
-        self.privacy_accountant = PrivacyAccountant()
-        
-    def compute_noise_scale(self, sensitivity: float) -> float:
-        """计算噪声标准差"""
-        return sensitivity * np.sqrt(2 * np.log(1.25 / self.delta)) / self.epsilon
-    
-    def clip_gradients(self, gradients: List[torch.Tensor]) -> List[torch.Tensor]:
-        """梯度裁剪"""
-        total_norm = 0.0
-        for grad in gradients:
-            param_norm = grad.data.norm(2)
-            total_norm += param_norm.item() ** 2
-        total_norm = total_norm ** 0.5
-        
-        clip_coef = self.clip_norm / (total_norm + 1e-6)
-        if clip_coef < 1:
-            for grad in gradients:
-                grad.data.mul_(clip_coef)
-        
-        return gradients
-    
-    def add_noise_to_gradients(self, gradients: List[torch.Tensor], 
-                             sensitivity: float) -> List[torch.Tensor]:
-        """向梯度添加噪声"""
-        noise_scale = self.compute_noise_scale(sensitivity)
-        
-        noisy_gradients = []
-        for grad in gradients:
-            noise = torch.randn_like(grad) * noise_scale
-            noisy_grad = grad + noise
-            noisy_gradients.append(noisy_grad)
-        
-        return noisy_gradients
-    
-    def apply_dp_to_gradients(self, gradients: List[torch.Tensor], 
-                            sensitivity: float) -> List[torch.Tensor]:
-        """应用差分隐私到梯度"""
-        # 梯度裁剪
-        clipped_gradients = self.clip_gradients(gradients)
-        
-        # 添加噪声
-        dp_gradients = self.add_noise_to_gradients(clipped_gradients, sensitivity)
-        
-        return dp_gradients
-
-class PrivacyAccountant:
-    """隐私预算计算器"""
-    
-    def __init__(self):
-        self.total_epsilon = 0.0
-        self.total_delta = 0.0
-        
-    def add_composition(self, epsilon: float, delta: float):
-        """添加隐私预算"""
-        self.total_epsilon += epsilon
-        self.total_delta += delta
-        
-    def get_total_privacy(self) -> Tuple[float, float]:
-        """获取总隐私预算"""
-        return self.total_epsilon, self.total_delta
-
-class DPNeuralNetwork(nn.Module):
-    """带差分隐私的神经网络"""
-    
-    def __init__(self, input_size: int = 10, hidden_size: int = 20, output_size: int = 2):
-        super(DPNeuralNetwork, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.fc3 = nn.Linear(hidden_size, output_size)
-        self.relu = nn.ReLU()
-        self.softmax = nn.Softmax(dim=1)
-        
-    def forward(self, x):
-        x = self.relu(self.fc1(x))
-        x = self.relu(self.fc2(x))
-        x = self.fc3(x)
-        return self.softmax(x)
-
-class DPTrainer:
-    """差分隐私训练器"""
-    
-    def __init__(self, model: nn.Module, epsilon: float = 1.0, delta: float = 1e-5):
-        self.model = model
-        self.dp_mechanism = DifferentialPrivacy(epsilon, delta)
-        self.privacy_accountant = PrivacyAccountant()
-        self.training_history = {'loss': [], 'accuracy': [], 'privacy_cost': []}
-        
-    def train_with_dp(self, X: torch.Tensor, y: torch.Tensor, 
-                     epochs: int = 10, batch_size: int = 32) -> Dict:
-        """使用差分隐私训练模型"""
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(self.model.parameters(), lr=0.01)
-        
-        num_batches = len(X) // batch_size
-        
-        for epoch in range(epochs):
-            epoch_loss = 0.0
-            correct = 0
-            total = 0
-            
-            for batch_idx in range(num_batches):
-                start_idx = batch_idx * batch_size
-                end_idx = start_idx + batch_size
-                
-                batch_X = X[start_idx:end_idx]
-                batch_y = y[start_idx:end_idx]
-                
-                # 前向传播
-                outputs = self.model(batch_X)
-                loss = criterion(outputs, batch_y)
-                
-                # 反向传播
-                optimizer.zero_grad()
-                loss.backward()
-                
-                # 获取梯度
-                gradients = [p.grad for p in self.model.parameters() if p.grad is not None]
-                
-                # 应用差分隐私
-                dp_gradients = self.dp_mechanism.apply_dp_to_gradients(gradients, sensitivity=1.0)
-                
-                # 更新参数
-                param_idx = 0
-                for param in self.model.parameters():
-                    if param.grad is not None:
-                        param.grad.data = dp_gradients[param_idx]
-                        param_idx += 1
-                
-                optimizer.step()
-                
-                # 统计
-                epoch_loss += loss.item()
-                _, predicted = torch.max(outputs.data, 1)
-                total += batch_y.size(0)
-                correct += (predicted == batch_y).sum().item()
-                
-                # 更新隐私预算
-                self.privacy_accountant.add_composition(
-                    self.dp_mechanism.epsilon / num_batches,
-                    self.dp_mechanism.delta / num_batches
-                )
-            
-            # 记录训练历史
-            avg_loss = epoch_loss / num_batches
-            accuracy = 100 * correct / total
-            total_epsilon, total_delta = self.privacy_accountant.get_total_privacy()
-            
-            self.training_history['loss'].append(avg_loss)
-            self.training_history['accuracy'].append(accuracy)
-            self.training_history['privacy_cost'].append(total_epsilon)
-            
-            print(f"Epoch {epoch+1}: Loss={avg_loss:.4f}, Accuracy={accuracy:.2f}%, "
-                  f"Privacy Cost (ε)={total_epsilon:.4f}")
-        
-        return self.training_history
-
-def generate_dp_data(num_samples: int = 1000) -> Tuple[torch.Tensor, torch.Tensor]:
-    """生成差分隐私测试数据"""
-    np.random.seed(42)
-    X = torch.randn(num_samples, 10)
-    y = torch.randint(0, 2, (num_samples,))
-    return X, y
-
-def visualize_dp_training(training_history: Dict):
-    """可视化差分隐私训练过程"""
-    plt.figure(figsize=(15, 5))
-    
-    # 训练损失
-    plt.subplot(1, 3, 1)
-    plt.plot(training_history['loss'], 'b-', linewidth=2)
-    plt.title('差分隐私训练损失')
-    plt.xlabel('训练轮数')
-    plt.ylabel('损失')
-    plt.grid(True)
-    
-    # 训练准确率
-    plt.subplot(1, 3, 2)
-    plt.plot(training_history['accuracy'], 'g-', linewidth=2)
-    plt.title('差分隐私训练准确率')
-    plt.xlabel('训练轮数')
-    plt.ylabel('准确率 (%)')
-    plt.grid(True)
-    
-    # 隐私成本
-    plt.subplot(1, 3, 3)
-    plt.plot(training_history['privacy_cost'], 'r-', linewidth=2)
-    plt.title('隐私预算消耗')
-    plt.xlabel('训练轮数')
-    plt.ylabel('ε-差分隐私')
-    plt.grid(True)
-    
-    plt.tight_layout()
-    plt.show()
-
-def compare_dp_vs_non_dp():
-    """比较差分隐私和非差分隐私训练"""
-    print("=== 差分隐私 vs 非差分隐私比较 ===")
-    
-    # 生成数据
-    X, y = generate_dp_data(1000)
-    
-    # 差分隐私训练
-    dp_model = DPNeuralNetwork()
-    dp_trainer = DPTrainer(dp_model, epsilon=1.0, delta=1e-5)
-    dp_history = dp_trainer.train_with_dp(X, y, epochs=10)
-    
-    # 非差分隐私训练
-    non_dp_model = DPNeuralNetwork()
-    non_dp_trainer = DPTrainer(non_dp_model, epsilon=float('inf'), delta=0.0)
-    non_dp_history = non_dp_trainer.train_with_dp(X, y, epochs=10)
-    
-    # 可视化比较
-    plt.figure(figsize=(15, 5))
-    
-    plt.subplot(1, 3, 1)
-    plt.plot(dp_history['loss'], 'r-', label='差分隐私', linewidth=2)
-    plt.plot(non_dp_history['loss'], 'b-', label='非差分隐私', linewidth=2)
-    plt.title('训练损失比较')
-    plt.xlabel('训练轮数')
-    plt.ylabel('损失')
-    plt.legend()
-    plt.grid(True)
-    
-    plt.subplot(1, 3, 2)
-    plt.plot(dp_history['accuracy'], 'r-', label='差分隐私', linewidth=2)
-    plt.plot(non_dp_history['accuracy'], 'b-', label='非差分隐私', linewidth=2)
-    plt.title('训练准确率比较')
-    plt.xlabel('训练轮数')
-    plt.ylabel('准确率 (%)')
-    plt.legend()
-    plt.grid(True)
-    
-    plt.subplot(1, 3, 3)
-    plt.plot(dp_history['privacy_cost'], 'r-', linewidth=2)
-    plt.title('隐私预算消耗')
-    plt.xlabel('训练轮数')
-    plt.ylabel('ε-差分隐私')
-    plt.grid(True)
-    
-    plt.tight_layout()
-    plt.show()
-
-# 主函数
-def main():
-    """主函数：演示差分隐私机制"""
-    print("=== 差分隐私机制演示 ===")
-    
-    # 比较差分隐私和非差分隐私训练
-    compare_dp_vs_non_dp()
-    
-    print("差分隐私训练完成！")
-
-if __name__ == "__main__":
-    main()
-
-## 3. 分布式训练框架 / Distributed Training Framework
-
-### 数学表示 / Mathematical Representation
-
-**分布式梯度下降**：
-$$\nabla f(w) = \frac{1}{N} \sum_{i=1}^{N} \nabla f_i(w)$$
-
-**异步更新**：
-$$w_{t+1} = w_t - \eta \nabla f_{i_t}(w_t)$$
-
-**同步更新**：
-$$w_{t+1} = w_t - \eta \frac{1}{K} \sum_{k=1}^{K} \nabla f_k(w_t)$$
-
-### 可视化表示 / Visual Representation
-
-```mermaid
-graph TD
-    A[参数服务器] --> B[工作节点1]
-    A --> C[工作节点2]
-    A --> D[工作节点3]
-    A --> E[工作节点K]
-    
-    B --> F[梯度计算]
-    C --> G[梯度计算]
-    D --> H[梯度计算]
-    E --> I[梯度计算]
-    
-    F --> J[梯度聚合]
-    G --> J
-    H --> J
-    I --> J
-    
-    J --> K[参数更新]
-    K --> A
-    
-    subgraph "分布式架构"
-        L[数据分片]
-        M[并行计算]
-        N[通信同步]
-    end
-```
-
-### 3Python实现 / Python Implementation
-
-```python
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import numpy as np
-from typing import List, Dict, Tuple
-import threading
-import time
-import queue
-from concurrent.futures import ThreadPoolExecutor
-import matplotlib.pyplot as plt
-import warnings
-warnings.filterwarnings('ignore')
-
-class DistributedWorker:
-    """分布式工作节点"""
-    
-    def __init__(self, worker_id: int, model: nn.Module, data: Tuple[torch.Tensor, torch.Tensor]):
-        self.worker_id = worker_id
-        self.model = model
-        self.X, self.y = data
+    def __init__(self, client_id: int, model: nn.Module, data: torch.Tensor, 
+                 labels: torch.Tensor, batch_size: int = 32):
+        self.client_id = client_id
+        self.model = copy.deepcopy(model)
+        self.data = data
+        self.labels = labels
+        self.batch_size = batch_size
         self.optimizer = optim.SGD(self.model.parameters(), lr=0.01)
         self.criterion = nn.CrossEntropyLoss()
-        
-    def compute_gradients(self, global_params: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
-        """计算梯度"""
-        # 加载全局参数
-        self.model.load_state_dict(global_params)
-        
-        # 前向传播
-        outputs = self.model(self.X)
-        loss = self.criterion(outputs, self.y)
-        
-        # 反向传播
-        self.optimizer.zero_grad()
-        loss.backward()
-        
-        # 收集梯度
-        gradients = {}
-        for name, param in self.model.named_parameters():
-            if param.grad is not None:
-                gradients[name] = param.grad.clone()
-        
-        return gradients
-
-class ParameterServer:
-    """参数服务器"""
     
-    def __init__(self, global_model: nn.Module):
-        self.global_model = global_model
-        self.global_params = self.global_model.state_dict()
-        self.training_history = {'loss': [], 'accuracy': []}
+    def train_epoch(self, global_model_state: Dict) -> Dict:
+        """训练一个epoch / Train for one epoch"""
+        # 加载全局模型参数
+        self.model.load_state_dict(global_model_state)
         
-    def update_global_params(self, gradients_list: List[Dict[str, torch.Tensor]]) -> None:
-        """更新全局参数"""
-        # 平均梯度
-        avg_gradients = {}
-        for name in self.global_params.keys():
-            avg_gradients[name] = torch.zeros_like(self.global_params[name])
+        # 本地训练
+        self.model.train()
+        total_loss = 0
+        num_batches = 0
+        
+        for i in range(0, len(self.data), self.batch_size):
+            batch_data = self.data[i:i+self.batch_size]
+            batch_labels = self.labels[i:i+self.batch_size]
             
-        for gradients in gradients_list:
-            for name, grad in gradients.items():
-                avg_gradients[name] += grad / len(gradients_list)
-        
-        # 更新参数
-        for name, param in self.global_model.named_parameters():
-            param.data -= 0.01 * avg_gradients[name]
-        
-        self.global_params = self.global_model.state_dict()
-    
-    def get_global_params(self) -> Dict[str, torch.Tensor]:
-        """获取全局参数"""
-        return self.global_params
-
-class DistributedTrainer:
-    """分布式训练器"""
-    
-    def __init__(self, global_model: nn.Module, num_workers: int = 4):
-        self.global_model = global_model
-        self.num_workers = num_workers
-        self.parameter_server = ParameterServer(global_model)
-        self.workers = []
-        self.training_history = {'loss': [], 'accuracy': [], 'communication_cost': []}
-        
-    def setup_workers(self, data_shards: List[Tuple[torch.Tensor, torch.Tensor]]):
-        """设置工作节点"""
-        self.workers = []
-        for i in range(self.num_workers):
-            worker_model = copy.deepcopy(self.global_model)
-            worker = DistributedWorker(i, worker_model, data_shards[i])
-            self.workers.append(worker)
-    
-    def train_distributed(self, epochs: int = 10) -> Dict:
-        """执行分布式训练"""
-        print("开始分布式训练...")
-        
-        for epoch in range(epochs):
-            print(f"第 {epoch + 1} 轮分布式训练")
-            
-            # 获取全局参数
-            global_params = self.parameter_server.get_global_params()
-            
-            # 并行计算梯度
-            gradients_list = []
-            with ThreadPoolExecutor(max_workers=self.num_workers) as executor:
-                futures = []
-                for worker in self.workers:
-                    future = executor.submit(worker.compute_gradients, global_params)
-                    futures.append(future)
-                
-                for future in futures:
-                    gradients = future.result()
-                    gradients_list.append(gradients)
-            
-            # 更新全局参数
-            self.parameter_server.update_global_params(gradients_list)
-            
-            # 评估全局模型
-            test_loss, test_accuracy = self.evaluate_global_model()
-            self.training_history['loss'].append(test_loss)
-            self.training_history['accuracy'].append(test_accuracy)
-            self.training_history['communication_cost'].append(self.num_workers)
-            
-            print(f"第 {epoch + 1} 轮完成，测试损失: {test_loss:.4f}, "
-                  f"测试准确率: {test_accuracy:.2f}%")
-        
-        return self.training_history
-    
-    def evaluate_global_model(self) -> Tuple[float, float]:
-        """评估全局模型性能"""
-        self.global_model.load_state_dict(self.parameter_server.get_global_params())
-        self.global_model.eval()
-        
-        # 生成测试数据
-        X_test, y_test = self.generate_test_data()
-        
-        criterion = nn.CrossEntropyLoss()
-        with torch.no_grad():
-            outputs = self.global_model(X_test)
-            loss = criterion(outputs, y_test)
-            
-            _, predicted = torch.max(outputs.data, 1)
-            accuracy = 100 * (predicted == y_test).sum().item() / len(y_test)
-        
-        return loss.item(), accuracy
-    
-    def generate_test_data(self, num_samples: int = 200) -> Tuple[torch.Tensor, torch.Tensor]:
-        """生成测试数据"""
-        np.random.seed(999)
-        X = torch.randn(num_samples, 10)
-        y = torch.randint(0, 2, (num_samples,))
-        return X, y
-
-def generate_distributed_data(num_workers: int, samples_per_worker: int = 100) -> List[Tuple[torch.Tensor, torch.Tensor]]:
-    """为分布式训练生成数据分片"""
-    data_shards = []
-    
-    for worker_id in range(num_workers):
-        np.random.seed(worker_id)
-        bias = worker_id * 0.3
-        X = torch.randn(samples_per_worker, 10) + bias
-        y = torch.randint(0, 2, (samples_per_worker,))
-        data_shards.append((X, y))
-    
-    return data_shards
-
-def visualize_distributed_training(training_history: Dict):
-    """可视化分布式训练过程"""
-    plt.figure(figsize=(15, 5))
-    
-    # 训练损失
-    plt.subplot(1, 3, 1)
-    plt.plot(training_history['loss'], 'b-', linewidth=2)
-    plt.title('分布式训练损失')
-    plt.xlabel('训练轮数')
-    plt.ylabel('损失')
-    plt.grid(True)
-    
-    # 训练准确率
-    plt.subplot(1, 3, 2)
-    plt.plot(training_history['accuracy'], 'g-', linewidth=2)
-    plt.title('分布式训练准确率')
-    plt.xlabel('训练轮数')
-    plt.ylabel('准确率 (%)')
-    plt.grid(True)
-    
-    # 通信成本
-    plt.subplot(1, 3, 3)
-    plt.plot(training_history['communication_cost'], 'r-', linewidth=2)
-    plt.title('通信成本')
-    plt.xlabel('训练轮数')
-    plt.ylabel('通信次数')
-    plt.grid(True)
-    
-    plt.tight_layout()
-    plt.show()
-
-def compare_distributed_vs_centralized():
-    """比较分布式和集中式训练"""
-    print("=== 分布式 vs 集中式训练比较 ===")
-    
-    # 分布式训练
-    global_model = SimpleNN()
-    distributed_trainer = DistributedTrainer(global_model, num_workers=4)
-    data_shards = generate_distributed_data(4, 100)
-    distributed_trainer.setup_workers(data_shards)
-    distributed_history = distributed_trainer.train_distributed(epochs=10)
-    
-    # 集中式训练
-    centralized_model = SimpleNN()
-    centralized_trainer = CentralizedTrainer(centralized_model)
-    all_data = torch.cat([shard[0] for shard in data_shards]), torch.cat([shard[1] for shard in data_shards])
-    centralized_history = centralized_trainer.train_centralized(all_data[0], all_data[1], epochs=10)
-    
-    # 可视化比较
-    plt.figure(figsize=(15, 5))
-    
-    plt.subplot(1, 3, 1)
-    plt.plot(distributed_history['loss'], 'r-', label='分布式', linewidth=2)
-    plt.plot(centralized_history['loss'], 'b-', label='集中式', linewidth=2)
-    plt.title('训练损失比较')
-    plt.xlabel('训练轮数')
-    plt.ylabel('损失')
-    plt.legend()
-    plt.grid(True)
-    
-    plt.subplot(1, 3, 2)
-    plt.plot(distributed_history['accuracy'], 'r-', label='分布式', linewidth=2)
-    plt.plot(centralized_history['accuracy'], 'b-', label='集中式', linewidth=2)
-    plt.title('训练准确率比较')
-    plt.xlabel('训练轮数')
-    plt.ylabel('准确率 (%)')
-    plt.legend()
-    plt.grid(True)
-    
-    plt.subplot(1, 3, 3)
-    plt.plot(distributed_history['communication_cost'], 'r-', linewidth=2)
-    plt.title('分布式通信成本')
-    plt.xlabel('训练轮数')
-    plt.ylabel('通信次数')
-    plt.grid(True)
-    
-    plt.tight_layout()
-    plt.show()
-
-class CentralizedTrainer:
-    """集中式训练器（用于比较）"""
-    
-    def __init__(self, model: nn.Module):
-        self.model = model
-        self.optimizer = optim.SGD(model.parameters(), lr=0.01)
-        self.criterion = nn.CrossEntropyLoss()
-        self.training_history = {'loss': [], 'accuracy': []}
-    
-    def train_centralized(self, X: torch.Tensor, y: torch.Tensor, epochs: int = 10) -> Dict:
-        """集中式训练"""
-        for epoch in range(epochs):
             self.optimizer.zero_grad()
-            outputs = self.model(X)
-            loss = self.criterion(outputs, y)
+            outputs = self.model(batch_data)
+            loss = self.criterion(outputs, batch_labels)
             loss.backward()
             self.optimizer.step()
             
-            # 计算准确率
-            _, predicted = torch.max(outputs.data, 1)
-            accuracy = 100 * (predicted == y).sum().item() / len(y)
-            
-            self.training_history['loss'].append(loss.item())
-            self.training_history['accuracy'].append(accuracy)
+            total_loss += loss.item()
+            num_batches += 1
         
-        return self.training_history
+        # 返回更新后的模型参数
+        return {
+            'client_id': self.client_id,
+            'model_state': self.model.state_dict(),
+            'data_size': len(self.data),
+            'avg_loss': total_loss / num_batches
+        }
 
-# 主函数
-def main():
-    """主函数：演示分布式训练框架"""
-    print("=== 分布式训练框架演示 ===")
+class FederatedServer:
+    """联邦学习服务器 / Federated Learning Server"""
     
-    # 比较分布式和集中式训练
-    compare_distributed_vs_centralized()
+    def __init__(self, global_model: nn.Module):
+        self.global_model = global_model
+        self.clients = []
     
-    print("分布式训练完成！")
+    def add_client(self, client: FederatedClient):
+        """添加客户端 / Add client"""
+        self.clients.append(client)
+    
+    def federated_averaging(self, client_updates: List[Dict]) -> Dict:
+        """联邦平均聚合 / Federated averaging aggregation"""
+        total_data_size = sum(update['data_size'] for update in client_updates)
+        
+        # 初始化聚合后的模型参数
+        aggregated_state = {}
+        first_update = client_updates[0]['model_state']
+        
+        for key in first_update.keys():
+            aggregated_state[key] = torch.zeros_like(first_update[key])
+        
+        # 加权平均
+        for update in client_updates:
+            weight = update['data_size'] / total_data_size
+            model_state = update['model_state']
+            
+            for key in aggregated_state.keys():
+                aggregated_state[key] += weight * model_state[key]
+        
+        return aggregated_state
+    
+    def train_round(self, client_fraction: float = 1.0) -> float:
+        """训练一轮 / Train for one round"""
+        # 选择客户端子集
+        num_clients = len(self.clients)
+        num_selected = max(1, int(client_fraction * num_clients))
+        selected_clients = np.random.choice(
+            self.clients, size=num_selected, replace=False
+        )
+        
+        # 获取全局模型状态
+        global_state = self.global_model.state_dict()
+        
+        # 客户端本地训练
+        client_updates = []
+        for client in selected_clients:
+            update = client.train_epoch(global_state)
+            client_updates.append(update)
+        
+        # 聚合模型参数
+        aggregated_state = self.federated_averaging(client_updates)
+        
+        # 更新全局模型
+        self.global_model.load_state_dict(aggregated_state)
+        
+        # 计算平均损失
+        avg_loss = np.mean([update['avg_loss'] for update in client_updates])
+        return avg_loss
+    
+    def train(self, num_rounds: int, client_fraction: float = 1.0) -> List[float]:
+        """训练多轮 / Train for multiple rounds"""
+        losses = []
+        
+        for round_idx in range(num_rounds):
+            loss = self.train_round(client_fraction)
+            losses.append(loss)
+            
+            if round_idx % 10 == 0:
+                print(f"Round {round_idx}, Average Loss: {loss:.4f}")
+        
+        return losses
 
-if __name__ == "__main__":
-    main()
+# 示例使用 / Example Usage
+def create_simple_model():
+    """创建简单模型 / Create simple model"""
+    return nn.Sequential(
+        nn.Linear(10, 20),
+        nn.ReLU(),
+        nn.Linear(20, 5)
+    )
+
+def generate_client_data(num_samples: int, num_features: int, num_classes: int):
+    """生成客户端数据 / Generate client data"""
+    data = torch.randn(num_samples, num_features)
+    labels = torch.randint(0, num_classes, (num_samples,))
+    return data, labels
+
+# 创建联邦学习系统
+global_model = create_simple_model()
+server = FederatedServer(global_model)
+
+# 添加客户端
+for i in range(5):
+    data, labels = generate_client_data(100, 10, 5)
+    client = FederatedClient(i, global_model, data, labels)
+    server.add_client(client)
+
+# 训练
+losses = server.train(num_rounds=50, client_fraction=0.8)
+print(f"Training completed. Final loss: {losses[-1]:.4f}")
+```
+
+## 2. 差分隐私保护 / Differential Privacy Protection
+
+### 2.1 数学表示 / Mathematical Representation
+
+#### 差分隐私定义 / Differential Privacy Definition
+
+一个随机化算法 $\mathcal{M}$ 满足 $(\epsilon, \delta)$-差分隐私，如果对于任意相邻数据集 $D$ 和 $D'$，以及任意输出集合 $S$：
+
+$$\Pr[\mathcal{M}(D) \in S] \leq e^{\epsilon} \cdot \Pr[\mathcal{M}(D') \in S] + \delta$$
+
+#### 高斯机制 / Gaussian Mechanism
+
+对于敏感度为 $\Delta f$ 的函数 $f$，添加高斯噪声：
+
+$$\mathcal{M}(D) = f(D) + \mathcal{N}(0, \sigma^2 I)$$
+
+其中 $\sigma = \frac{\Delta f \sqrt{2 \ln(1.25/\delta)}}{\epsilon}$。
+
+#### 联邦学习中的差分隐私 / Differential Privacy in Federated Learning
+
+局部差分隐私更新：
+
+$$w_{t+1}^{(k)} = w_t - \eta \nabla F_k(w_t) + \mathcal{N}(0, \sigma^2 I)$$
+
+### 2.2 流程图 / Flowchart
+
+```mermaid
+flowchart TD
+    A[计算局部梯度] --> B[计算梯度敏感度]
+    B --> C[确定噪声参数]
+    C --> D[生成高斯噪声]
+    D --> E[添加噪声到梯度]
+    E --> F[更新局部模型]
+    F --> G[上传噪声化模型]
+    G --> H[服务器聚合]
+    H --> I[更新全局模型]
+    I --> J{隐私预算耗尽?}
+    J -->|否| K[继续训练]
+    J -->|是| L[停止训练]
+    K --> A
+```
+
+### 2.3 代码实现 / Code Implementation
+
+```python
+import torch
+import torch.nn as nn
+import numpy as np
+from typing import Dict, Tuple
+import copy
+
+class DifferentialPrivacyClient:
+    """差分隐私客户端 / Differential Privacy Client"""
+    
+    def __init__(self, client_id: int, model: nn.Module, data: torch.Tensor, 
+                 labels: torch.Tensor, epsilon: float = 1.0, delta: float = 1e-5,
+                 clipping_norm: float = 1.0):
+        self.client_id = client_id
+        self.model = copy.deepcopy(model)
+        self.data = data
+        self.labels = labels
+        self.epsilon = epsilon
+        self.delta = delta
+        self.clipping_norm = clipping_norm
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.01)
+        self.criterion = nn.CrossEntropyLoss()
+    
+    def clip_gradients(self, gradients: torch.Tensor) -> torch.Tensor:
+        """梯度裁剪 / Gradient clipping"""
+        norm = torch.norm(gradients)
+        if norm > self.clipping_norm:
+            gradients = gradients * (self.clipping_norm / norm)
+        return gradients
+    
+    def add_noise_to_gradients(self, gradients: torch.Tensor) -> torch.Tensor:
+        """向梯度添加噪声 / Add noise to gradients"""
+        # 计算噪声标准差
+        sensitivity = self.clipping_norm / len(self.data)
+        sigma = sensitivity * np.sqrt(2 * np.log(1.25 / self.delta)) / self.epsilon
+        
+        # 生成高斯噪声
+        noise = torch.randn_like(gradients) * sigma
+        return gradients + noise
+    
+    def train_epoch_with_privacy(self, global_model_state: Dict) -> Dict:
+        """带隐私保护的训练 / Train with privacy protection"""
+        # 加载全局模型参数
+        self.model.load_state_dict(global_model_state)
+        
+        self.model.train()
+        total_loss = 0
+        num_batches = 0
+        
+        # 累积梯度
+        accumulated_gradients = None
+        
+        for i in range(0, len(self.data), self.batch_size):
+            batch_data = self.data[i:i+self.batch_size]
+            batch_labels = self.labels[i:i+self.batch_size]
+            
+            self.optimizer.zero_grad()
+            outputs = self.model(batch_data)
+            loss = self.criterion(outputs, batch_labels)
+            loss.backward()
+            
+            # 累积梯度
+            if accumulated_gradients is None:
+                accumulated_gradients = []
+                for param in self.model.parameters():
+                    if param.grad is not None:
+                        accumulated_gradients.append(param.grad.clone())
+            else:
+                for idx, param in enumerate(self.model.parameters()):
+                    if param.grad is not None:
+                        accumulated_gradients[idx] += param.grad.clone()
+            
+            total_loss += loss.item()
+            num_batches += 1
+        
+        # 梯度裁剪和噪声添加
+        if accumulated_gradients is not None:
+            for i, grad in enumerate(accumulated_gradients):
+                grad = self.clip_gradients(grad)
+                grad = self.add_noise_to_gradients(grad)
+                accumulated_gradients[i] = grad
+            
+            # 应用噪声化梯度
+            param_idx = 0
+            for param in self.model.parameters():
+                if param.grad is not None:
+                    param.data -= 0.01 * accumulated_gradients[param_idx]
+                    param_idx += 1
+        
+        return {
+            'client_id': self.client_id,
+            'model_state': self.model.state_dict(),
+            'data_size': len(self.data),
+            'avg_loss': total_loss / num_batches
+        }
+
+class PrivacyPreservingFederatedServer:
+    """隐私保护联邦学习服务器 / Privacy-Preserving Federated Server"""
+    
+    def __init__(self, global_model: nn.Module):
+        self.global_model = global_model
+        self.clients = []
+    
+    def add_client(self, client: DifferentialPrivacyClient):
+        """添加客户端 / Add client"""
+        self.clients.append(client)
+    
+    def federated_averaging(self, client_updates: List[Dict]) -> Dict:
+        """联邦平均聚合 / Federated averaging aggregation"""
+        total_data_size = sum(update['data_size'] for update in client_updates)
+        
+        aggregated_state = {}
+        first_update = client_updates[0]['model_state']
+        
+        for key in first_update.keys():
+            aggregated_state[key] = torch.zeros_like(first_update[key])
+        
+        for update in client_updates:
+            weight = update['data_size'] / total_data_size
+            model_state = update['model_state']
+            
+            for key in aggregated_state.keys():
+                aggregated_state[key] += weight * model_state[key]
+        
+        return aggregated_state
+    
+    def train_round(self, client_fraction: float = 1.0) -> float:
+        """训练一轮 / Train for one round"""
+        num_clients = len(self.clients)
+        num_selected = max(1, int(client_fraction * num_clients))
+        selected_clients = np.random.choice(
+            self.clients, size=num_selected, replace=False
+        )
+        
+        global_state = self.global_model.state_dict()
+        
+        client_updates = []
+        for client in selected_clients:
+            update = client.train_epoch_with_privacy(global_state)
+            client_updates.append(update)
+        
+        aggregated_state = self.federated_averaging(client_updates)
+        self.global_model.load_state_dict(aggregated_state)
+        
+        avg_loss = np.mean([update['avg_loss'] for update in client_updates])
+        return avg_loss
+    
+    def train(self, num_rounds: int, client_fraction: float = 1.0) -> List[float]:
+        """训练多轮 / Train for multiple rounds"""
+        losses = []
+        
+        for round_idx in range(num_rounds):
+            loss = self.train_round(client_fraction)
+            losses.append(loss)
+            
+            if round_idx % 10 == 0:
+                print(f"Round {round_idx}, Average Loss: {loss:.4f}")
+        
+        return losses
+
+# 示例使用 / Example Usage
+def create_privacy_preserving_federated_system():
+    """创建隐私保护联邦学习系统 / Create privacy-preserving federated learning system"""
+    global_model = create_simple_model()
+    server = PrivacyPreservingFederatedServer(global_model)
+    
+    # 添加差分隐私客户端
+    for i in range(5):
+        data, labels = generate_client_data(100, 10, 5)
+        client = DifferentialPrivacyClient(
+            i, global_model, data, labels, 
+            epsilon=1.0, delta=1e-5, clipping_norm=1.0
+        )
+        server.add_client(client)
+    
+    return server
+
+# 训练隐私保护联邦学习系统
+privacy_server = create_privacy_preserving_federated_system()
+privacy_losses = privacy_server.train(num_rounds=30, client_fraction=0.8)
+print(f"Privacy-preserving training completed. Final loss: {privacy_losses[-1]:.4f}")
+```
+
+## 3. 安全多方计算 / Secure Multi-Party Computation
+
+### 3.1 数学表示 / Mathematical Representation
+
+#### 秘密共享 / Secret Sharing
+
+对于秘密 $s$，生成 $n$ 个份额：
+
+$$s = \sum_{i=1}^{n} s_i \pmod{p}$$
+
+其中 $p$ 是素数，每个份额 $s_i$ 都是随机生成的。
+
+#### 安全聚合协议 / Secure Aggregation Protocol
+
+客户端 $i$ 的模型参数 $w_i$ 通过以下方式保护：
+
+1. 生成随机掩码：$r_i \in \mathbb{Z}_p$
+2. 计算掩码参数：$\tilde{w}_i = w_i + r_i \pmod{p}$
+3. 上传掩码参数到服务器
+4. 服务器计算：$\sum_{i} \tilde{w}_i = \sum_{i} w_i + \sum_{i} r_i \pmod{p}$
+5. 通过安全通道移除掩码：$\sum_{i} w_i = \sum_{i} \tilde{w}_i - \sum_{i} r_i \pmod{p}$
+
+#### 同态加密 / Homomorphic Encryption
+
+对于加法同态加密：
+
+$$\text{Enc}(m_1) \oplus \text{Enc}(m_2) = \text{Enc}(m_1 + m_2)$$
+
+### 3.2 流程图 / Flowchart
+
+```mermaid
+flowchart TD
+    A[客户端生成密钥对] --> B[生成随机掩码]
+    B --> C[掩码化模型参数]
+    C --> D[加密掩码化参数]
+    D --> E[上传到服务器]
+    E --> F[服务器聚合加密参数]
+    F --> G[生成聚合密钥]
+    G --> H[解密聚合结果]
+    H --> I[移除掩码]
+    I --> J[获得聚合模型]
+    J --> K[分发新全局模型]
+    K --> L[下一轮训练]
+    L --> A
+```
+
+### 3.3 代码实现 / Code Implementation
+
+```python
+import torch
+import numpy as np
+from typing import Dict, List, Tuple
+import hashlib
+import secrets
+
+class SecureAggregationClient:
+    """安全聚合客户端 / Secure Aggregation Client"""
+    
+    def __init__(self, client_id: int, model: nn.Module, data: torch.Tensor, 
+                 labels: torch.Tensor, num_clients: int):
+        self.client_id = client_id
+        self.model = copy.deepcopy(model)
+        self.data = data
+        self.labels = labels
+        self.num_clients = num_clients
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.01)
+        self.criterion = nn.CrossEntropyLoss()
+        
+        # 生成密钥对
+        self.private_key = secrets.token_bytes(32)
+        self.public_key = hashlib.sha256(self.private_key).digest()
+    
+    def generate_masks(self) -> Dict[str, torch.Tensor]:
+        """生成随机掩码 / Generate random masks"""
+        masks = {}
+        model_state = self.model.state_dict()
+        
+        for key in model_state.keys():
+            shape = model_state[key].shape
+            # 生成随机掩码
+            mask = torch.randn(shape) * 0.1
+            masks[key] = mask
+        
+        return masks
+    
+    def mask_model_parameters(self, masks: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """掩码化模型参数 / Mask model parameters"""
+        masked_state = {}
+        model_state = self.model.state_dict()
+        
+        for key in model_state.keys():
+            masked_state[key] = model_state[key] + masks[key]
+        
+        return masked_state
+    
+    def train_epoch_secure(self, global_model_state: Dict) -> Tuple[Dict, Dict]:
+        """安全训练一个epoch / Secure train for one epoch"""
+        # 加载全局模型参数
+        self.model.load_state_dict(global_model_state)
+        
+        # 本地训练
+        self.model.train()
+        total_loss = 0
+        num_batches = 0
+        
+        for i in range(0, len(self.data), self.batch_size):
+            batch_data = self.data[i:i+self.batch_size]
+            batch_labels = self.labels[i:i+self.batch_size]
+            
+            self.optimizer.zero_grad()
+            outputs = self.model(batch_data)
+            loss = self.criterion(outputs, batch_labels)
+            loss.backward()
+            self.optimizer.step()
+            
+            total_loss += loss.item()
+            num_batches += 1
+        
+        # 生成掩码
+        masks = self.generate_masks()
+        
+        # 掩码化模型参数
+        masked_state = self.mask_model_parameters(masks)
+        
+        return {
+            'client_id': self.client_id,
+            'masked_model_state': masked_state,
+            'data_size': len(self.data),
+            'avg_loss': total_loss / num_batches
+        }, masks
+
+class SecureAggregationServer:
+    """安全聚合服务器 / Secure Aggregation Server"""
+    
+    def __init__(self, global_model: nn.Module):
+        self.global_model = global_model
+        self.clients = []
+    
+    def add_client(self, client: SecureAggregationClient):
+        """添加客户端 / Add client"""
+        self.clients.append(client)
+    
+    def secure_aggregation(self, client_updates: List[Tuple[Dict, Dict]]) -> Dict:
+        """安全聚合 / Secure aggregation"""
+        # 分离更新和掩码
+        updates = [update[0] for update in client_updates]
+        masks = [update[1] for update in client_updates]
+        
+        # 计算总数据量
+        total_data_size = sum(update['data_size'] for update in updates)
+        
+        # 聚合掩码化参数
+        aggregated_state = {}
+        first_update = updates[0]['masked_model_state']
+        
+        for key in first_update.keys():
+            aggregated_state[key] = torch.zeros_like(first_update[key])
+        
+        for update in updates:
+            weight = update['data_size'] / total_data_size
+            masked_state = update['masked_model_state']
+            
+            for key in aggregated_state.keys():
+                aggregated_state[key] += weight * masked_state[key]
+        
+        # 移除掩码（在实际实现中，这需要通过安全通道）
+        total_masks = {}
+        for key in aggregated_state.keys():
+            total_masks[key] = torch.zeros_like(aggregated_state[key])
+        
+        for mask in masks:
+            for key in total_masks.keys():
+                total_masks[key] += mask[key]
+        
+        # 移除掩码
+        for key in aggregated_state.keys():
+            aggregated_state[key] -= total_masks[key] / len(masks)
+        
+        return aggregated_state
+    
+    def train_round_secure(self, client_fraction: float = 1.0) -> float:
+        """安全训练一轮 / Secure train for one round"""
+        num_clients = len(self.clients)
+        num_selected = max(1, int(client_fraction * num_clients))
+        selected_clients = np.random.choice(
+            self.clients, size=num_selected, replace=False
+        )
+        
+        global_state = self.global_model.state_dict()
+        
+        client_updates = []
+        for client in selected_clients:
+            update, masks = client.train_epoch_secure(global_state)
+            client_updates.append((update, masks))
+        
+        aggregated_state = self.secure_aggregation(client_updates)
+        self.global_model.load_state_dict(aggregated_state)
+        
+        avg_loss = np.mean([update[0]['avg_loss'] for update in client_updates])
+        return avg_loss
+    
+    def train_secure(self, num_rounds: int, client_fraction: float = 1.0) -> List[float]:
+        """安全训练多轮 / Secure train for multiple rounds"""
+        losses = []
+        
+        for round_idx in range(num_rounds):
+            loss = self.train_round_secure(client_fraction)
+            losses.append(loss)
+            
+            if round_idx % 10 == 0:
+                print(f"Secure Round {round_idx}, Average Loss: {loss:.4f}")
+        
+        return losses
+
+# 示例使用 / Example Usage
+def create_secure_federated_system():
+    """创建安全联邦学习系统 / Create secure federated learning system"""
+    global_model = create_simple_model()
+    server = SecureAggregationServer(global_model)
+    
+    # 添加安全聚合客户端
+    for i in range(5):
+        data, labels = generate_client_data(100, 10, 5)
+        client = SecureAggregationClient(i, global_model, data, labels, num_clients=5)
+        server.add_client(client)
+    
+    return server
+
+# 训练安全联邦学习系统
+secure_server = create_secure_federated_system()
+secure_losses = secure_server.train_secure(num_rounds=25, client_fraction=0.8)
+print(f"Secure federated learning completed. Final loss: {secure_losses[-1]:.4f}")
 ```
 
 ## 总结 / Summary
 
-本文档提供了联邦学习扩展的完整多表征实现，包括：
+本文档提供了联邦学习的三个核心技术的多表示示例：
 
-### 主要特性 / Key Features
+1. **联邦平均算法**：实现了基本的联邦学习框架，包括客户端本地训练和服务器模型聚合
+2. **差分隐私保护**：通过梯度裁剪和噪声添加实现隐私保护
+3. **安全多方计算**：通过掩码化和安全聚合协议保护模型参数
 
-1. **联邦平均算法**：
-   - 数学公式和理论基础
-   - 可视化流程图
-   - 完整的Python实现
+每个技术都包含了详细的数学表示、可视化流程图和完整的Python代码实现，为联邦学习的研究和应用提供了全面的参考。
 
-2. **差分隐私机制**：
-   - 隐私预算计算
-   - 梯度裁剪和噪声添加
-   - 隐私成本分析
+This document provides multi-representation examples for three core federated learning technologies:
 
-3. **分布式训练框架**：
-   - 参数服务器架构
-   - 工作节点并行计算
-   - 通信成本分析
+1. **Federated Averaging Algorithm**: Implements the basic federated learning framework with client local training and server model aggregation
+2. **Differential Privacy Protection**: Achieves privacy protection through gradient clipping and noise addition
+3. **Secure Multi-Party Computation**: Protects model parameters through masking and secure aggregation protocols
 
-### 技术亮点 / Technical Highlights
-
-- **多表征格式**：数学公式、可视化图表、代码实现
-- **完整实现**：包含训练、评估、可视化功能
-- **性能分析**：损失曲线、准确率、隐私成本、通信成本
-- **对比实验**：差分隐私vs非差分隐私、分布式vs集中式
-
-### 应用场景 / Applications
-
-- 联邦学习系统设计
-- 隐私保护机器学习
-- 大规模分布式训练
-- 跨机构数据协作
-
----
-
-*文档版本: 1.0.0*
-*最后更新: 2025-08-01*
+Each technology includes detailed mathematical representations, visual flowcharts, and complete Python code implementations, providing comprehensive references for federated learning research and applications.

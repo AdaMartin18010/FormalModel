@@ -6,26 +6,38 @@
 
 ## 目录 / Table of Contents
 
-1. [声波传播 / Acoustic Wave Propagation](#1-声波传播--acoustic-wave-propagation)
-   - [声学波动方程 / Acoustic Wave Equation](#11-声学波动方程--acoustic-wave-equation)
-   - [平面声波 / Plane Acoustic Waves](#12-平面声波--plane-acoustic-waves)
-   - [球面声波 / Spherical Acoustic Waves](#13-球面声波--spherical-acoustic-waves)
-   - [声波能量 / Acoustic Energy](#14-声波能量--acoustic-energy)
-   - [声强 / Sound Intensity](#15-声强--sound-intensity)
-
-2. [声学阻抗 / Acoustic Impedance](#2-声学阻抗--acoustic-impedance)
-   - [特性阻抗 / Characteristic Impedance](#21-特性阻抗--characteristic-impedance)
-   - [声学阻抗匹配 / Acoustic Impedance Matching](#22-声学阻抗匹配--acoustic-impedance-matching)
-   - [反射与透射 / Reflection and Transmission](#23-反射与透射--reflection-and-transmission)
-   - [边界条件 / Boundary Conditions](#24-边界条件--boundary-conditions)
-   - [阻抗测量 / Impedance Measurement](#25-阻抗测量--impedance-measurement)
-
-3. [声学共振 / Acoustic Resonance](#3-声学共振--acoustic-resonance)
-   - [共振频率 / Resonance Frequency](#31-共振频率--resonance-frequency)
-   - [品质因子 / Quality Factor](#32-品质因子--quality-factor)
-   - [共振模式 / Resonance Modes](#33-共振模式--resonance-modes)
-   - [共振腔 / Resonant Cavities](#34-共振腔--resonant-cavities)
-   - [共振应用 / Resonance Applications](#35-共振应用--resonance-applications)
+- [声学模型 / Acoustic Models](#声学模型--acoustic-models)
+  - [目录 / Table of Contents](#目录--table-of-contents)
+  - [1. 声波传播 / Acoustic Wave Propagation](#1-声波传播--acoustic-wave-propagation)
+    - [1.1 声学波动方程 / Acoustic Wave Equation](#11-声学波动方程--acoustic-wave-equation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition)
+      - [公理化定义 / Axiomatic Definitions](#公理化定义--axiomatic-definitions)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems)
+      - [算法实现 / Algorithm Implementation](#算法实现--algorithm-implementation)
+    - [1.2 平面声波 / Plane Acoustic Waves](#12-平面声波--plane-acoustic-waves)
+      - [1.2.1 形式化定义 / Formal Definition](#121-形式化定义--formal-definition)
+      - [1.2.2 公理化定义 / Axiomatic Definitions](#122-公理化定义--axiomatic-definitions)
+      - [1.2.3 形式化定理 / Formal Theorems](#123-形式化定理--formal-theorems)
+      - [1.2.4 算法实现 / Algorithm Implementation](#124-算法实现--algorithm-implementation)
+    - [1.3 球面声波 / Spherical Acoustic Waves](#13-球面声波--spherical-acoustic-waves)
+      - [1.3.1 形式化定义 / Formal Definition](#131-形式化定义--formal-definition)
+      - [1.3.2 公理化定义 / Axiomatic Definitions](#132-公理化定义--axiomatic-definitions)
+      - [1.3.3 形式化定理 / Formal Theorems](#133-形式化定理--formal-theorems)
+      - [1.3.4 算法实现 / Algorithm Implementation](#134-算法实现--algorithm-implementation)
+  - [2. 声学阻抗 / Acoustic Impedance](#2-声学阻抗--acoustic-impedance)
+    - [2.1 特性阻抗 / Characteristic Impedance](#21-特性阻抗--characteristic-impedance)
+      - [2.1.1 形式化定义 / Formal Definition](#211-形式化定义--formal-definition)
+      - [2.1.2 公理化定义 / Axiomatic Definitions](#212-公理化定义--axiomatic-definitions)
+      - [2.1.3 形式化定理 / Formal Theorems](#213-形式化定理--formal-theorems)
+      - [2.1.4 算法实现 / Algorithm Implementation](#214-算法实现--algorithm-implementation)
+  - [3. 声学共振 / Acoustic Resonance](#3-声学共振--acoustic-resonance)
+    - [3.1 共振频率 / Resonance Frequency](#31-共振频率--resonance-frequency)
+      - [3.1.1 形式化定义 / Formal Definition](#311-形式化定义--formal-definition)
+      - [3.1.2 公理化定义 / Axiomatic Definitions](#312-公理化定义--axiomatic-definitions)
+      - [3.1.3 形式化定理 / Formal Theorems](#313-形式化定理--formal-theorems)
+      - [3.1.3 算法实现 / Algorithm Implementation](#313-算法实现--algorithm-implementation)
+  - [版本历史 / Version History](#版本历史--version-history)
+  - [下一步计划 / Next Steps](#下一步计划--next-steps)
 
 ## 1. 声波传播 / Acoustic Wave Propagation
 
@@ -35,6 +47,7 @@
 
 **定义 1.1.1** (声学系统)
 声学系统是一个六元组 $\mathcal{AC} = \langle \mathcal{P}, \mathcal{V}, \mathcal{\rho}, \mathcal{c}, \mathcal{E}, \mathcal{I} \rangle$，其中：
+
 - $\mathcal{P}$ 是声压集合
 - $\mathcal{V}$ 是质点速度集合
 - $\mathcal{\rho}$ 是密度集合
@@ -148,17 +161,18 @@ def acoustic_wave_example():
 
 ### 1.2 平面声波 / Plane Acoustic Waves
 
-#### 形式化定义 / Formal Definition
+#### 1.2.1 形式化定义 / Formal Definition
 
 **定义 1.2.1** (平面声波系统)
 平面声波系统是一个五元组 $\mathcal{PAW} = \langle \mathcal{P}, \mathcal{V}, \mathcal{k}, \mathcal{\omega}, \mathcal{\phi} \rangle$，其中：
+
 - $\mathcal{P}$ 是声压集合
 - $\mathcal{V}$ 是质点速度集合
 - $\mathcal{k}$ 是波矢集合
 - $\mathcal{\omega}$ 是角频率集合
 - $\mathcal{\phi}$ 是相位集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 1.2.2 公理化定义 / Axiomatic Definitions
 
 **公理 1.2.1** (平面波解)
 平面声波解形式为：
@@ -172,7 +186,7 @@ $$\vec{v} = \frac{\vec{k}}{\rho \omega} p$$
 波矢与角频率满足色散关系：
 $$\omega = c|\vec{k}|$$
 
-#### 形式化定理 / Formal Theorems
+#### 1.2.3 形式化定理 / Formal Theorems
 
 **定理 1.2.1** (平面波传播)
 平面波沿波矢方向传播：
@@ -186,7 +200,7 @@ $$u = \frac{1}{2} \frac{p^2}{\rho c^2} + \frac{1}{2} \rho |\vec{v}|^2$$
 平面波声强：
 $$I = \frac{1}{2} \frac{p^2}{\rho c}$$
 
-#### 算法实现 / Algorithm Implementation
+#### 1.2.4 算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np
@@ -265,17 +279,18 @@ def plane_wave_example():
 
 ### 1.3 球面声波 / Spherical Acoustic Waves
 
-#### 形式化定义 / Formal Definition
+#### 1.3.1 形式化定义 / Formal Definition
 
 **定义 1.3.1** (球面声波系统)
 球面声波系统是一个五元组 $\mathcal{SAW} = \langle \mathcal{P}, \mathcal{V}, \mathcal{r}, \mathcal{\omega}, \mathcal{A} \rangle$，其中：
+
 - $\mathcal{P}$ 是声压集合
 - $\mathcal{V}$ 是质点速度集合
 - $\mathcal{r}$ 是径向距离集合
 - $\mathcal{\omega}$ 是角频率集合
 - $\mathcal{A}$ 是振幅集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 1.3.2 公理化定义 / Axiomatic Definitions
 
 **公理 1.3.1** (球面波解)
 球面声波解形式为：
@@ -289,7 +304,7 @@ $$A(r) = \frac{A_0}{r}$$
 球面波能量在球面上守恒：
 $$4\pi r^2 I(r) = \text{constant}$$
 
-#### 形式化定理 / Formal Theorems
+#### 1.3.3 形式化定理 / Formal Theorems
 
 **定理 1.3.1** (球面波传播)
 球面波沿径向传播：
@@ -303,7 +318,7 @@ $$I(r) = \frac{|A|^2}{2\rho c r^2}$$
 球面波总能量：
 $$E = \int_0^{\infty} 4\pi r^2 I(r) dr$$
 
-#### 算法实现 / Algorithm Implementation
+#### 1.3.4 算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np
@@ -379,16 +394,17 @@ def spherical_wave_example():
 
 ### 2.1 特性阻抗 / Characteristic Impedance
 
-#### 形式化定义 / Formal Definition
+#### 2.1.1 形式化定义 / Formal Definition
 
 **定义 2.1.1** (声学阻抗系统)
 声学阻抗系统是一个四元组 $\mathcal{AI} = \langle \mathcal{Z}, \mathcal{P}, \mathcal{V}, \mathcal{R} \rangle$，其中：
+
 - $\mathcal{Z}$ 是阻抗集合
 - $\mathcal{P}$ 是声压集合
 - $\mathcal{V}$ 是质点速度集合
 - $\mathcal{R}$ 是反射系数集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 2.1.2 公理化定义 / Axiomatic Definitions
 
 **公理 2.1.1** (特性阻抗定义)
 特性阻抗定义为声压与质点速度之比：
@@ -402,7 +418,7 @@ $$Z_1 = Z_2$$
 阻抗匹配时无反射：
 $$Z_1 = Z_2 \Rightarrow R = 0$$
 
-#### 形式化定理 / Formal Theorems
+#### 2.1.3 形式化定理 / Formal Theorems
 
 **定理 2.1.1** (特性阻抗关系)
 特性阻抗与介质性质关系：
@@ -416,7 +432,7 @@ $$R = \frac{Z_2 - Z_1}{Z_2 + Z_1}$$
 透射系数与阻抗关系：
 $$T = \frac{2Z_2}{Z_1 + Z_2}$$
 
-#### 算法实现 / Algorithm Implementation
+#### 2.1.4 算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np
@@ -491,17 +507,18 @@ def impedance_example():
 
 ### 3.1 共振频率 / Resonance Frequency
 
-#### 形式化定义 / Formal Definition
+#### 3.1.1 形式化定义 / Formal Definition
 
 **定义 3.1.1** (声学共振系统)
 声学共振系统是一个五元组 $\mathcal{AR} = \langle \mathcal{f}, \mathcal{Q}, \mathcal{M}, \mathcal{L}, \mathcal{D} \rangle$，其中：
+
 - $\mathcal{f}$ 是共振频率集合
 - $\mathcal{Q}$ 是品质因子集合
 - $\mathcal{M}$ 是共振模式集合
 - $\mathcal{L}$ 是共振长度集合
 - $\mathcal{D}$ 是阻尼集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 3.1.2 公理化定义 / Axiomatic Definitions
 
 **公理 3.1.1** (共振条件)
 共振时输入阻抗为零：
@@ -515,7 +532,7 @@ $$f_n = \frac{nc}{2L}$$
 品质因子定义：
 $$Q = \frac{f_0}{\Delta f}$$
 
-#### 形式化定理 / Formal Theorems
+#### 3.1.3 形式化定理 / Formal Theorems
 
 **定理 3.1.1** (共振频率公式)
 一维共振腔共振频率：
@@ -529,7 +546,7 @@ $$Q = \frac{\omega_0}{\gamma}$$
 共振带宽：
 $$\Delta f = \frac{f_0}{Q}$$
 
-#### 算法实现 / Algorithm Implementation
+#### 3.1.3 算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np

@@ -6,26 +6,60 @@
 
 ## 目录 / Table of Contents
 
-1. [几何光学 / Geometric Optics](#1-几何光学--geometric-optics)
-   - [光线传播 / Ray Propagation](#11-光线传播--ray-propagation)
-   - [反射定律 / Reflection Law](#12-反射定律--reflection-law)
-   - [折射定律 / Refraction Law](#13-折射定律--refraction-law)
-   - [成像理论 / Imaging Theory](#14-成像理论--imaging-theory)
-   - [光学系统 / Optical Systems](#15-光学系统--optical-systems)
-
-2. [波动光学 / Wave Optics](#2-波动光学--wave-optics)
-   - [光波传播 / Wave Propagation](#21-光波传播--wave-propagation)
-   - [干涉现象 / Interference](#22-干涉现象--interference)
-   - [衍射现象 / Diffraction](#23-衍射现象--diffraction)
-   - [偏振现象 / Polarization](#24-偏振现象--polarization)
-   - [相干性 / Coherence](#25-相干性--coherence)
-
-3. [量子光学 / Quantum Optics](#3-量子光学--quantum-optics)
-   - [光子 / Photons](#31-光子--photons)
-   - [光场量子化 / Field Quantization](#32-光场量子化--field-quantization)
-   - [光子统计 / Photon Statistics](#33-光子统计--photon-statistics)
-   - [量子干涉 / Quantum Interference](#34-量子干涉--quantum-interference)
-   - [量子纠缠 / Quantum Entanglement](#35-量子纠缠--quantum-entanglement)
+- [光学模型 / Optical Models](#光学模型--optical-models)
+  - [目录 / Table of Contents](#目录--table-of-contents)
+  - [1. 几何光学 / Geometric Optics](#1-几何光学--geometric-optics)
+    - [1.1 光线传播 / Ray Propagation](#11-光线传播--ray-propagation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition)
+      - [公理化定义 / Axiomatic Definitions](#公理化定义--axiomatic-definitions)
+      - [等价定义 / Equivalent Definitions](#等价定义--equivalent-definitions)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems)
+      - [算法实现 / Algorithm Implementation](#算法实现--algorithm-implementation)
+    - [1.2 反射定律 / Reflection Law](#12-反射定律--reflection-law)
+      - [1形式化定义 / Formal Definition](#1形式化定义--formal-definition)
+      - [1公理化定义 / Axiomatic Definitions](#1公理化定义--axiomatic-definitions)
+      - [1形式化定理 / Formal Theorems](#1形式化定理--formal-theorems)
+      - [1算法实现 / Algorithm Implementation](#1算法实现--algorithm-implementation)
+    - [1.3 折射定律 / Refraction Law](#13-折射定律--refraction-law)
+      - [1.3.1 形式化定义 / Formal Definition](#131-形式化定义--formal-definition)
+      - [1.3.2 公理化定义 / Axiomatic Definitions](#132-公理化定义--axiomatic-definitions)
+      - [1.3.3 形式化定理 / Formal Theorems](#133-形式化定理--formal-theorems)
+      - [1.3.4 算法实现 / Algorithm Implementation](#134-算法实现--algorithm-implementation)
+    - [1.4 成像理论 / Imaging Theory](#14-成像理论--imaging-theory)
+      - [1.4.1 形式化定义 / Formal Definition](#141-形式化定义--formal-definition)
+      - [1.4.2 形式化定理 / Formal Theorems](#142-形式化定理--formal-theorems)
+      - [1.4.3 算法实现 / Algorithm Implementation](#143-算法实现--algorithm-implementation)
+    - [1.5 光学系统（ABCD矩阵） / Optical Systems (ABCD Matrices)](#15-光学系统abcd矩阵--optical-systems-abcd-matrices)
+      - [1.5.1  形式化定义 / Formal Definition](#151--形式化定义--formal-definition)
+      - [1.5.2 形式化定理 / Formal Theorems](#152-形式化定理--formal-theorems)
+      - [1.5.3 算法实现 / Algorithm Implementation](#153-算法实现--algorithm-implementation)
+  - [2. 波动光学 / Wave Optics](#2-波动光学--wave-optics)
+    - [2.1 光波传播 / Wave Propagation](#21-光波传播--wave-propagation)
+      - [2形式化定义 / Formal Definition](#2形式化定义--formal-definition)
+      - [2公理化定义 / Axiomatic Definitions](#2公理化定义--axiomatic-definitions)
+      - [2形式化定理 / Formal Theorems](#2形式化定理--formal-theorems)
+      - [2算法实现 / Algorithm Implementation](#2算法实现--algorithm-implementation)
+    - [2.2 干涉现象 / Interference](#22-干涉现象--interference)
+      - [3形式化定义 / Formal Definition](#3形式化定义--formal-definition)
+      - [3公理化定义 / Axiomatic Definitions](#3公理化定义--axiomatic-definitions)
+      - [3形式化定理 / Formal Theorems](#3形式化定理--formal-theorems)
+      - [3算法实现 / Algorithm Implementation](#3算法实现--algorithm-implementation)
+    - [2.3 衍射与傅里叶光学 / Diffraction and Fourier Optics](#23-衍射与傅里叶光学--diffraction-and-fourier-optics)
+      - [2.3.1 形式化定义 / Formal Definition](#231-形式化定义--formal-definition)
+      - [2.3.2 形式化定理 / Formal Theorems](#232-形式化定理--formal-theorems)
+      - [2.3.3 算法实现 / Algorithm Implementation](#233-算法实现--algorithm-implementation)
+    - [2.4 非线性光学 / Nonlinear Optics](#24-非线性光学--nonlinear-optics)
+      - [2.4.1 形式化定义 / Formal Definition](#241-形式化定义--formal-definition)
+      - [2.4.2 形式化定理 / Formal Theorems](#242-形式化定理--formal-theorems)
+      - [2.4.3 算法实现 / Algorithm Implementation](#243-算法实现--algorithm-implementation)
+  - [3. 量子光学 / Quantum Optics](#3-量子光学--quantum-optics)
+    - [3.1 光子 / Photons](#31-光子--photons)
+      - [3.1.1 形式化定义 / Formal Definition](#311-形式化定义--formal-definition)
+      - [3.1.2 公理化定义 / Axiomatic Definitions](#312-公理化定义--axiomatic-definitions)
+      - [3.1.3 形式化定理 / Formal Theorems](#313-形式化定理--formal-theorems)
+      - [3.1.4 算法实现 / Algorithm Implementation](#314-算法实现--algorithm-implementation)
+  - [版本历史 / Version History](#版本历史--version-history)
+  - [下一步计划 / Next Steps](#下一步计划--next-steps)
 
 ## 1. 几何光学 / Geometric Optics
 
@@ -35,6 +69,7 @@
 
 **定义 1.1.1** (光线传播系统)
 几何光学系统是一个五元组 $\mathcal{GO} = \langle \mathcal{R}, \mathcal{M}, \mathcal{P}, \mathcal{L}, \mathcal{I} \rangle$，其中：
+
 - $\mathcal{R}$ 是光线集合
 - $\mathcal{M}$ 是介质集合
 - $\mathcal{P}$ 是传播路径集合
@@ -59,6 +94,7 @@ $$\forall r_1, r_2 \in \mathcal{R}: r_1 \neq r_2 \Rightarrow \text{independent}(
 
 **定义 1.1.2** (光线传播等价定义)
 光线传播可以通过以下等价方式定义：
+
 1. 费马原理：光线沿光程最小的路径传播
 2. 惠更斯原理：每个点都是新的波源
 3. 几何路径：直线段连接
@@ -189,16 +225,17 @@ def ray_propagation_example():
 
 ### 1.2 反射定律 / Reflection Law
 
-#### 形式化定义 / Formal Definition
+#### 1形式化定义 / Formal Definition
 
 **定义 1.2.1** (反射系统)
 反射系统是一个四元组 $\mathcal{RF} = \langle \mathcal{I}, \mathcal{N}, \mathcal{R}, \mathcal{L} \rangle$，其中：
+
 - $\mathcal{I}$ 是入射光线集合
 - $\mathcal{N}$ 是法向量集合
 - $\mathcal{R}$ 是反射光线集合
 - $\mathcal{L}$ 是反射定律集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 1公理化定义 / Axiomatic Definitions
 
 **公理 1.2.1** (入射角等于反射角)
 入射角等于反射角：
@@ -212,7 +249,7 @@ $$\text{coplanar}(\vec{i}, \vec{r}, \vec{n})$$
 反射光线与入射光线关于法向量对称：
 $$\vec{r} = \vec{i} - 2(\vec{i} \cdot \vec{n})\vec{n}$$
 
-#### 形式化定理 / Formal Theorems
+#### 1形式化定理 / Formal Theorems
 
 **定理 1.2.1** (反射定律)
 反射角等于入射角：
@@ -226,7 +263,7 @@ $$\vec{r} = \vec{i} - 2(\vec{i} \cdot \vec{n})\vec{n}$$
 理想反射时能量守恒：
 $$E_i = E_r$$
 
-#### 算法实现 / Algorithm Implementation
+#### 1算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np
@@ -282,17 +319,18 @@ def reflection_example():
 
 ### 1.3 折射定律 / Refraction Law
 
-#### 形式化定义 / Formal Definition
+#### 1.3.1 形式化定义 / Formal Definition
 
 **定义 1.3.1** (折射系统)
 折射系统是一个五元组 $\mathcal{RF} = \langle \mathcal{I}, \mathcal{N}, \mathcal{T}, \mathcal{M}, \mathcal{L} \rangle$，其中：
+
 - $\mathcal{I}$ 是入射光线集合
 - $\mathcal{N}$ 是法向量集合
 - $\mathcal{T}$ 是折射光线集合
 - $\mathcal{M}$ 是介质集合
 - $\mathcal{L}$ 是折射定律集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 1.3.2 公理化定义 / Axiomatic Definitions
 
 **公理 1.3.1** (斯涅尔定律)
 入射角正弦与折射角正弦之比等于折射率之比：
@@ -306,7 +344,7 @@ $$\text{coplanar}(\vec{i}, \vec{t}, \vec{n})$$
 折射率定义为光速比值：
 $$n = \frac{c}{v}$$
 
-#### 形式化定理 / Formal Theorems
+#### 1.3.3 形式化定理 / Formal Theorems
 
 **定理 1.3.1** (斯涅尔定律)
 折射角与入射角满足：
@@ -320,7 +358,7 @@ $$\theta_c = \arcsin\left(\frac{n_2}{n_1}\right)$$
 折射向量计算公式：
 $$\vec{t} = \frac{n_1}{n_2} \vec{i} + \left(\frac{n_1}{n_2} \cos \theta_1 - \cos \theta_2\right) \vec{n}$$
 
-#### 算法实现 / Algorithm Implementation
+#### 1.3.4 算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np
@@ -400,14 +438,84 @@ def refraction_example():
     }
 ```
 
+### 1.4 成像理论 / Imaging Theory
+
+#### 1.4.1 形式化定义 / Formal Definition
+
+- 薄透镜成像：$\frac{1}{f} = \frac{1}{s} + \frac{1}{s'}$，放大率 $m = -\frac{s'}{s}$。
+- 物像关系：物高$y$、像高$y'$满足 $y' = m y$。
+
+#### 1.4.2 形式化定理 / Formal Theorems
+
+- 共轭定理：给定$f$与$s$，存在唯一$s'$满足薄透镜方程。
+- 放大率定理：$m=-s'/s$ 与主光线几何一致。
+
+#### 1.4.3 算法实现 / Algorithm Implementation
+
+```python
+from typing import Optional
+
+def thin_lens_image_distance(f: float, s: float) -> Optional[float]:
+    if abs(s) < 1e-15 or abs(f) < 1e-15:
+        return None
+    denom = 1.0/f - 1.0/s
+    if abs(denom) < 1e-15:
+        return None
+    return 1.0/denom
+
+def magnification_from_distances(s: float, sp: float) -> float:
+    return - sp / s
+```
+
+### 1.5 光学系统（ABCD矩阵） / Optical Systems (ABCD Matrices)
+
+#### 1.5.1  形式化定义 / Formal Definition
+
+- 储勒-阿贝成像标架下的光线以方向余弦近轴近似表示，使用ABCD矩阵描述：
+  $\begin{pmatrix} y_2 \\ \theta_2 \end{pmatrix} = \begin{pmatrix} A & B \\ C & D \end{pmatrix} \begin{pmatrix} y_1 \\ \theta_1 \end{pmatrix}$。
+- 传播矩阵：$P(d)=\begin{pmatrix}1 & d\\0 & 1\end{pmatrix}$；薄透镜矩阵：$L(f)=\begin{pmatrix}1 & 0\\-1/f & 1\end{pmatrix}$。
+- 复合系统矩阵按序相乘：$M = M_n \cdots M_2 M_1$。
+
+#### 1.5.2 形式化定理 / Formal Theorems
+
+- 成像条件：当$B=0$时物面像面共轭，放大率$M = A$。
+- 焦点性质：当入瞳在共轭焦距处，$C=-1/f$决定会聚度。
+
+#### 1.5.3 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from typing import Tuple
+
+def abcd_propagation(d: float) -> np.ndarray:
+    return np.array([[1.0, d],[0.0, 1.0]], dtype=float)
+
+def abcd_thin_lens(f: float) -> np.ndarray:
+    return np.array([[1.0, 0.0],[-1.0/f, 1.0]], dtype=float)
+
+def abcd_chain(mats: Tuple[np.ndarray, ...]) -> np.ndarray:
+    M = np.eye(2)
+    for m in mats:
+        M = m @ M
+    return M
+
+def abcd_apply(M: np.ndarray, y: float, theta: float) -> Tuple[float, float]:
+    vec = M @ np.array([y, theta], dtype=float)
+    return float(vec[0]), float(vec[1])
+
+def imaging_condition(M: np.ndarray, tol: float = 1e-10) -> bool:
+    return abs(M[0,1]) < tol
+```
+
 ## 2. 波动光学 / Wave Optics
 
 ### 2.1 光波传播 / Wave Propagation
 
-#### 形式化定义 / Formal Definition
+#### 2形式化定义 / Formal Definition
 
 **定义 2.1.1** (光波系统)
 光波系统是一个六元组 $\mathcal{WO} = \langle \mathcal{E}, \mathcal{B}, \mathcal{k}, \mathcal{\omega}, \mathcal{\phi}, \mathcal{A} \rangle$，其中：
+
 - $\mathcal{E}$ 是电场集合
 - $\mathcal{B}$ 是磁场集合
 - $\mathcal{k}$ 是波矢集合
@@ -415,7 +523,7 @@ def refraction_example():
 - $\mathcal{\phi}$ 是相位集合
 - $\mathcal{A}$ 是振幅集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 2公理化定义 / Axiomatic Definitions
 
 **公理 2.1.1** (波动方程)
 光波满足波动方程：
@@ -429,7 +537,7 @@ $$\vec{E}(\vec{r}, t) = \vec{E}_0 e^{i(\vec{k} \cdot \vec{r} - \omega t)}$$
 波矢与角频率满足色散关系：
 $$\omega = c|\vec{k}|$$
 
-#### 形式化定理 / Formal Theorems
+#### 2形式化定理 / Formal Theorems
 
 **定理 2.1.1** (波动方程解)
 波动方程的通解为：
@@ -443,7 +551,7 @@ $$u = \frac{1}{2} \epsilon_0 |\vec{E}|^2 + \frac{1}{2\mu_0} |\vec{B}|^2$$
 能流密度为：
 $$\vec{S} = \frac{1}{\mu_0} \vec{E} \times \vec{B}$$
 
-#### 算法实现 / Algorithm Implementation
+#### 2算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np
@@ -523,17 +631,18 @@ def wave_example():
 
 ### 2.2 干涉现象 / Interference
 
-#### 形式化定义 / Formal Definition
+#### 3形式化定义 / Formal Definition
 
 **定义 2.2.1** (干涉系统)
 干涉系统是一个五元组 $\mathcal{IN} = \langle \mathcal{W}, \mathcal{P}, \mathcal{I}, \mathcal{C}, \mathcal{R} \rangle$，其中：
+
 - $\mathcal{W}$ 是波函数集合
 - $\mathcal{P}$ 是相位差集合
 - $\mathcal{I}$ 是干涉强度集合
 - $\mathcal{C}$ 是相干性集合
 - $\mathcal{R}$ 是干涉结果集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 3公理化定义 / Axiomatic Definitions
 
 **公理 2.2.1** (干涉叠加)
 干涉强度为各波强度之和加上干涉项：
@@ -547,7 +656,7 @@ $$\Delta\phi = \frac{2\pi}{\lambda} \Delta L$$
 干涉需要相干性：
 $$\text{coherent}(w_1, w_2) \Rightarrow \text{interference}(w_1, w_2)$$
 
-#### 形式化定理 / Formal Theorems
+#### 3形式化定理 / Formal Theorems
 
 **定理 2.2.1** (干涉强度)
 干涉强度公式：
@@ -561,7 +670,7 @@ $$\Delta\phi = 2\pi n, \quad n \in \mathbb{Z}$$
 干涉极小条件：
 $$\Delta\phi = \pi(2n+1), \quad n \in \mathbb{Z}$$
 
-#### 算法实现 / Algorithm Implementation
+#### 3算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np
@@ -622,21 +731,115 @@ def interference_example():
     }
 ```
 
+### 2.3 衍射与傅里叶光学 / Diffraction and Fourier Optics
+
+#### 2.3.1 形式化定义 / Formal Definition
+
+- 菲涅耳衍射（近场）传输算子：
+  $U(x,y;z) = \frac{e^{ikz}}{i\lambda z} \iint U(x',y';0) \exp\Big\{\frac{ik}{2z}[(x-x')^2+(y-y')^2]\Big\} dx'dy'$。
+- 夫琅禾费衍射（远场）与傅里叶变换关系：
+  $U(\xi,\eta;z) \propto \mathcal{F}\{U(x,y;0)\}\big|_{f_x=\xi/(\lambda z), f_y=\eta/(\lambda z)}$。
+
+#### 2.3.2 形式化定理 / Formal Theorems
+
+- 卷积定理：自由传播等价于与二次相位核卷积。
+- 光强守恒（适当归一化）：$\iint |U(x,y;z)|^2 dxdy = \text{const}$。
+
+#### 2.3.3 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from numpy.fft import fft2, ifft2, fftshift, ifftshift
+from typing import Tuple
+
+pi = np.pi
+
+def fresnel_propagate(u0: np.ndarray, wavelength: float, z: float,
+                      dx: float, dy: float) -> np.ndarray:
+    """基于频域的菲涅耳传播（角谱/二次相位近似）"""
+    ny, nx = u0.shape
+    k = 2*pi / wavelength
+    fx = np.fft.fftfreq(nx, d=dx)
+    fy = np.fft.fftfreq(ny, d=dy)
+    FX, FY = np.meshgrid(fx, fy)
+    H = np.exp(1j * k * z) * np.exp(-1j * pi * wavelength * z * (FX**2 + FY**2))
+    U0 = fft2(u0)
+    Uz = ifft2(U0 * fftshift(H))
+    return Uz
+
+def fraunhofer_pattern(u0: np.ndarray, wavelength: float, z: float,
+                       dx: float, dy: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """夫琅禾费衍射近似：返回频域坐标与光强"""
+    ny, nx = u0.shape
+    k = 2*pi / wavelength
+    U0 = fftshift(fft2(ifftshift(u0))) * dx * dy
+    fx = np.fft.fftfreq(nx, d=dx)
+    fy = np.fft.fftfreq(ny, d=dy)
+    FX, FY = np.meshgrid(fftshift(fx), fftshift(fy))
+    I = (1/(wavelength*z))**2 * np.abs(U0)**2
+    return FX, FY, I
+```
+
+### 2.4 非线性光学 / Nonlinear Optics
+
+#### 2.4.1 形式化定义 / Formal Definition
+
+- 介质折射率的光强依赖：$n(I) = n_0 + n_2 I$（Kerr效应）。
+- 标准(1+1)D非线性薛定谔方程（稳态包络近似）：
+  $\displaystyle i\,\partial_z A + \frac{1}{2k} \partial_{xx}A + \gamma |A|^2 A = 0$，
+  其中 $k = 2\pi n_0/\lambda,\ \gamma = k n_2 / n_0$。
+
+#### 2.4.2 形式化定理 / Formal Theorems
+
+- 相位自调制：均匀介质中幅值不变而相位随强度演化，产生谱展宽。
+- 孤子解条件：在色散与非线性平衡时存在传播保持形状的解。
+
+#### 2.4.3 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from numpy.fft import fft, ifft, fftfreq
+
+def split_step_nlse_1d(A0: np.ndarray, wavelength: float, n0: float, n2: float,
+                       dx: float, dz: float, steps: int) -> np.ndarray:
+    """分步傅里叶法求解1D NLSE（标量近似、周期边界）"""
+    k0 = 2*np.pi / wavelength
+    k = n0 * k0
+    gamma = k * n2 / n0
+    N = A0.size
+    fx = fftfreq(N, d=dx)
+    D = np.exp(-1j * (2*np.pi*fx)**2 * dz / (2*k))  # 线性算子（色散）
+    A = A0.astype(np.complex128).copy()
+    for _ in range(steps):
+        # 非线性半步
+        A *= np.exp(-1j * gamma * np.abs(A)**2 * dz/2)
+        # 线性一步（频域）
+        A = ifft(fft(A) * D)
+        # 非线性半步
+        A *= np.exp(-1j * gamma * np.abs(A)**2 * dz/2)
+    return A
+
+def kerr_phase_shift(I: np.ndarray, n2: float, k: float, z: float) -> np.ndarray:
+    """Kerr介质引入的非线性相移Δφ = k n2 I z"""
+    return k * n2 * I * z
+```
+
 ## 3. 量子光学 / Quantum Optics
 
 ### 3.1 光子 / Photons
 
-#### 形式化定义 / Formal Definition
+#### 3.1.1 形式化定义 / Formal Definition
 
 **定义 3.1.1** (光子系统)
 光子系统是一个五元组 $\mathcal{PH} = \langle \mathcal{E}, \mathcal{p}, \mathcal{s}, \mathcal{n}, \mathcal{\psi} \rangle$，其中：
+
 - $\mathcal{E}$ 是光子能量集合
 - $\mathcal{p}$ 是光子动量集合
 - $\mathcal{s}$ 是光子自旋集合
 - $\mathcal{n}$ 是光子数集合
 - $\mathcal{\psi}$ 是光子波函数集合
 
-#### 公理化定义 / Axiomatic Definitions
+#### 3.1.2 公理化定义 / Axiomatic Definitions
 
 **公理 3.1.1** (光子能量)
 光子能量与频率关系：
@@ -650,7 +853,7 @@ $$\forall \gamma \in \mathcal{PH}: \vec{p} = \hbar \vec{k}$$
 光子自旋为1：
 $$\forall \gamma \in \mathcal{PH}: s = 1$$
 
-#### 形式化定理 / Formal Theorems
+#### 3.1.3 形式化定理 / Formal Theorems
 
 **定理 3.1.1** (光子能量-动量关系)
 光子能量与动量关系：
@@ -664,7 +867,7 @@ $$\frac{dN}{dt} = 0$$
 光子服从玻色-爱因斯坦统计：
 $$n_i = \frac{1}{e^{h\nu_i/kT} - 1}$$
 
-#### 算法实现 / Algorithm Implementation
+#### 3.1.4 算法实现 / Algorithm Implementation
 
 ```python
 import numpy as np

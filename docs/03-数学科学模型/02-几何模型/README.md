@@ -16,6 +16,7 @@
     - [流形 / Manifolds](#流形--manifolds)
     - [切空间 / Tangent Spaces](#切空间--tangent-spaces)
     - [黎曼几何 / Riemannian Geometry](#黎曼几何--riemannian-geometry)
+    - [算法实现 / Algorithm Implementation](#算法实现--algorithm-implementation)
   - [3.2.4 代数几何 / Algebraic Geometry](#324-代数几何--algebraic-geometry)
     - [代数曲线 / Algebraic Curves](#代数曲线--algebraic-curves)
     - [代数曲面 / Algebraic Surfaces](#代数曲面--algebraic-surfaces)
@@ -143,6 +144,101 @@ $$\Gamma_{ij}^k = \frac{1}{2}g^{kl}(\partial_i g_{jl} + \partial_j g_{il} - \par
 
 **测地线方程**:
 $$\frac{d^2 x^k}{dt^2} + \Gamma_{ij}^k \frac{dx^i}{dt} \frac{dx^j}{dt} = 0$$
+
+#### 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from typing import Callable, Tuple
+
+Array = np.ndarray
+
+def inverse_metric(g: Array) -> Array:
+    """度量张量逆 g^{ij}（二维或三维对称正定）"""
+    return np.linalg.inv(g)
+
+def christoffel_symbols(g: Callable[[Array], Array],
+                        dg: Callable[[Array], Tuple[Array, Array, Array]],
+                        x: Array) -> Array:
+    """
+    计算Γ^k_{ij}：
+    - g(x): 返回点x处的度量张量 g_{ij}
+    - dg(x): 返回对坐标的偏导 (∂_0 g_{ij}, ∂_1 g_{ij}, ∂_2 g_{ij})（按需维度）
+    - x: 坐标点
+    返回形状 (n, n, n)，索引顺序为 Gamma[k,i,j]
+    """
+    g_ij = g(x)
+    g_inv = inverse_metric(g_ij)
+    partials = dg(x)  # 列表或元组，len = n，每个都是 (n,n)
+    n = g_ij.shape[0]
+    Gamma = np.zeros((n, n, n), dtype=float)
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                s = 0.0
+                for l in range(n):
+                    s += g_inv[k, l] * (partials[i][j, l] + partials[j][i, l] - partials[l][i, j])
+                Gamma[k, i, j] = 0.5 * s
+    return Gamma
+
+def geodesic_rhs(x: Array, v: Array, Gamma: Array) -> Tuple[Array, Array]:
+    """测地线一阶系统：x' = v, v'^k = -Γ^k_{ij} v^i v^j"""
+    n = x.size
+    a = np.zeros_like(v)
+    for k in range(n):
+        s = 0.0
+        for i in range(n):
+            for j in range(n):
+                s += Gamma[k, i, j] * v[i] * v[j]
+        a[k] = -s
+    return v, a
+
+def rk4_step(x: Array, v: Array, h: float,
+             Gamma_fn: Callable[[Array], Array]) -> Tuple[Array, Array]:
+    """对测地线方程进行单步RK4推进（仿射参数步长h）。"""
+    Gamma = Gamma_fn(x)
+    k1_x, k1_v = geodesic_rhs(x, v, Gamma)
+
+    Gamma2 = Gamma_fn(x + 0.5*h*k1_x)
+    k2_x, k2_v = geodesic_rhs(x + 0.5*h*k1_x, v + 0.5*h*k1_v, Gamma2)
+
+    Gamma3 = Gamma_fn(x + 0.5*h*k2_x)
+    k3_x, k3_v = geodesic_rhs(x + 0.5*h*k2_x, v + 0.5*h*k2_v, Gamma3)
+
+    Gamma4 = Gamma_fn(x + h*k3_x)
+    k4_x, k4_v = geodesic_rhs(x + h*k3_x, v + h*k3_v, Gamma4)
+
+    x_new = x + (h/6.0)*(k1_x + 2*k2_x + 2*k3_x + k4_x)
+    v_new = v + (h/6.0)*(k1_v + 2*k2_v + 2*k3_v + k4_v)
+    return x_new, v_new
+
+# 示例：二维极坐标平面度量 g = diag(1, r^2)
+
+def g_polar(x: Array) -> Array:
+    r, theta = x
+    return np.array([[1.0, 0.0], [0.0, r*r]], dtype=float)
+
+def dg_polar(x: Array) -> Tuple[Array, Array]:
+    r, theta = x
+    # ∂_r g, ∂_θ g
+    dg_dr = np.array([[0.0, 0.0], [0.0, 2.0*r]], dtype=float)
+    dg_dth = np.zeros((2,2), dtype=float)
+    return (dg_dr, dg_dth)
+
+def Gamma_polar(x: Array) -> Array:
+    return christoffel_symbols(g_polar, dg_polar, x)
+
+def geodesic_example():
+    x = np.array([1.0, 0.0])      # r=1, θ=0
+    v = np.array([0.0, 1.0])      # 初始方向（仅角向）
+    h = 0.01
+    steps = 100
+    path = [x.copy()]
+    for _ in range(steps):
+        x, v = rk4_step(x, v, h, Gamma_polar)
+        path.append(x.copy())
+    return np.array(path)
+```
 
 ---
 
@@ -288,5 +384,5 @@ $$
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-25*
+*版本: 1.1.0*

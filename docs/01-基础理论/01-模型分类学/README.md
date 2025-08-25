@@ -20,6 +20,10 @@
       - [量子力学模型 / Quantum Mechanics Models](#量子力学模型--quantum-mechanics-models)
       - [相对论模型 / Relativity Models](#相对论模型--relativity-models)
       - [热力学模型 / Thermodynamics Models](#热力学模型--thermodynamics-models)
+      - [电磁学模型 / Electromagnetism Models](#电磁学模型--electromagnetism-models)
+      - [光学模型 / Optical Models](#光学模型--optical-models)
+      - [声学模型 / Acoustic Models](#声学模型--acoustic-models)
+      - [流体力学模型 / Fluid Mechanics Models](#流体力学模型--fluid-mechanics-models)
     - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
       - [代数模型 / Algebraic Models](#代数模型--algebraic-models)
       - [几何模型 / Geometric Models](#几何模型--geometric-models)
@@ -179,6 +183,30 @@
 - **广义相对论**: $R_{\mu\nu} - \frac{1}{2}Rg_{\mu\nu} = 8\pi GT_{\mu\nu}$
 
 #### 热力学模型 / Thermodynamics Models
+
+#### 电磁学模型 / Electromagnetism Models
+
+- **麦克斯韦方程组**: $\nabla \cdot \vec{E} = \rho/\epsilon_0$, $\nabla \cdot \vec{B} = 0$, $\nabla \times \vec{E} = -\partial_t \vec{B}$, $\nabla \times \vec{B} = \mu_0 \vec{J} + \mu_0\epsilon_0\partial_t \vec{E}$
+- **电磁波**: $\nabla^2 \vec{E} - \frac{1}{c^2}\partial_t^2 \vec{E} = 0$
+- **介质响应**: $\vec{D} = \epsilon \vec{E}$, $\vec{H} = \vec{B}/\mu$
+
+#### 光学模型 / Optical Models
+
+- **几何光学**: 费马原理 $\delta \int n\,ds = 0$, 反射/折射定律
+- **波动光学**: 平面波 $\vec{E}=\vec{E}_0 e^{i(\vec{k}\cdot\vec{r}-\omega t)}$, 干涉、衍射、偏振
+- **量子光学**: 光子 $E=h\nu$, $\vec{p}=\hbar\vec{k}$
+
+#### 声学模型 / Acoustic Models
+
+- **声学波动方程**: $\nabla^2 p - \frac{1}{c^2}\partial_t^2 p = 0$
+- **声强与能量**: $I=\langle p\,v \rangle$, $u=\tfrac{p^2}{2\rho c^2}+\tfrac{1}{2}\rho v^2$
+- **阻抗与匹配**: $Z=\rho c$, $R=\frac{Z_2-Z_1}{Z_2+Z_1}$
+
+#### 流体力学模型 / Fluid Mechanics Models
+
+- **连续性方程**: $\partial_t \rho + \nabla\cdot(\rho\vec{u})=0$
+- **纳维-斯托克斯**: $\rho(\partial_t\vec{u}+(\vec{u}\cdot\nabla)\vec{u})=-\nabla p + \mu\nabla^2\vec{u}+\rho\vec{f}$
+- **边界层与雷诺数**: $Re=\rho UL/\mu$, $\delta(x)\sim5\sqrt{\nu x/U_\infty}$
 
 - **热力学定律**: $\Delta U = Q - W$, $\Delta S \geq 0$
 - **统计力学**: 玻尔兹曼分布、费米-狄拉克统计
@@ -367,6 +395,10 @@ graph TD
     B --> F[量子力学模型]
     B --> G[相对论模型]
     B --> H[热力学模型]
+    B --> EM[电磁学模型]
+    B --> OP[光学模型]
+    B --> AC[声学模型]
+    B --> FM[流体力学模型]
     
     C --> I[算法模型]
     C --> J[数据结构模型]

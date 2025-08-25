@@ -34,6 +34,7 @@
   - [3.1.8 实现与应用 / Implementation and Applications](#318-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Python实现示例 / Python Implementation Example](#python实现示例--python-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [密码学 / Cryptography](#密码学--cryptography)
       - [编码理论 / Coding Theory](#编码理论--coding-theory)
@@ -582,6 +583,128 @@ example = do
         Nothing -> putStrLn "Operation not defined"
 ```
 
+### Python实现示例 / Python Implementation Example
+
+```python
+from typing import Dict, Tuple, Optional, List
+
+class FiniteGroup:
+    def __init__(self, elements: List[str], identity: str,
+                 op: Dict[Tuple[str, str], str], inv: Dict[str, str]):
+        self.elements = elements
+        self.identity = identity
+        self.op = op
+        self.inv = inv
+
+    def multiply(self, a: str, b: str) -> Optional[str]:
+        return self.op.get((a, b))
+
+    def inverse(self, a: str) -> Optional[str]:
+        return self.inv.get(a)
+
+    def is_group(self) -> bool:
+        # 闭包与运算定义完整性
+        for a in self.elements:
+            for b in self.elements:
+                if (a, b) not in self.op:
+                    return False
+                if self.op[(a, b)] not in self.elements:
+                    return False
+        # 结合律
+        for a in self.elements:
+            for b in self.elements:
+                for c in self.elements:
+                    ab = self.multiply(a, b)
+                    bc = self.multiply(b, c)
+                    if ab is None or bc is None:
+                        return False
+                    ab_c = self.multiply(ab, c)
+                    a_bc = self.multiply(a, bc)
+                    if ab_c != a_bc:
+                        return False
+        # 单位元
+        e = self.identity
+        if e not in self.elements:
+            return False
+        for a in self.elements:
+            if self.multiply(e, a) != a or self.multiply(a, e) != a:
+                return False
+        # 逆元
+        for a in self.elements:
+            inv_a = self.inverse(a)
+            if inv_a is None:
+                return False
+            if self.multiply(a, inv_a) != e or self.multiply(inv_a, a) != e:
+                return False
+        return True
+
+def egcd(a: int, b: int) -> Tuple[int, int, int]:
+    """扩展欧几里得算法: 返回(g, x, y) 使得 ax + by = g = gcd(a, b)"""
+    if b == 0:
+        return (a, 1, 0)
+    g, x1, y1 = egcd(b, a % b)
+    return (g, y1, x1 - (a // b) * y1)
+
+def modinv(a: int, p: int) -> Optional[int]:
+    """模逆 a^{-1} mod p（p为素数或当gcd(a,p)=1时存在）"""
+    g, x, _ = egcd(a % p, p)
+    if g != 1:
+        return None
+    return x % p
+
+class FiniteField:
+    def __init__(self, p: int):
+        if p <= 1:
+            raise ValueError("p must be prime (not checked here)")
+        self.p = p
+
+    def add(self, a: int, b: int) -> int:
+        return (a + b) % self.p
+
+    def neg(self, a: int) -> int:
+        return (-a) % self.p
+
+    def sub(self, a: int, b: int) -> int:
+        return (a - b) % self.p
+
+    def mul(self, a: int, b: int) -> int:
+        return (a * b) % self.p
+
+    def inv(self, a: int) -> Optional[int]:
+        return modinv(a, self.p)
+
+    def div(self, a: int, b: int) -> Optional[int]:
+        inv_b = self.inv(b)
+        if inv_b is None:
+            return None
+        return self.mul(a, inv_b)
+
+# 示例：Z_3循环群与有限域GF(7)
+def demo_algebra():
+    # Z_3群
+    elems = ["0", "1", "2"]
+    op = {}
+    inv = {"0": "0", "1": "2", "2": "1"}
+    for a in elems:
+        for b in elems:
+            op[(a, b)] = str((int(a) + int(b)) % 3)
+    G = FiniteGroup(elems, "0", op, inv)
+
+    # 检查群公理
+    ok_group = G.is_group()
+
+    # GF(7)
+    F7 = FiniteField(7)
+    inv3 = F7.inv(3)
+    seven_demo = {
+        "sum_3_5": F7.add(3, 5),
+        "prod_3_5": F7.mul(3, 5),
+        "inv_3": inv3,
+        "div_4_by_3": F7.div(4, 3)
+    }
+    return {"is_Z3_group": ok_group, "GF7_demo": seven_demo}
+```
+
 ### 应用领域 / Application Domains
 
 #### 密码学 / Cryptography
@@ -613,5 +736,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-25*
+*版本: 1.1.0*

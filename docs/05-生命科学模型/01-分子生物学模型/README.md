@@ -743,6 +743,104 @@ example = do
 
 ---
 
+## 5.1.9 算法实现 / Algorithm Implementation
+
+### 基因表达与Hill调控 / Gene Expression with Hill Regulation
+
+```python
+import numpy as np
+from typing import Tuple, Callable, List
+
+def hill_activation(x: float, K: float, n: int) -> float:
+    """Hill激活函数 f(x) = x^n / (K^n + x^n)"""
+    xn = max(x, 0.0) ** n
+    Kn = K ** n
+    return xn / (Kn + xn + 1e-15)
+
+def hill_repression(x: float, K: float, n: int) -> float:
+    """Hill抑制函数 f(x) = K^n / (K^n + x^n)"""
+    xn = max(x, 0.0) ** n
+    Kn = K ** n
+    return Kn / (Kn + xn + 1e-15)
+
+def gene_expression_ode(m: float, p: float, params: dict) -> Tuple[float, float]:
+    """一基因表达ODE: dm/dt = α·reg - δ_m m, dp/dt = β m - δ_p p"""
+    alpha = params['alpha']
+    beta = params['beta']
+    delta_m = params['delta_m']
+    delta_p = params['delta_p']
+    regulator = params['reg'](p) if callable(params['reg']) else 1.0
+    dm = alpha * regulator - delta_m * m
+    dp = beta * m - delta_p * p
+    return dm, dp
+
+def rk4_step(state: Tuple[float, float], h: float, deriv: Callable, params: dict) -> Tuple[float, float]:
+    m, p = state
+    k1m, k1p = deriv(m, p, params)
+    k2m, k2p = deriv(m + 0.5*h*k1m, p + 0.5*h*k1p, params)
+    k3m, k3p = deriv(m + 0.5*h*k2m, p + 0.5*h*k2p, params)
+    k4m, k4p = deriv(m + h*k3m, p + h*k3p, params)
+    m_new = m + h*(k1m + 2*k2m + 2*k3m + k4m)/6.0
+    p_new = p + h*(k1p + 2*k2p + 2*k3p + k4p)/6.0
+    return m_new, p_new
+
+def simulate_gene_switch(T: float = 200.0, dt: float = 0.1) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """自激/自抑基因开关：通过Hill调控得到双稳态或单稳态"""
+    time = np.arange(0.0, T+dt, dt)
+    m, p = 0.1, 0.1
+    traj_m, traj_p = [], []
+    # 选择自激活开关：reg(p) = Hill_activation(p)
+    params = {
+        'alpha': 2.0, 'beta': 5.0, 'delta_m': 0.5, 'delta_p': 0.2,
+        'reg': lambda x: hill_activation(x, K=1.0, n=3)
+    }
+    for _ in time:
+        m, p = rk4_step((m, p), dt, gene_expression_ode, params)
+        traj_m.append(m)
+        traj_p.append(p)
+    return time, np.array(traj_m), np.array(traj_p)
+
+def repressilator(T: float = 300.0, dt: float = 0.05) -> Tuple[np.ndarray, np.ndarray]:
+    """三基因抑制振荡器（Elowitz & Leibler Repressilator）简化ODE"""
+    time = np.arange(0.0, T+dt, dt)
+    m = np.array([0.1, 0.1, 0.1], dtype=float)
+    p = np.array([0.1, 0.1, 0.1], dtype=float)
+    traj = []
+    alpha_m = 1.0; alpha_p = 5.0; delta_m = 0.5; delta_p = 0.2; K = 1.0; n = 2
+
+    def deriv(mv, pv):
+        dm = np.zeros(3); dp = np.zeros(3)
+        # 抑制环: 0<-2, 1<-0, 2<-1
+        regs = [hill_repression(pv[2], K, n), hill_repression(pv[0], K, n), hill_repression(pv[1], K, n)]
+        for i in range(3):
+            dm[i] = alpha_m*regs[i] - delta_m*mv[i]
+            dp[i] = alpha_p*mv[i] - delta_p*pv[i]
+        return dm, dp
+
+    for _ in time:
+        dm1, dp1 = deriv(m, p)
+        dm2, dp2 = deriv(m + 0.5*dt*dm1, p + 0.5*dt*dp1)
+        dm3, dp3 = deriv(m + 0.5*dt*dm2, p + 0.5*dt*dp2)
+        dm4, dp4 = deriv(m + dt*dm3, p + dt*dp3)
+        m = m + dt*(dm1 + 2*dm2 + 2*dm3 + dm4)/6.0
+        p = p + dt*(dp1 + 2*dp2 + 2*dp3 + dp4)/6.0
+        traj.append(p.copy())
+    return time, np.array(traj)
+
+def molecular_biology_verification():
+    """分子生物学模型综合验证"""
+    # 基因开关
+    t, m, p = simulate_gene_switch(T=120.0, dt=0.1)
+    assert np.isfinite(p).all() and p.max() > 0.2
+    # 抑制振荡器
+    t2, P = repressilator(T=150.0, dt=0.05)
+    assert np.isfinite(P).all() and (P.ptp(axis=0) > 0.05).all()
+    print("Gene switch and repressilator simulations succeeded.")
+
+if __name__ == "__main__":
+    molecular_biology_verification()
+```
+
 ## 参考文献 / References
 
 1. Alberts, B., et al. (2014). Molecular Biology of the Cell. Garland Science.
@@ -752,5 +850,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

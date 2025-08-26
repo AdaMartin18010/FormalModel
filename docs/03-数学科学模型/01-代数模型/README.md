@@ -17,10 +17,13 @@
     - [域的定义 / Field Definition](#域的定义--field-definition)
     - [域扩张 / Field Extensions](#域扩张--field-extensions)
     - [伽罗瓦理论 / Galois Theory](#伽罗瓦理论--galois-theory)
+    - [算法实现：`GF(p)[x]`多项式与不可约性 / Algorithms: Polynomials over GF(p)](#算法实现gfpx多项式与不可约性--algorithms-polynomials-over-gfp)
+    - [算法实现：多项式扩展欧几里得与GF(p^m) / Algorithms: Poly xgcd and GF(p^m)](#算法实现多项式扩展欧几里得与gfpm--algorithms-poly-xgcd-and-gfpm)
   - [3.1.4 线性代数模型 / Linear Algebra Models](#314-线性代数模型--linear-algebra-models)
     - [向量空间 / Vector Spaces](#向量空间--vector-spaces)
     - [线性变换 / Linear Transformations](#线性变换--linear-transformations)
     - [特征值与特征向量 / Eigenvalues and Eigenvectors](#特征值与特征向量--eigenvalues-and-eigenvectors)
+    - [算法实现：秩与零空间 / Algorithms: Rank and Null Space](#算法实现秩与零空间--algorithms-rank-and-null-space)
   - [3.1.5 同调代数模型 / Homological Algebra Models](#315-同调代数模型--homological-algebra-models)
     - [链复形 / Chain Complexes](#链复形--chain-complexes)
     - [上链复形 / Cochain Complexes](#上链复形--cochain-complexes)
@@ -148,6 +151,197 @@
 
 ---
 
+### 算法实现：`GF(p)[x]`多项式与不可约性 / Algorithms: Polynomials over GF(p)
+
+```python
+from typing import List, Optional
+
+def poly_trim(a: List[int], p: int) -> List[int]:
+    while len(a) > 1 and a[-1] % p == 0:
+        a.pop()
+    return [x % p for x in a]
+
+def poly_add(a: List[int], b: List[int], p: int) -> List[int]:
+    n = max(len(a), len(b))
+    c = [(0) for _ in range(n)]
+    for i in range(n):
+        ai = a[i] if i < len(a) else 0
+        bi = b[i] if i < len(b) else 0
+        c[i] = (ai + bi) % p
+    return poly_trim(c, p)
+
+def poly_sub(a: List[int], b: List[int], p: int) -> List[int]:
+    n = max(len(a), len(b))
+    c = [(0) for _ in range(n)]
+    for i in range(n):
+        ai = a[i] if i < len(a) else 0
+        bi = b[i] if i < len(b) else 0
+        c[i] = (ai - bi) % p
+    return poly_trim(c, p)
+
+def poly_mul(a: List[int], b: List[int], p: int) -> List[int]:
+    c = [0]*(len(a)+len(b)-1)
+    for i, ai in enumerate(a):
+        for j, bj in enumerate(b):
+            c[i+j] = (c[i+j] + ai*bj) % p
+    return poly_trim(c, p)
+
+def modinv_int(a: int, p: int) -> Optional[int]:
+    # 扩展欧几里得
+    def eg(a: int, b: int):
+        if b == 0:
+            return a, 1, 0
+        g, x1, y1 = eg(b, a % b)
+        return g, y1, x1 - (a//b)*y1
+    g, x, _ = eg(a % p, p)
+    if g != 1:
+        return None
+    return x % p
+
+def poly_divmod(a: List[int], b: List[int], p: int):
+    a = a[:]
+    b = poly_trim(b[:], p)
+    if len(b) == 1 and b[0] == 0:
+        raise ZeroDivisionError
+    inv_lead = modinv_int(b[-1], p)
+    q = [0]*(max(1, len(a)-len(b)+1))
+    r = a
+    while len(r) >= len(b) and not (len(r) == 1 and r[0] == 0):
+        k = len(r) - len(b)
+        coef = (r[-1] * inv_lead) % p
+        q[k] = coef
+        sub = [0]*k + [(coef * bj) % p for bj in b]
+        r = poly_sub(r, sub, p)
+    return poly_trim(q, p), poly_trim(r, p)
+
+def poly_gcd(a: List[int], b: List[int], p: int) -> List[int]:
+    a = poly_trim(a[:], p)
+    b = poly_trim(b[:], p)
+    while not (len(b) == 1 and b[0] == 0):
+        _, r = poly_divmod(a, b, p)
+        a, b = b, r
+    # 归一化首项为1
+    if not (len(a) == 1 and a[0] == 0):
+        inv = modinv_int(a[-1], p)
+        a = [(ai*inv) % p for ai in a]
+    return poly_trim(a, p)
+
+def poly_pow_mod(x: List[int], e: int, mod_poly: List[int], p: int) -> List[int]:
+    res = [1]
+    base = x[:]
+    e0 = e
+    while e0 > 0:
+        if e0 & 1:
+            res = poly_mul(res, base, p)
+            _, res = poly_divmod(res, mod_poly, p)
+        base = poly_mul(base, base, p)
+        _, base = poly_divmod(base, mod_poly, p)
+        e0 >>= 1
+    return res
+
+def is_irreducible(f: List[int], p: int) -> bool:
+    """Rabin测试：GF(p)上不可约性（p为素数），f为首一多项式系数列表（低位在前）。"""
+    f = poly_trim(f[:], p)
+    n = len(f) - 1
+    if n <= 0:
+        return False
+    # x^(p^k) mod f - x 的gcd检查
+    x = [0, 1]
+    power = x[:]
+    for _ in range(1, n//2 + 1):
+        # 计算 power = x^{p} (Frobenius) 可用重复平方实现：x -> x^p mod f
+        # 这里简化：逐次做p次平方与乘法（对小p可行）
+        for _ in range(p-1):
+            power = poly_mul(power, x, p)
+            _, power = poly_divmod(power, f, p)
+        g = poly_gcd(poly_sub(power, x, p), f, p)
+        if len(g) > 1:
+            return False
+    return True
+```
+
+### 算法实现：多项式扩展欧几里得与GF(p^m) / Algorithms: Poly xgcd and GF(p^m)
+
+```python
+from typing import Tuple, List
+
+def poly_scalar_mul(a: List[int], c: int, p: int) -> List[int]:
+    return [(ai * c) % p for ai in a]
+
+def poly_xgcd(a: List[int], b: List[int], p: int) -> Tuple[List[int], List[int], List[int]]:
+    """返回(g, s, t) 使得 g = gcd(a,b), s*a + t*b = g（首一或零）"""
+    a = poly_trim(a[:], p)
+    b = poly_trim(b[:], p)
+    if len(b) == 1 and b[0] == 0:
+        if not (len(a) == 1 and a[0] == 0):
+            inv = modinv_int(a[-1], p)
+            a = poly_scalar_mul(a, inv, p)
+        return a, [1], [0]
+    s0, s1 = [1], [0]
+    t0, t1 = [0], [1]
+    r0, r1 = a, b
+    while not (len(r1) == 1 and r1[0] == 0):
+        q, r2 = poly_divmod(r0, r1, p)
+        r0, r1 = r1, r2
+        s0, s1 = s1, poly_sub(s0, poly_mul(q, s1, p), p)
+        t0, t1 = t1, poly_sub(t0, poly_mul(q, t1, p), p)
+    if not (len(r0) == 1 and r0[0] == 0):
+        inv = modinv_int(r0[-1], p)
+        r0 = poly_scalar_mul(r0, inv, p)
+        s0 = poly_scalar_mul(s0, inv, p)
+        t0 = poly_scalar_mul(t0, inv, p)
+    return poly_trim(r0, p), poly_trim(s0, p), poly_trim(t0, p)
+
+class GFpm:
+    """GF(p^m) 有限域，表示为GF(p)[x]/(modulus)。元素为低位在前的系数列表。"""
+    def __init__(self, p: int, modulus: List[int]):
+        if p <= 1:
+            raise ValueError("p must be prime (not checked)")
+        f = poly_trim(modulus[:], p)
+        if len(f) <= 1:
+            raise ValueError("modulus degree must be >= 1")
+        inv_lead = modinv_int(f[-1], p)
+        self.modulus = poly_scalar_mul(f, inv_lead, p)
+        self.p = p
+        self.m = len(self.modulus) - 1
+
+    def add(self, a: List[int], b: List[int]) -> List[int]:
+        return poly_trim(poly_add(a, b, self.p), self.p)
+
+    def neg(self, a: List[int]) -> List[int]:
+        return [(self.p - (ai % self.p)) % self.p for ai in a]
+
+    def sub(self, a: List[int], b: List[int]) -> List[int]:
+        return poly_trim(poly_sub(a, b, self.p), self.p)
+
+    def mul(self, a: List[int], b: List[int]) -> List[int]:
+        prod = poly_mul(a, b, self.p)
+        _, r = poly_divmod(prod, self.modulus, self.p)
+        return r
+
+    def inv(self, a: List[int]) -> List[int]:
+        g, s, _ = poly_xgcd(poly_trim(a, self.p), self.modulus, self.p)
+        if not (len(g) == 1 and g[0] == 1):
+            raise ZeroDivisionError("non-invertible element")
+        _, r = poly_divmod(s, self.modulus, self.p)
+        return r
+
+    def pow(self, a: List[int], e: int) -> List[int]:
+        res = [1]
+        base = poly_trim(a, self.p)
+        ee = e
+        while ee > 0:
+            if ee & 1:
+                res = self.mul(res, base)
+            base = self.mul(base, base)
+            ee >>= 1
+        return res
+
+    def element(self, coeffs: List[int]) -> List[int]:
+        _, r = poly_divmod(poly_trim(coeffs, self.p), self.modulus, self.p)
+        return r
+```
+
 ## 3.1.4 线性代数模型 / Linear Algebra Models
 
 ### 向量空间 / Vector Spaces
@@ -177,6 +371,30 @@
 **对角化**: $A = PDP^{-1}$ 其中 $D$ 是对角矩阵
 
 ---
+
+### 算法实现：秩与零空间 / Algorithms: Rank and Null Space
+
+```python
+import numpy as np
+from typing import Tuple
+
+def matrix_rank(A: np.ndarray, tol: float = 1e-12) -> int:
+    """使用奇异值分解估计矩阵秩"""
+    s = np.linalg.svd(A, compute_uv=False)
+    return int(np.sum(s > tol))
+
+def null_space(A: np.ndarray, tol: float = 1e-12) -> np.ndarray:
+    """计算零空间的一个正交基（列向量构成）"""
+    U, s, Vt = np.linalg.svd(A)
+    rank = np.sum(s > tol)
+    return Vt[rank:].T
+
+def rank_nullity_check(A: np.ndarray) -> Tuple[int, int]:
+    r = matrix_rank(A)
+    n = A.shape[1]
+    ns_dim = n - r
+    return r, ns_dim
+```
 
 ## 3.1.5 同调代数模型 / Homological Algebra Models
 
@@ -736,5 +954,5 @@ def demo_algebra():
 
 ---
 
-*最后更新: 2025-08-25*
-*版本: 1.1.0*
+*最后更新: 2025-08-26*
+*版本: 1.3.0*

@@ -541,6 +541,530 @@ def simulated_annealing(initial_solution, temperature, cooling_rate):
 
 ---
 
+## 4.2.8 算法实现 / Algorithm Implementation
+
+### 复杂度分析算法 / Complexity Analysis Algorithms
+
+```python
+import time
+import random
+import numpy as np
+from typing import List, Dict, Tuple, Callable
+import matplotlib.pyplot as plt
+
+def time_complexity_measurement(algorithm: Callable, input_sizes: List[int], 
+                              num_trials: int = 5) -> Dict[int, float]:
+    """测量算法的时间复杂度"""
+    results = {}
+    
+    for size in input_sizes:
+        times = []
+        for _ in range(num_trials):
+            # 生成测试数据
+            if 'sort' in algorithm.__name__:
+                data = list(range(size))
+                random.shuffle(data)
+            elif 'search' in algorithm.__name__:
+                data = list(range(size))
+                target = random.choice(data)
+            else:
+                data = list(range(size))
+            
+            # 测量时间
+            start_time = time.time()
+            algorithm(data)
+            end_time = time.time()
+            times.append(end_time - start_time)
+        
+        results[size] = np.mean(times)
+    
+    return results
+
+def space_complexity_analysis(algorithm: Callable, input_sizes: List[int]) -> Dict[int, int]:
+    """分析算法的空间复杂度"""
+    import sys
+    results = {}
+    
+    for size in input_sizes:
+        # 生成测试数据
+        data = list(range(size))
+        
+        # 测量内存使用
+        initial_memory = sys.getsizeof(data)
+        result = algorithm(data)
+        final_memory = sys.getsizeof(result) if result else 0
+        
+        results[size] = final_memory - initial_memory
+    
+    return results
+
+def plot_complexity_analysis(time_results: Dict[int, float], 
+                           space_results: Dict[int, int], 
+                           algorithm_name: str):
+    """绘制复杂度分析图表"""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+    
+    # 时间复杂度图
+    sizes = list(time_results.keys())
+    times = list(time_results.values())
+    ax1.plot(sizes, times, 'b-o', label='实际时间')
+    ax1.set_xlabel('输入大小')
+    ax1.set_ylabel('时间 (秒)')
+    ax1.set_title(f'{algorithm_name} - 时间复杂度')
+    ax1.legend()
+    ax1.grid(True)
+    
+    # 空间复杂度图
+    spaces = list(space_results.values())
+    ax2.plot(sizes, spaces, 'r-o', label='额外空间')
+    ax2.set_xlabel('输入大小')
+    ax2.set_ylabel('内存 (字节)')
+    ax2.set_title(f'{algorithm_name} - 空间复杂度')
+    ax2.legend()
+    ax2.grid(True)
+    
+    plt.tight_layout()
+    plt.show()
+
+### 分治算法实现 / Divide and Conquer Implementation
+
+def merge_sort_optimized(arr: List[int]) -> List[int]:
+    """优化的归并排序"""
+    if len(arr) <= 1:
+        return arr
+    
+    # 小数组使用插入排序
+    if len(arr) <= 10:
+        return insertion_sort(arr)
+    
+    mid = len(arr) // 2
+    left = merge_sort_optimized(arr[:mid])
+    right = merge_sort_optimized(arr[mid:])
+    
+    return merge_optimized(left, right)
+
+def merge_optimized(left: List[int], right: List[int]) -> List[int]:
+    """优化的合并函数"""
+    result = []
+    i = j = 0
+    
+    # 预分配空间
+    result = [0] * (len(left) + len(right))
+    k = 0
+    
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result[k] = left[i]
+            i += 1
+        else:
+            result[k] = right[j]
+            j += 1
+        k += 1
+    
+    # 复制剩余元素
+    while i < len(left):
+        result[k] = left[i]
+        i += 1
+        k += 1
+    
+    while j < len(right):
+        result[k] = right[j]
+        j += 1
+        k += 1
+    
+    return result
+
+def insertion_sort(arr: List[int]) -> List[int]:
+    """插入排序"""
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and arr[j] > key:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+    return arr
+
+def quick_sort_optimized(arr: List[int]) -> List[int]:
+    """优化的快速排序"""
+    if len(arr) <= 1:
+        return arr
+    
+    # 三数取中法选择基准
+    def median_of_three(arr, left, right):
+        mid = (left + right) // 2
+        if arr[left] > arr[mid]:
+            arr[left], arr[mid] = arr[mid], arr[left]
+        if arr[left] > arr[right]:
+            arr[left], arr[right] = arr[right], arr[left]
+        if arr[mid] > arr[right]:
+            arr[mid], arr[right] = arr[right], arr[mid]
+        return arr[mid]
+    
+    def partition(arr, left, right):
+        pivot = median_of_three(arr, left, right)
+        i = left - 1
+        
+        for j in range(left, right):
+            if arr[j] <= pivot:
+                i += 1
+                arr[i], arr[j] = arr[j], arr[i]
+        
+        arr[i + 1], arr[right] = arr[right], arr[i + 1]
+        return i + 1
+    
+    def quick_sort_helper(arr, left, right):
+        if left < right:
+            pi = partition(arr, left, right)
+            quick_sort_helper(arr, left, pi - 1)
+            quick_sort_helper(arr, pi + 1, right)
+    
+    arr_copy = arr.copy()
+    quick_sort_helper(arr_copy, 0, len(arr_copy) - 1)
+    return arr_copy
+
+### 动态规划算法实现 / Dynamic Programming Implementation
+
+def longest_common_subsequence_optimized(str1: str, str2: str) -> Tuple[int, str]:
+    """优化的最长公共子序列算法"""
+    m, n = len(str1), len(str2)
+    
+    # 使用滚动数组优化空间复杂度
+    dp = [[0] * (n + 1) for _ in range(2)]
+    
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if str1[i-1] == str2[j-1]:
+                dp[i % 2][j] = dp[(i-1) % 2][j-1] + 1
+            else:
+                dp[i % 2][j] = max(dp[(i-1) % 2][j], dp[i % 2][j-1])
+    
+    # 重构LCS
+    lcs = []
+    i, j = m, n
+    while i > 0 and j > 0:
+        if str1[i-1] == str2[j-1]:
+            lcs.append(str1[i-1])
+            i -= 1
+            j -= 1
+        elif dp[i % 2][j-1] > dp[(i-1) % 2][j]:
+            j -= 1
+        else:
+            i -= 1
+    
+    return dp[m % 2][n], ''.join(reversed(lcs))
+
+def knapsack_optimized(values: List[int], weights: List[int], 
+                      capacity: int) -> Tuple[int, List[int]]:
+    """优化的0-1背包问题"""
+    n = len(values)
+    
+    # 使用滚动数组
+    dp = [[0] * (capacity + 1) for _ in range(2)]
+    selected = [[False] * (capacity + 1) for _ in range(2)]
+    
+    for i in range(1, n + 1):
+        for w in range(capacity + 1):
+            if weights[i-1] <= w:
+                include = dp[(i-1) % 2][w-weights[i-1]] + values[i-1]
+                exclude = dp[(i-1) % 2][w]
+                
+                if include > exclude:
+                    dp[i % 2][w] = include
+                    selected[i % 2][w] = True
+                else:
+                    dp[i % 2][w] = exclude
+                    selected[i % 2][w] = False
+            else:
+                dp[i % 2][w] = dp[(i-1) % 2][w]
+                selected[i % 2][w] = False
+    
+    # 重构选择的物品
+    items = []
+    w = capacity
+    for i in range(n, 0, -1):
+        if selected[i % 2][w]:
+            items.append(i-1)
+            w -= weights[i-1]
+    
+    return dp[n % 2][capacity], items
+
+def edit_distance_optimized(str1: str, str2: str) -> int:
+    """优化的编辑距离算法"""
+    m, n = len(str1), len(str2)
+    
+    # 使用滚动数组
+    dp = [[0] * (n + 1) for _ in range(2)]
+    
+    # 初始化第一行
+    for j in range(n + 1):
+        dp[0][j] = j
+    
+    for i in range(1, m + 1):
+        dp[i % 2][0] = i
+        for j in range(1, n + 1):
+            if str1[i-1] == str2[j-1]:
+                dp[i % 2][j] = dp[(i-1) % 2][j-1]
+            else:
+                dp[i % 2][j] = 1 + min(
+                    dp[(i-1) % 2][j],      # 删除
+                    dp[i % 2][j-1],        # 插入
+                    dp[(i-1) % 2][j-1]     # 替换
+                )
+    
+    return dp[m % 2][n]
+
+### 图算法实现 / Graph Algorithms Implementation
+
+class Graph:
+    def __init__(self, vertices: int):
+        self.V = vertices
+        self.graph = [[0] * vertices for _ in range(vertices)]
+    
+    def add_edge(self, u: int, v: int, weight: int):
+        self.graph[u][v] = weight
+        self.graph[v][u] = weight  # 无向图
+    
+    def dijkstra_optimized(self, start: int) -> List[int]:
+        """优化的Dijkstra算法"""
+        distances = [float('inf')] * self.V
+        distances[start] = 0
+        visited = [False] * self.V
+        
+        for _ in range(self.V):
+            # 找到未访问的最小距离顶点
+            min_dist = float('inf')
+            min_vertex = -1
+            
+            for v in range(self.V):
+                if not visited[v] and distances[v] < min_dist:
+                    min_dist = distances[v]
+                    min_vertex = v
+            
+            if min_vertex == -1:
+                break
+            
+            visited[min_vertex] = True
+            
+            # 更新邻居距离
+            for v in range(self.V):
+                if (not visited[v] and 
+                    self.graph[min_vertex][v] > 0 and 
+                    distances[min_vertex] + self.graph[min_vertex][v] < distances[v]):
+                    distances[v] = distances[min_vertex] + self.graph[min_vertex][v]
+        
+        return distances
+    
+    def floyd_warshall_optimized(self) -> List[List[int]]:
+        """优化的Floyd-Warshall算法"""
+        dist = [row[:] for row in self.graph]
+        
+        for i in range(self.V):
+            for j in range(self.V):
+                if dist[i][j] == 0 and i != j:
+                    dist[i][j] = float('inf')
+        
+        for k in range(self.V):
+            for i in range(self.V):
+                for j in range(self.V):
+                    if dist[i][k] != float('inf') and dist[k][j] != float('inf'):
+                        dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+        
+        return dist
+
+def kruskal_optimized(edges: List[Tuple[int, int, int]], vertices: int) -> List[Tuple[int, int, int]]:
+    """优化的Kruskal算法"""
+    # 按权重排序
+    edges.sort(key=lambda x: x[2])
+    
+    # 并查集
+    parent = list(range(vertices))
+    rank = [0] * vertices
+    
+    def find(x):
+        if parent[x] != x:
+            parent[x] = find(parent[x])
+        return parent[x]
+    
+    def union(x, y):
+        px, py = find(x), find(y)
+        if px == py:
+            return False
+        
+        if rank[px] < rank[py]:
+            parent[px] = py
+        elif rank[px] > rank[py]:
+            parent[py] = px
+        else:
+            parent[py] = px
+            rank[px] += 1
+        return True
+    
+    mst = []
+    for u, v, weight in edges:
+        if union(u, v):
+            mst.append((u, v, weight))
+            if len(mst) == vertices - 1:
+                break
+    
+    return mst
+
+### 随机算法实现 / Randomized Algorithms Implementation
+
+def randomized_quick_sort_optimized(arr: List[int]) -> List[int]:
+    """优化的随机快速排序"""
+    if len(arr) <= 1:
+        return arr
+    
+    # 随机选择基准
+    pivot = random.choice(arr)
+    
+    # 三路分区
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    
+    return (randomized_quick_sort_optimized(left) + 
+            middle + 
+            randomized_quick_sort_optimized(right))
+
+def miller_rabin_optimized(n: int, k: int = 5) -> bool:
+    """优化的Miller-Rabin素数测试"""
+    if n == 2 or n == 3:
+        return True
+    if n < 2 or n % 2 == 0:
+        return False
+    
+    # 分解 n-1 = 2^r * s
+    r, s = 0, n - 1
+    while s % 2 == 0:
+        r += 1
+        s //= 2
+    
+    # 测试k次
+    for _ in range(k):
+        a = random.randrange(2, n - 1)
+        x = pow(a, s, n)
+        
+        if x == 1 or x == n - 1:
+            continue
+        
+        for _ in range(r - 1):
+            x = (x * x) % n
+            if x == n - 1:
+                break
+        else:
+            return False
+    
+    return True
+
+def reservoir_sampling(stream: List[int], k: int) -> List[int]:
+    """水库采样算法"""
+    reservoir = stream[:k]
+    
+    for i in range(k, len(stream)):
+        j = random.randint(0, i)
+        if j < k:
+            reservoir[j] = stream[i]
+    
+    return reservoir
+
+### 算法验证函数 / Algorithm Verification Functions
+
+def algorithm_verification():
+    """算法综合验证"""
+    print("=== 算法模型验证 ===\n")
+    
+    # 测试数据
+    test_sizes = [100, 500, 1000]
+    
+    # 1. 分治算法验证
+    print("1. 分治算法验证:")
+    for size in test_sizes:
+        data = list(range(size))
+        random.shuffle(data)
+        
+        # 归并排序
+        sorted_merge = merge_sort_optimized(data.copy())
+        assert sorted_merge == sorted(data), f"归并排序验证失败: size={size}"
+        
+        # 快速排序
+        sorted_quick = quick_sort_optimized(data.copy())
+        assert sorted_quick == sorted(data), f"快速排序验证失败: size={size}"
+    
+    print("   分治算法验证通过!")
+    
+    # 2. 动态规划验证
+    print("\n2. 动态规划验证:")
+    
+    # LCS测试
+    str1, str2 = "ABCDGH", "AEDFHR"
+    lcs_length, lcs_string = longest_common_subsequence_optimized(str1, str2)
+    print(f"   LCS: '{str1}' vs '{str2}' -> 长度: {lcs_length}, 序列: '{lcs_string}'")
+    
+    # 背包问题测试
+    values = [60, 100, 120]
+    weights = [10, 20, 30]
+    capacity = 50
+    max_value, selected_items = knapsack_optimized(values, weights, capacity)
+    print(f"   背包问题: 最大价值: {max_value}, 选择物品: {selected_items}")
+    
+    # 编辑距离测试
+    edit_dist = edit_distance_optimized("kitten", "sitting")
+    print(f"   编辑距离: 'kitten' -> 'sitting' = {edit_dist}")
+    
+    print("   动态规划验证通过!")
+    
+    # 3. 图算法验证
+    print("\n3. 图算法验证:")
+    
+    # 创建测试图
+    g = Graph(4)
+    g.add_edge(0, 1, 4)
+    g.add_edge(0, 2, 3)
+    g.add_edge(1, 2, 1)
+    g.add_edge(1, 3, 2)
+    g.add_edge(2, 3, 4)
+    
+    # Dijkstra算法
+    distances = g.dijkstra_optimized(0)
+    print(f"   Dijkstra最短路径: {distances}")
+    
+    # Kruskal算法
+    edges = [(0, 1, 4), (0, 2, 3), (1, 2, 1), (1, 3, 2), (2, 3, 4)]
+    mst = kruskal_optimized(edges, 4)
+    print(f"   Kruskal最小生成树: {mst}")
+    
+    print("   图算法验证通过!")
+    
+    # 4. 随机算法验证
+    print("\n4. 随机算法验证:")
+    
+    # 素数测试
+    primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]
+    composites = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20]
+    
+    for p in primes:
+        assert miller_rabin_optimized(p), f"素数测试失败: {p}"
+    
+    for c in composites:
+        assert not miller_rabin_optimized(c), f"合数测试失败: {c}"
+    
+    print("   素数测试验证通过!")
+    
+    # 水库采样
+    stream = list(range(100))
+    sample = reservoir_sampling(stream, 10)
+    print(f"   水库采样结果: {sample}")
+    
+    print("   随机算法验证通过!")
+    
+    print("\n=== 所有算法验证完成 ===")
+
+if __name__ == "__main__":
+    algorithm_verification()
+```
+
 ## 参考文献 / References
 
 1. Cormen, T. H., et al. (2009). Introduction to Algorithms. MIT Press.
@@ -551,5 +1075,5 @@ def simulated_annealing(initial_solution, temperature, cooling_rate):
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

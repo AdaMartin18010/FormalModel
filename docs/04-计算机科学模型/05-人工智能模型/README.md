@@ -552,6 +552,592 @@ example = do
 
 ---
 
+## 4.5.9 算法实现 / Algorithm Implementation
+
+### 机器学习基础算法 / Basic Machine Learning Algorithms
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from typing import List, Tuple, Optional, Dict, Any
+from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.model_selection import train_test_split
+import random
+
+class LinearRegression:
+    """线性回归模型"""
+    def __init__(self, learning_rate: float = 0.01, max_iterations: int = 1000):
+        self.learning_rate = learning_rate
+        self.max_iterations = max_iterations
+        self.weights: Optional[np.ndarray] = None
+        self.bias: float = 0.0
+        self.cost_history: List[float] = []
+    
+    def fit(self, X: np.ndarray, y: np.ndarray) -> 'LinearRegression':
+        """训练线性回归模型"""
+        n_samples, n_features = X.shape
+        
+        # 初始化参数
+        self.weights = np.zeros(n_features)
+        self.bias = 0.0
+        
+        for iteration in range(self.max_iterations):
+            # 前向传播
+            y_pred = self.predict(X)
+            
+            # 计算损失
+            cost = np.mean((y_pred - y) ** 2)
+            self.cost_history.append(cost)
+            
+            # 计算梯度
+            dw = (2 / n_samples) * np.dot(X.T, (y_pred - y))
+            db = (2 / n_samples) * np.sum(y_pred - y)
+            
+            # 更新参数
+            self.weights -= self.learning_rate * dw
+            self.bias -= self.learning_rate * db
+            
+            # 早停
+            if iteration > 0 and abs(self.cost_history[-1] - self.cost_history[-2]) < 1e-6:
+                break
+        
+        return self
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """预测"""
+        if self.weights is None:
+            raise ValueError("Model not fitted yet")
+        return np.dot(X, self.weights) + self.bias
+    
+    def score(self, X: np.ndarray, y: np.ndarray) -> float:
+        """计算R²分数"""
+        y_pred = self.predict(X)
+        ss_res = np.sum((y - y_pred) ** 2)
+        ss_tot = np.sum((y - np.mean(y)) ** 2)
+        return 1 - (ss_res / ss_tot)
+
+class LogisticRegression:
+    """逻辑回归模型"""
+    def __init__(self, learning_rate: float = 0.01, max_iterations: int = 1000):
+        self.learning_rate = learning_rate
+        self.max_iterations = max_iterations
+        self.weights: Optional[np.ndarray] = None
+        self.bias: float = 0.0
+        self.cost_history: List[float] = []
+    
+    def sigmoid(self, z: np.ndarray) -> np.ndarray:
+        """sigmoid激活函数"""
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+    
+    def fit(self, X: np.ndarray, y: np.ndarray) -> 'LogisticRegression':
+        """训练逻辑回归模型"""
+        n_samples, n_features = X.shape
+        
+        # 初始化参数
+        self.weights = np.zeros(n_features)
+        self.bias = 0.0
+        
+        for iteration in range(self.max_iterations):
+            # 前向传播
+            z = np.dot(X, self.weights) + self.bias
+            y_pred = self.sigmoid(z)
+            
+            # 计算损失（交叉熵）
+            epsilon = 1e-15
+            cost = -np.mean(y * np.log(y_pred + epsilon) + (1 - y) * np.log(1 - y_pred + epsilon))
+            self.cost_history.append(cost)
+            
+            # 计算梯度
+            dw = (1 / n_samples) * np.dot(X.T, (y_pred - y))
+            db = (1 / n_samples) * np.sum(y_pred - y)
+            
+            # 更新参数
+            self.weights -= self.learning_rate * dw
+            self.bias -= self.learning_rate * db
+            
+            # 早停
+            if iteration > 0 and abs(self.cost_history[-1] - self.cost_history[-2]) < 1e-6:
+                break
+        
+        return self
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """预测"""
+        if self.weights is None:
+            raise ValueError("Model not fitted yet")
+        z = np.dot(X, self.weights) + self.bias
+        return self.sigmoid(z)
+    
+    def predict_classes(self, X: np.ndarray, threshold: float = 0.5) -> np.ndarray:
+        """预测类别"""
+        return (self.predict(X) >= threshold).astype(int)
+    
+    def score(self, X: np.ndarray, y: np.ndarray) -> float:
+        """计算准确率"""
+        return accuracy_score(y, self.predict_classes(X))
+
+class SupportVectorMachine:
+    """支持向量机（简化版）"""
+    def __init__(self, learning_rate: float = 0.01, max_iterations: int = 1000, C: float = 1.0):
+        self.learning_rate = learning_rate
+        self.max_iterations = max_iterations
+        self.C = C
+        self.weights: Optional[np.ndarray] = None
+        self.bias: float = 0.0
+    
+    def fit(self, X: np.ndarray, y: np.ndarray) -> 'SupportVectorMachine':
+        """训练SVM模型"""
+        n_samples, n_features = X.shape
+        
+        # 将标签转换为-1和1
+        y = np.where(y == 0, -1, 1)
+        
+        # 初始化参数
+        self.weights = np.zeros(n_features)
+        self.bias = 0.0
+        
+        for iteration in range(self.max_iterations):
+            for i in range(n_samples):
+                # 计算决策函数
+                decision = y[i] * (np.dot(X[i], self.weights) + self.bias)
+                
+                # 更新规则
+                if decision < 1:
+                    self.weights += self.learning_rate * (self.C * y[i] * X[i] - 2 * (1/self.max_iterations) * self.weights)
+                    self.bias += self.learning_rate * self.C * y[i]
+                else:
+                    self.weights += self.learning_rate * (-2 * (1/self.max_iterations) * self.weights)
+        
+        return self
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """预测"""
+        if self.weights is None:
+            raise ValueError("Model not fitted yet")
+        return np.sign(np.dot(X, self.weights) + self.bias)
+    
+    def score(self, X: np.ndarray, y: np.ndarray) -> float:
+        """计算准确率"""
+        y = np.where(y == 0, -1, 1)
+        return accuracy_score(y, self.predict(X))
+
+### 深度学习算法 / Deep Learning Algorithms
+
+class NeuralNetwork:
+    """多层感知机"""
+    def __init__(self, layers: List[int], learning_rate: float = 0.01, max_iterations: int = 1000):
+        self.layers = layers
+        self.learning_rate = learning_rate
+        self.max_iterations = max_iterations
+        self.weights: List[np.ndarray] = []
+        self.biases: List[np.ndarray] = []
+        self.cost_history: List[float] = []
+        
+        # 初始化权重和偏置
+        for i in range(len(layers) - 1):
+            w = np.random.randn(layers[i + 1], layers[i]) * 0.01
+            b = np.zeros((layers[i + 1], 1))
+            self.weights.append(w)
+            self.biases.append(b)
+    
+    def sigmoid(self, z: np.ndarray) -> np.ndarray:
+        """sigmoid激活函数"""
+        return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
+    
+    def sigmoid_derivative(self, z: np.ndarray) -> np.ndarray:
+        """sigmoid导数"""
+        return z * (1 - z)
+    
+    def forward_propagation(self, X: np.ndarray) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+        """前向传播"""
+        activations = [X.T]  # 输入层
+        z_values = []
+        
+        for i in range(len(self.weights)):
+            z = np.dot(self.weights[i], activations[-1]) + self.biases[i]
+            z_values.append(z)
+            activation = self.sigmoid(z)
+            activations.append(activation)
+        
+        return activations, z_values
+    
+    def backward_propagation(self, X: np.ndarray, y: np.ndarray, activations: List[np.ndarray], z_values: List[np.ndarray]) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+        """反向传播"""
+        m = X.shape[0]
+        y = y.reshape(-1, 1)
+        
+        # 计算输出层误差
+        delta = activations[-1] - y.T
+        
+        # 计算梯度
+        weight_gradients = []
+        bias_gradients = []
+        
+        for i in range(len(self.weights) - 1, -1, -1):
+            weight_gradients.insert(0, np.dot(delta, activations[i].T) / m)
+            bias_gradients.insert(0, np.sum(delta, axis=1, keepdims=True) / m)
+            
+            if i > 0:
+                delta = np.dot(self.weights[i].T, delta) * self.sigmoid_derivative(activations[i])
+        
+        return weight_gradients, bias_gradients
+    
+    def fit(self, X: np.ndarray, y: np.ndarray) -> 'NeuralNetwork':
+        """训练神经网络"""
+        for iteration in range(self.max_iterations):
+            # 前向传播
+            activations, z_values = self.forward_propagation(X)
+            
+            # 计算损失
+            cost = -np.mean(y * np.log(activations[-1].T + 1e-15) + (1 - y) * np.log(1 - activations[-1].T + 1e-15))
+            self.cost_history.append(cost)
+            
+            # 反向传播
+            weight_gradients, bias_gradients = self.backward_propagation(X, y, activations, z_values)
+            
+            # 更新参数
+            for i in range(len(self.weights)):
+                self.weights[i] -= self.learning_rate * weight_gradients[i]
+                self.biases[i] -= self.learning_rate * bias_gradients[i]
+            
+            # 早停
+            if iteration > 0 and abs(self.cost_history[-1] - self.cost_history[-2]) < 1e-6:
+                break
+        
+        return self
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """预测"""
+        activations, _ = self.forward_propagation(X)
+        return activations[-1].T
+    
+    def predict_classes(self, X: np.ndarray, threshold: float = 0.5) -> np.ndarray:
+        """预测类别"""
+        return (self.predict(X) >= threshold).astype(int)
+    
+    def score(self, X: np.ndarray, y: np.ndarray) -> float:
+        """计算准确率"""
+        return accuracy_score(y, self.predict_classes(X))
+
+class ConvolutionalNeuralNetwork:
+    """简化的卷积神经网络"""
+    def __init__(self, input_shape: Tuple[int, int, int], num_classes: int, learning_rate: float = 0.01):
+        self.input_shape = input_shape
+        self.num_classes = num_classes
+        self.learning_rate = learning_rate
+        self.filters = []
+        self.weights = None
+        self.bias = None
+        
+        # 初始化卷积核
+        self.filters = [np.random.randn(3, 3) * 0.1 for _ in range(6)]
+        
+        # 计算全连接层的输入大小
+        conv_output_size = (input_shape[0] - 2) * (input_shape[1] - 2) * len(self.filters)
+        self.weights = np.random.randn(num_classes, conv_output_size) * 0.1
+        self.bias = np.zeros((num_classes, 1))
+    
+    def convolve(self, image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+        """卷积操作"""
+        h, w = image.shape
+        kh, kw = kernel.shape
+        output_h = h - kh + 1
+        output_w = w - kw + 1
+        
+        output = np.zeros((output_h, output_w))
+        for i in range(output_h):
+            for j in range(output_w):
+                output[i, j] = np.sum(image[i:i+kh, j:j+kw] * kernel)
+        
+        return output
+    
+    def relu(self, x: np.ndarray) -> np.ndarray:
+        """ReLU激活函数"""
+        return np.maximum(0, x)
+    
+    def softmax(self, x: np.ndarray) -> np.ndarray:
+        """softmax函数"""
+        exp_x = np.exp(x - np.max(x))
+        return exp_x / np.sum(exp_x)
+    
+    def forward(self, X: np.ndarray) -> Tuple[np.ndarray, List[np.ndarray]]:
+        """前向传播"""
+        batch_size = X.shape[0]
+        conv_outputs = []
+        
+        for i in range(batch_size):
+            image = X[i, :, :, 0]  # 假设是灰度图像
+            conv_output = []
+            
+            for kernel in self.filters:
+                conv_result = self.convolve(image, kernel)
+                conv_result = self.relu(conv_result)
+                conv_output.append(conv_result)
+            
+            conv_outputs.append(np.array(conv_output))
+        
+        # 展平
+        flattened = np.array([output.flatten() for output in conv_outputs])
+        
+        # 全连接层
+        logits = np.dot(self.weights, flattened.T) + self.bias
+        probabilities = self.softmax(logits)
+        
+        return probabilities.T, conv_outputs
+    
+    def fit(self, X: np.ndarray, y: np.ndarray, epochs: int = 10) -> 'ConvolutionalNeuralNetwork':
+        """训练CNN"""
+        for epoch in range(epochs):
+            for i in range(X.shape[0]):
+                # 前向传播
+                probabilities, conv_outputs = self.forward(X[i:i+1])
+                
+                # 计算损失（交叉熵）
+                target = np.zeros((1, self.num_classes))
+                target[0, y[i]] = 1
+                loss = -np.sum(target * np.log(probabilities + 1e-15))
+                
+                # 简化的反向传播（这里只是示例）
+                # 实际实现需要更复杂的梯度计算
+                
+                if i % 100 == 0:
+                    print(f"Epoch {epoch+1}, Sample {i}, Loss: {loss:.4f}")
+        
+        return self
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """预测"""
+        probabilities, _ = self.forward(X)
+        return np.argmax(probabilities, axis=1)
+
+### 强化学习算法 / Reinforcement Learning Algorithms
+
+class QLearning:
+    """Q-Learning算法"""
+    def __init__(self, state_size: int, action_size: int, learning_rate: float = 0.1, 
+                 discount_factor: float = 0.95, epsilon: float = 0.1):
+        self.state_size = state_size
+        self.action_size = action_size
+        self.learning_rate = learning_rate
+        self.discount_factor = discount_factor
+        self.epsilon = epsilon
+        self.q_table = np.zeros((state_size, action_size))
+    
+    def choose_action(self, state: int) -> int:
+        """选择动作（ε-贪婪策略）"""
+        if random.random() < self.epsilon:
+            return random.randint(0, self.action_size - 1)
+        else:
+            return np.argmax(self.q_table[state])
+    
+    def update(self, state: int, action: int, reward: float, next_state: int) -> None:
+        """更新Q值"""
+        old_value = self.q_table[state, action]
+        next_max = np.max(self.q_table[next_state])
+        new_value = (1 - self.learning_rate) * old_value + self.learning_rate * (reward + self.discount_factor * next_max)
+        self.q_table[state, action] = new_value
+    
+    def get_policy(self) -> np.ndarray:
+        """获取最优策略"""
+        return np.argmax(self.q_table, axis=1)
+
+class PolicyGradient:
+    """策略梯度算法"""
+    def __init__(self, state_size: int, action_size: int, learning_rate: float = 0.01):
+        self.state_size = state_size
+        self.action_size = action_size
+        self.learning_rate = learning_rate
+        self.policy = np.random.rand(state_size, action_size)
+        self.policy = self.policy / np.sum(self.policy, axis=1, keepdims=True)
+    
+    def choose_action(self, state: int) -> int:
+        """根据策略选择动作"""
+        return np.random.choice(self.action_size, p=self.policy[state])
+    
+    def update_policy(self, states: List[int], actions: List[int], rewards: List[float]) -> None:
+        """更新策略"""
+        # 计算折扣奖励
+        discounted_rewards = []
+        running_reward = 0
+        for reward in reversed(rewards):
+            running_reward = reward + 0.95 * running_reward
+            discounted_rewards.insert(0, running_reward)
+        
+        # 标准化奖励
+        discounted_rewards = np.array(discounted_rewards)
+        discounted_rewards = (discounted_rewards - np.mean(discounted_rewards)) / (np.std(discounted_rewards) + 1e-8)
+        
+        # 更新策略
+        for state, action, reward in zip(states, actions, discounted_rewards):
+            # 计算策略梯度
+            action_probs = self.policy[state]
+            action_prob = action_probs[action]
+            
+            # 更新策略参数
+            self.policy[state, action] += self.learning_rate * reward * (1 - action_prob)
+            
+            # 重新归一化
+            self.policy[state] = self.policy[state] / np.sum(self.policy[state])
+
+### 自然语言处理算法 / Natural Language Processing Algorithms
+
+class Word2Vec:
+    """简化的Word2Vec实现"""
+    def __init__(self, vocab_size: int, embedding_dim: int, learning_rate: float = 0.01):
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.learning_rate = learning_rate
+        
+        # 初始化词向量
+        self.word_vectors = np.random.randn(vocab_size, embedding_dim) * 0.1
+        self.context_vectors = np.random.randn(vocab_size, embedding_dim) * 0.1
+    
+    def sigmoid(self, x: np.ndarray) -> np.ndarray:
+        """sigmoid函数"""
+        return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
+    
+    def train_on_batch(self, center_word: int, context_words: List[int], negative_words: List[int]) -> float:
+        """训练一个批次"""
+        loss = 0
+        
+        # 正样本
+        for context_word in context_words:
+            # 前向传播
+            center_vec = self.word_vectors[center_word]
+            context_vec = self.context_vectors[context_word]
+            score = np.dot(center_vec, context_vec)
+            prob = self.sigmoid(score)
+            
+            # 计算损失
+            loss -= np.log(prob + 1e-15)
+            
+            # 反向传播
+            grad = prob - 1
+            self.word_vectors[center_word] -= self.learning_rate * grad * context_vec
+            self.context_vectors[context_word] -= self.learning_rate * grad * center_vec
+        
+        # 负样本
+        for negative_word in negative_words:
+            center_vec = self.word_vectors[center_word]
+            negative_vec = self.context_vectors[negative_word]
+            score = np.dot(center_vec, negative_vec)
+            prob = self.sigmoid(score)
+            
+            # 计算损失
+            loss -= np.log(1 - prob + 1e-15)
+            
+            # 反向传播
+            grad = prob
+            self.word_vectors[center_word] -= self.learning_rate * grad * negative_vec
+            self.context_vectors[negative_word] -= self.learning_rate * grad * center_vec
+        
+        return loss
+    
+    def get_word_vector(self, word_id: int) -> np.ndarray:
+        """获取词向量"""
+        return self.word_vectors[word_id]
+    
+    def find_similar_words(self, word_id: int, top_k: int = 5) -> List[Tuple[int, float]]:
+        """找到相似词"""
+        word_vec = self.word_vectors[word_id]
+        similarities = []
+        
+        for i in range(self.vocab_size):
+            if i != word_id:
+                other_vec = self.word_vectors[i]
+                similarity = np.dot(word_vec, other_vec) / (np.linalg.norm(word_vec) * np.linalg.norm(other_vec))
+                similarities.append((i, similarity))
+        
+        similarities.sort(key=lambda x: x[1], reverse=True)
+        return similarities[:top_k]
+
+### 人工智能模型验证函数 / AI Models Verification Functions
+
+def ai_models_verification():
+    """人工智能模型综合验证"""
+    print("=== 人工智能模型验证 ===\n")
+    
+    # 1. 线性回归验证
+    print("1. 线性回归验证:")
+    np.random.seed(42)
+    X = np.random.randn(100, 2)
+    y = 3 * X[:, 0] + 2 * X[:, 1] + 1 + np.random.randn(100) * 0.1
+    
+    lr = LinearRegression(learning_rate=0.01, max_iterations=1000)
+    lr.fit(X, y)
+    
+    score = lr.score(X, y)
+    print(f"   线性回归R²分数: {score:.4f}")
+    print(f"   权重: {lr.weights}")
+    print(f"   偏置: {lr.bias:.4f}")
+    
+    # 2. 逻辑回归验证
+    print("\n2. 逻辑回归验证:")
+    X = np.random.randn(100, 2)
+    y = (X[:, 0] + X[:, 1] > 0).astype(int)
+    
+    log_reg = LogisticRegression(learning_rate=0.1, max_iterations=1000)
+    log_reg.fit(X, y)
+    
+    score = log_reg.score(X, y)
+    print(f"   逻辑回归准确率: {score:.4f}")
+    
+    # 3. 神经网络验证
+    print("\n3. 神经网络验证:")
+    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+    y = np.array([0, 1, 1, 0])  # XOR问题
+    
+    nn = NeuralNetwork([2, 4, 1], learning_rate=0.1, max_iterations=10000)
+    nn.fit(X, y)
+    
+    predictions = nn.predict_classes(X)
+    score = nn.score(X, y)
+    print(f"   神经网络准确率: {score:.4f}")
+    print(f"   预测结果: {predictions}")
+    
+    # 4. Q-Learning验证
+    print("\n4. Q-Learning验证:")
+    # 简单的网格世界环境
+    q_learning = QLearning(state_size=4, action_size=4)
+    
+    # 模拟一些训练数据
+    for episode in range(100):
+        state = 0
+        for step in range(10):
+            action = q_learning.choose_action(state)
+            next_state = min(state + 1, 3)  # 简单的环境
+            reward = 1 if next_state == 3 else 0
+            q_learning.update(state, action, reward, next_state)
+            state = next_state
+            if state == 3:
+                break
+    
+    policy = q_learning.get_policy()
+    print(f"   最优策略: {policy}")
+    
+    # 5. Word2Vec验证
+    print("\n5. Word2Vec验证:")
+    vocab_size = 100
+    embedding_dim = 10
+    word2vec = Word2Vec(vocab_size, embedding_dim)
+    
+    # 模拟训练
+    for _ in range(100):
+        center_word = random.randint(0, vocab_size - 1)
+        context_words = [random.randint(0, vocab_size - 1) for _ in range(2)]
+        negative_words = [random.randint(0, vocab_size - 1) for _ in range(3)]
+        loss = word2vec.train_on_batch(center_word, context_words, negative_words)
+    
+    word_vector = word2vec.get_word_vector(0)
+    print(f"   词向量维度: {word_vector.shape}")
+    print(f"   词向量范数: {np.linalg.norm(word_vector):.4f}")
+    
+    print("\n=== 所有人工智能模型验证完成 ===")
+
+if __name__ == "__main__":
+    ai_models_verification()
+```
+
 ## 参考文献 / References
 
 1. Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press.
@@ -561,5 +1147,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

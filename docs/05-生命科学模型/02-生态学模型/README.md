@@ -850,6 +850,87 @@ example = do
 
 ---
 
+## 5.2.8 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from typing import Tuple, Callable
+
+def logistic_step(N: float, r: float, K: float, dt: float) -> float:
+    """逻辑斯蒂增长离散步进 (Euler)"""
+    dN = r * N * (1.0 - N / max(K, 1e-12))
+    return max(0.0, N + dt * dN)
+
+def simulate_logistic(N0: float, r: float, K: float, T: float, dt: float) -> np.ndarray:
+    t = np.arange(0.0, T + dt, dt)
+    N = np.zeros_like(t)
+    N[0] = max(0.0, N0)
+    for i in range(1, len(t)):
+        N[i] = logistic_step(N[i-1], r, K, dt)
+    return t, N
+
+def lotka_volterra_step(N: float, P: float, params: dict, dt: float) -> Tuple[float, float]:
+    r = params['r']; alpha = params['alpha']; beta = params['beta']; delta = params['delta']
+    dN = r * N - alpha * N * P
+    dP = beta * alpha * N * P - delta * P
+    return max(0.0, N + dt * dN), max(0.0, P + dt * dP)
+
+def simulate_lv(N0: float, P0: float, params: dict, T: float, dt: float):
+    t = np.arange(0.0, T + dt, dt)
+    N = np.zeros_like(t); P = np.zeros_like(t)
+    N[0], P[0] = max(0.0, N0), max(0.0, P0)
+    for i in range(1, len(t)):
+        N[i], P[i] = lotka_volterra_step(N[i-1], P[i-1], params, dt)
+    return t, N, P
+
+def competition_step(N1: float, N2: float, params: dict, dt: float) -> Tuple[float, float]:
+    r1 = params['r1']; r2 = params['r2']; K1 = params['K1']; K2 = params['K2']
+    a12 = params['a12']; a21 = params['a21']
+    dN1 = r1 * N1 * (1.0 - (N1 + a12 * N2) / max(K1, 1e-12))
+    dN2 = r2 * N2 * (1.0 - (N2 + a21 * N1) / max(K2, 1e-12))
+    return max(0.0, N1 + dt * dN1), max(0.0, N2 + dt * dN2)
+
+def simulate_competition(N10: float, N20: float, params: dict, T: float, dt: float):
+    t = np.arange(0.0, T + dt, dt)
+    N1 = np.zeros_like(t); N2 = np.zeros_like(t)
+    N1[0], N2[0] = max(0.0, N10), max(0.0, N20)
+    for i in range(1, len(t)):
+        N1[i], N2[i] = competition_step(N1[i-1], N2[i-1], params, dt)
+    return t, N1, N2
+
+def jacobian_lv(N: float, P: float, params: dict):
+    r = params['r']; alpha = params['alpha']; beta = params['beta']; delta = params['delta']
+    # J = [[∂f/∂N, ∂f/∂P], [∂g/∂N, ∂g/∂P]]
+    return np.array([[r - alpha * P, -alpha * N],
+                     [beta * alpha * P, beta * alpha * N - delta]], dtype=float)
+
+def local_stability_eigs(J: np.ndarray) -> np.ndarray:
+    return np.linalg.eigvals(J)
+
+def ecology_verification():
+    # 逻辑斯蒂增长收敛至K
+    t, N = simulate_logistic(N0=10.0, r=0.5, K=100.0, T=50.0, dt=0.1)
+    assert np.isfinite(N).all() and abs(N[-1] - 100.0) < 5.0
+
+    # Lotka-Volterra 正常振荡、雅可比特征值可计算
+    params_lv = {'r': 1.0, 'alpha': 0.02, 'beta': 0.1, 'delta': 0.4}
+    t2, Nv, Pv = simulate_lv(40.0, 9.0, params_lv, T=60.0, dt=0.05)
+    assert np.isfinite(Nv).all() and np.isfinite(Pv).all()
+    N_star = params_lv['delta'] / (params_lv['beta'] * params_lv['alpha'])
+    P_star = params_lv['r'] / params_lv['alpha']
+    eigs = local_stability_eigs(jacobian_lv(N_star, P_star, params_lv))
+    assert np.isfinite(eigs).all()
+
+    # 竞争模型：弱竞争下共存
+    params_comp = {'r1': 0.8, 'r2': 0.7, 'K1': 100.0, 'K2': 80.0, 'a12': 0.3, 'a21': 0.4}
+    t3, N1, N2 = simulate_competition(10.0, 10.0, params_comp, T=80.0, dt=0.1)
+    assert N1[-1] > 1.0 and N2[-1] > 1.0
+    print("Ecology model algorithms verified.")
+
+if __name__ == "__main__":
+    ecology_verification()
+```
+
 ## 参考文献 / References
 
 1. May, R. M. (1973). Stability and Complexity in Model Ecosystems. Princeton University Press.
@@ -859,5 +940,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

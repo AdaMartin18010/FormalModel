@@ -566,6 +566,395 @@ example = do
 
 ---
 
+## 4.1.9 算法实现 / Algorithm Implementation
+
+### 图灵机算法 / Turing Machine Algorithms
+
+```python
+from typing import Dict, List, Tuple, Optional
+from enum import Enum
+import numpy as np
+
+class Symbol(Enum):
+    ZERO = '0'
+    ONE = '1'
+    BLANK = 'B'
+
+class Direction(Enum):
+    LEFT = 'L'
+    RIGHT = 'R'
+    STAY = 'N'
+
+class Transition:
+    def __init__(self, next_state: str, write_symbol: Symbol, direction: Direction):
+        self.next_state = next_state
+        self.write_symbol = write_symbol
+        self.direction = direction
+
+class TuringMachine:
+    def __init__(self, states: List[str], alphabet: List[Symbol], 
+                 tape_alphabet: List[Symbol], transitions: Dict[Tuple[str, Symbol], Transition],
+                 initial_state: str, accept_states: List[str]):
+        self.states = states
+        self.alphabet = alphabet
+        self.tape_alphabet = tape_alphabet
+        self.transitions = transitions
+        self.initial_state = initial_state
+        self.accept_states = accept_states
+        self.current_state = initial_state
+        self.tape = [Symbol.BLANK]
+        self.head_position = 0
+        
+    def get_current_symbol(self) -> Symbol:
+        if 0 <= self.head_position < len(self.tape):
+            return self.tape[self.head_position]
+        return Symbol.BLANK
+    
+    def set_current_symbol(self, symbol: Symbol):
+        if 0 <= self.head_position < len(self.tape):
+            self.tape[self.head_position] = symbol
+    
+    def step(self) -> bool:
+        current_symbol = self.get_current_symbol()
+        key = (self.current_state, current_symbol)
+        
+        if key in self.transitions:
+            transition = self.transitions[key]
+            
+            # 写入符号
+            self.set_current_symbol(transition.write_symbol)
+            
+            # 移动读写头
+            if transition.direction == Direction.LEFT:
+                self.head_position -= 1
+            elif transition.direction == Direction.RIGHT:
+                self.head_position += 1
+            
+            # 更新状态
+            self.current_state = transition.next_state
+            
+            # 扩展磁带
+            if self.head_position < 0:
+                self.tape.insert(0, Symbol.BLANK)
+                self.head_position = 0
+            elif self.head_position >= len(self.tape):
+                self.tape.append(Symbol.BLANK)
+            
+            return True
+        return False
+    
+    def is_accepting(self) -> bool:
+        return self.current_state in self.accept_states
+    
+    def run(self, input_tape: List[Symbol], max_steps: int = 1000) -> bool:
+        self.tape = input_tape + [Symbol.BLANK]
+        self.current_state = self.initial_state
+        self.head_position = 0
+        
+        steps = 0
+        while steps < max_steps:
+            if not self.step():
+                break
+            steps += 1
+        
+        return self.is_accepting()
+
+def create_even_ones_tm() -> TuringMachine:
+    """创建识别包含偶数个1的字符串的图灵机"""
+    states = ['q0', 'q1']
+    alphabet = [Symbol.ZERO, Symbol.ONE]
+    tape_alphabet = [Symbol.ZERO, Symbol.ONE, Symbol.BLANK]
+    
+    transitions = {
+        ('q0', Symbol.ZERO): Transition('q0', Symbol.ZERO, Direction.RIGHT),
+        ('q0', Symbol.ONE): Transition('q1', Symbol.ONE, Direction.RIGHT),
+        ('q1', Symbol.ZERO): Transition('q1', Symbol.ZERO, Direction.RIGHT),
+        ('q1', Symbol.ONE): Transition('q0', Symbol.ONE, Direction.RIGHT),
+    }
+    
+    return TuringMachine(states, alphabet, tape_alphabet, transitions, 'q0', ['q0'])
+
+def turing_machine_verification():
+    """图灵机验证函数"""
+    tm = create_even_ones_tm()
+    
+    # 测试用例
+    test_cases = [
+        ([Symbol.ZERO, Symbol.ZERO], True),  # 0个1
+        ([Symbol.ONE, Symbol.ZERO], False),  # 1个1
+        ([Symbol.ONE, Symbol.ONE], True),    # 2个1
+        ([Symbol.ONE, Symbol.ZERO, Symbol.ONE], True),  # 2个1
+    ]
+    
+    print("图灵机验证结果:")
+    for input_tape, expected in test_cases:
+        result = tm.run(input_tape)
+        print(f"输入: {[s.value for s in input_tape]} -> 接受: {result} (期望: {expected})")
+        assert result == expected, f"验证失败: {input_tape}"
+    print("所有测试通过!")
+
+### 有限状态机算法 / Finite State Machine Algorithms
+
+class DFA:
+    def __init__(self, states: List[str], alphabet: List[str], 
+                 transitions: Dict[Tuple[str, str], str], 
+                 initial_state: str, accept_states: List[str]):
+        self.states = states
+        self.alphabet = alphabet
+        self.transitions = transitions
+        self.initial_state = initial_state
+        self.accept_states = accept_states
+    
+    def run(self, input_string: str) -> bool:
+        current_state = self.initial_state
+        
+        for symbol in input_string:
+            if symbol not in self.alphabet:
+                return False
+            
+            key = (current_state, symbol)
+            if key not in self.transitions:
+                return False
+            
+            current_state = self.transitions[key]
+        
+        return current_state in self.accept_states
+
+class NFA:
+    def __init__(self, states: List[str], alphabet: List[str],
+                 transitions: Dict[Tuple[str, str], List[str]],
+                 initial_state: str, accept_states: List[str]):
+        self.states = states
+        self.alphabet = alphabet
+        self.transitions = transitions
+        self.initial_state = initial_state
+        self.accept_states = accept_states
+    
+    def epsilon_closure(self, states: List[str]) -> List[str]:
+        """计算ε闭包"""
+        closure = set(states)
+        stack = list(states)
+        
+        while stack:
+            state = stack.pop()
+            key = (state, 'ε')
+            if key in self.transitions:
+                for next_state in self.transitions[key]:
+                    if next_state not in closure:
+                        closure.add(next_state)
+                        stack.append(next_state)
+        
+        return list(closure)
+    
+    def run(self, input_string: str) -> bool:
+        current_states = self.epsilon_closure([self.initial_state])
+        
+        for symbol in input_string:
+            if symbol not in self.alphabet:
+                return False
+            
+            next_states = set()
+            for state in current_states:
+                key = (state, symbol)
+                if key in self.transitions:
+                    next_states.update(self.transitions[key])
+            
+            current_states = self.epsilon_closure(list(next_states))
+            
+            if not current_states:
+                return False
+        
+        return any(state in self.accept_states for state in current_states)
+
+def create_dfa_example() -> DFA:
+    """创建识别以'01'结尾的字符串的DFA"""
+    states = ['q0', 'q1', 'q2']
+    alphabet = ['0', '1']
+    transitions = {
+        ('q0', '0'): 'q1',
+        ('q0', '1'): 'q0',
+        ('q1', '0'): 'q1',
+        ('q1', '1'): 'q2',
+        ('q2', '0'): 'q1',
+        ('q2', '1'): 'q0',
+    }
+    
+    return DFA(states, alphabet, transitions, 'q0', ['q2'])
+
+def finite_automata_verification():
+    """有限状态机验证函数"""
+    dfa = create_dfa_example()
+    
+    test_cases = [
+        ('01', True),
+        ('001', True),
+        ('101', True),
+        ('0', False),
+        ('1', False),
+        ('00', False),
+    ]
+    
+    print("DFA验证结果:")
+    for input_str, expected in test_cases:
+        result = dfa.run(input_str)
+        print(f"输入: '{input_str}' -> 接受: {result} (期望: {expected})")
+        assert result == expected, f"验证失败: {input_str}"
+    print("所有测试通过!")
+
+### λ演算算法 / Lambda Calculus Algorithms
+
+class LambdaTerm:
+    def __init__(self, term_type: str, value=None, left=None, right=None):
+        self.term_type = term_type  # 'variable', 'abstraction', 'application'
+        self.value = value
+        self.left = left
+        self.right = right
+    
+    def __str__(self):
+        if self.term_type == 'variable':
+            return self.value
+        elif self.term_type == 'abstraction':
+            return f"λ{self.value}.{self.left}"
+        elif self.term_type == 'application':
+            return f"({self.left} {self.right})"
+
+def parse_lambda_term(expr: str) -> LambdaTerm:
+    """简单的λ项解析器"""
+    expr = expr.strip()
+    
+    # 变量
+    if expr.isalpha():
+        return LambdaTerm('variable', expr)
+    
+    # 抽象 λx.M
+    if expr.startswith('λ'):
+        dot_pos = expr.find('.')
+        if dot_pos != -1:
+            var = expr[1:dot_pos]
+            body = expr[dot_pos + 1:]
+            return LambdaTerm('abstraction', var, parse_lambda_term(body))
+    
+    # 应用 M N
+    if expr.startswith('(') and expr.endswith(')'):
+        expr = expr[1:-1]
+        paren_count = 0
+        for i, char in enumerate(expr):
+            if char == '(':
+                paren_count += 1
+            elif char == ')':
+                paren_count -= 1
+            elif char == ' ' and paren_count == 0:
+                left = expr[:i]
+                right = expr[i+1:]
+                return LambdaTerm('application', 
+                                left=parse_lambda_term(left),
+                                right=parse_lambda_term(right))
+    
+    return LambdaTerm('variable', expr)
+
+def beta_reduce(term: LambdaTerm, substitution: Dict[str, LambdaTerm]) -> LambdaTerm:
+    """β归约"""
+    if term.term_type == 'variable':
+        return substitution.get(term.value, term)
+    
+    elif term.term_type == 'abstraction':
+        new_body = beta_reduce(term.left, substitution)
+        return LambdaTerm('abstraction', term.value, new_body)
+    
+    elif term.term_type == 'application':
+        if term.left.term_type == 'abstraction':
+            # β归约: (λx.M) N -> M[x := N]
+            new_substitution = substitution.copy()
+            new_substitution[term.left.value] = term.right
+            return beta_reduce(term.left.left, new_substitution)
+        else:
+            new_left = beta_reduce(term.left, substitution)
+            new_right = beta_reduce(term.right, substitution)
+            return LambdaTerm('application', left=new_left, right=new_right)
+    
+    return term
+
+def lambda_calculus_verification():
+    """λ演算验证函数"""
+    # 测试: (λx.x) y -> y
+    identity = LambdaTerm('abstraction', 'x', LambdaTerm('variable', 'x'))
+    application = LambdaTerm('application', left=identity, right=LambdaTerm('variable', 'y'))
+    
+    result = beta_reduce(application, {})
+    print(f"λ演算测试: (λx.x) y -> {result}")
+    assert str(result) == 'y', "λ演算验证失败"
+    print("λ演算验证通过!")
+
+### 复杂度分析算法 / Complexity Analysis Algorithms
+
+def time_complexity_analysis():
+    """时间复杂度分析示例"""
+    algorithms = {
+        '线性搜索': lambda n: n,
+        '二分搜索': lambda n: np.log2(n),
+        '冒泡排序': lambda n: n**2,
+        '快速排序': lambda n: n * np.log2(n),
+        '矩阵乘法': lambda n: n**3,
+    }
+    
+    sizes = [10, 100, 1000]
+    
+    print("时间复杂度分析:")
+    for name, func in algorithms.items():
+        print(f"\n{name}:")
+        for size in sizes:
+            complexity = func(size)
+            print(f"  n={size}: {complexity:.2f}")
+    
+    return algorithms
+
+def space_complexity_analysis():
+    """空间复杂度分析示例"""
+    algorithms = {
+        '递归斐波那契': lambda n: n,  # 调用栈深度
+        '迭代斐波那契': lambda n: 1,  # 常数空间
+        '动态规划': lambda n: n,      # 数组大小
+        '深度优先搜索': lambda n: n,  # 递归深度
+        '广度优先搜索': lambda n: 2**n,  # 队列大小
+    }
+    
+    sizes = [10, 20, 30]
+    
+    print("空间复杂度分析:")
+    for name, func in algorithms.items():
+        print(f"\n{name}:")
+        for size in sizes:
+            complexity = func(size)
+            print(f"  n={size}: {complexity:.2f}")
+    
+    return algorithms
+
+def computational_models_verification():
+    """计算模型综合验证"""
+    print("=== 计算模型算法验证 ===\n")
+    
+    # 图灵机验证
+    turing_machine_verification()
+    print()
+    
+    # 有限状态机验证
+    finite_automata_verification()
+    print()
+    
+    # λ演算验证
+    lambda_calculus_verification()
+    print()
+    
+    # 复杂度分析
+    time_complexity_analysis()
+    space_complexity_analysis()
+    
+    print("\n=== 所有计算模型算法验证完成 ===")
+
+if __name__ == "__main__":
+    computational_models_verification()
+```
+
 ## 参考文献 / References
 
 1. Sipser, M. (2012). Introduction to the Theory of Computation. Cengage Learning.
@@ -575,5 +964,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

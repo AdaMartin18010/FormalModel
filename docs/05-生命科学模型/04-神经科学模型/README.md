@@ -883,6 +883,86 @@ example = do
 
 ---
 
+## 5.4.8 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from typing import Tuple
+
+def lif_simulate(T: float = 1.0, dt: float = 1e-4, I: float = 1.5, 
+                 V_rest: float = -65.0, V_th: float = -50.0, V_reset: float = -65.0, 
+                 tau_m: float = 0.02, t_ref: float = 0.002) -> Tuple[np.ndarray, np.ndarray]:
+    n = int(T / dt)
+    V = np.ones(n) * V_rest
+    spikes = np.zeros(n, dtype=bool)
+    ref_counter = 0.0
+    R = 1.0
+    for t in range(1, n):
+        if ref_counter > 0.0:
+            V[t] = V_reset
+            ref_counter -= dt
+            continue
+        dV = (-(V[t-1] - V_rest) + R * I) / tau_m
+        V[t] = V[t-1] + dt * dV
+        if V[t] >= V_th:
+            spikes[t] = True
+            V[t] = V_reset
+            ref_counter = t_ref
+    time = np.arange(n) * dt
+    return time, V, spikes
+
+def rate_model_step(r: float, I: float, tau: float, dt: float, phi=lambda x: np.maximum(0.0, x)) -> float:
+    dr = (-r + phi(I)) / tau
+    return max(0.0, r + dt * dr)
+
+def stdp_update(w: float, delta_t: float, A_plus: float = 0.01, A_minus: float = 0.012, 
+                tau_plus: float = 0.02, tau_minus: float = 0.02, wmin: float = 0.0, wmax: float = 1.0) -> float:
+    if delta_t > 0:
+        w += A_plus * np.exp(-delta_t / tau_plus)
+    else:
+        w -= A_minus * np.exp(delta_t / tau_minus)
+    return min(wmax, max(wmin, w))
+
+def network_dynamics_WilsonCowan(E: float, I: float, dt: float, params: dict) -> Tuple[float, float]:
+    tau_E, tau_I = params['tau_E'], params['tau_I']
+    w_EE, w_EI, w_IE, w_II = params['w_EE'], params['w_EI'], params['w_IE'], params['w_II']
+    I_E, I_I = params['I_E'], params['I_I']
+    phi = lambda x: 1.0 / (1.0 + np.exp(-x))
+    dE = (-E + phi(w_EE * E - w_EI * I + I_E)) / tau_E
+    dI = (-I + phi(w_IE * E - w_II * I + I_I)) / tau_I
+    E_new = np.clip(E + dt * dE, 0.0, 1.0)
+    I_new = np.clip(I + dt * dI, 0.0, 1.0)
+    return E_new, I_new
+
+def neuroscience_verification():
+    # LIF产生脉冲
+    t, V, spikes = lif_simulate(T=0.5, dt=1e-4, I=2.0)
+    assert spikes.sum() > 0 and np.isfinite(V).all()
+    
+    # 发放率模型单步稳定
+    r = 0.0
+    for _ in range(1000):
+        r = rate_model_step(r, I=1.0, tau=0.05, dt=1e-3)
+    assert 0.0 <= r <= 1e3
+    
+    # STDP权重更新方向正确
+    w = 0.5
+    w_pot = stdp_update(w, delta_t=0.01)
+    w_dep = stdp_update(w, delta_t=-0.01)
+    assert w_pot > w and w_dep < w
+    
+    # Wilson-Cowan网络稳定迭代
+    E, I = 0.1, 0.1
+    params = {'tau_E': 0.02, 'tau_I': 0.01, 'w_EE': 10.0, 'w_EI': 12.0, 'w_IE': 10.0, 'w_II': 0.0, 'I_E': 0.5, 'I_I': 0.0}
+    for _ in range(2000):
+        E, I = network_dynamics_WilsonCowan(E, I, 1e-3, params)
+    assert 0.0 <= E <= 1.0 and 0.0 <= I <= 1.0
+    print("Neuroscience models verified.")
+
+if __name__ == "__main__":
+    neuroscience_verification()
+```
+
 ## 参考文献 / References
 
 1. Hodgkin, A. L., & Huxley, A. F. (1952). A quantitative description of membrane current and its application to conduction and excitation in nerve. Journal of Physiology.
@@ -892,5 +972,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

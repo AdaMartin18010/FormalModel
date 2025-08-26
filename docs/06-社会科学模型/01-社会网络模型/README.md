@@ -898,6 +898,127 @@ example = do
 
 ---
 
+## 6.1.9 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from collections import deque, defaultdict
+from typing import Dict, List, Tuple, Set
+
+def degree_centrality(adj: Dict[int, List[int]]) -> Dict[int, float]:
+    n = len(adj)
+    return {u: len(adj[u]) / max(1, n - 1) for u in adj}
+
+def bfs_shortest_paths(adj: Dict[int, List[int]], s: int) -> Tuple[Dict[int, int], Dict[int, List[int]]]:
+    dist = {u: -1 for u in adj}
+    paths = {u: [] for u in adj}
+    dist[s] = 0
+    paths[s] = [[s]]
+    q = deque([s])
+    while q:
+        u = q.popleft()
+        for v in adj[u]:
+            if dist[v] == -1:
+                dist[v] = dist[u] + 1
+                paths[v] = [p + [v] for p in paths[u]]
+                q.append(v)
+            elif dist[v] == dist[u] + 1:
+                paths[v].extend(p + [v] for p in paths[u])
+    return dist, paths
+
+def betweenness_centrality(adj: Dict[int, List[int]]) -> Dict[int, float]:
+    bc = {u: 0.0 for u in adj}
+    nodes = list(adj.keys())
+    for s in nodes:
+        dist, paths = bfs_shortest_paths(adj, s)
+        for t in nodes:
+            if t != s and paths[t]:
+                all_paths = paths[t]
+                denom = len(all_paths)
+                for p in all_paths:
+                    for v in p[1:-1]:
+                        bc[v] += 1.0 / denom
+    # 归一化（无向图近似）
+    n = len(nodes)
+    norm = (n - 1) * (n - 2)
+    if norm > 0:
+        for v in bc:
+            bc[v] /= norm
+    return bc
+
+def label_propagation(adj: Dict[int, List[int]], max_iter: int = 100) -> Dict[int, int]:
+    labels = {u: u for u in adj}
+    nodes = list(adj.keys())
+    for _ in range(max_iter):
+        changed = 0
+        np.random.shuffle(nodes)
+        for u in nodes:
+            if not adj[u]:
+                continue
+            counts = defaultdict(int)
+            for v in adj[u]:
+                counts[labels[v]] += 1
+            best_label = max(counts.items(), key=lambda x: (x[1], x[0]))[0]
+            if labels[u] != best_label:
+                labels[u] = best_label
+                changed += 1
+        if changed == 0:
+            break
+    return labels
+
+def independent_cascade(adj: Dict[int, List[int]], seeds: Set[int], p: float = 0.1, R: int = 100) -> float:
+    n = len(adj)
+    total = 0
+    for _ in range(R):
+        active = set(seeds)
+        frontier = set(seeds)
+        while frontier:
+            new_frontier = set()
+            for u in frontier:
+                for v in adj[u]:
+                    if v not in active and np.random.rand() < p:
+                        active.add(v)
+                        new_frontier.add(v)
+            frontier = new_frontier
+        total += len(active)
+    return total / R
+
+def deffuant_update(opinions: np.ndarray, edges: List[Tuple[int, int]], mu: float = 0.5, eps: float = 0.3, steps: int = 10000) -> np.ndarray:
+    n = len(opinions)
+    for _ in range(steps):
+        i, j = edges[np.random.randint(len(edges))]
+        if abs(opinions[i] - opinions[j]) < eps:
+            xi, xj = opinions[i], opinions[j]
+            opinions[i] = xi + mu * (xj - xi)
+            opinions[j] = xj + mu * (xi - xj)
+    return opinions
+
+def social_network_verification():
+    # 构造小图
+    adj = {0: [1,2], 1: [0,2], 2: [0,1,3], 3: [2]}
+    deg = degree_centrality(adj)
+    bc = betweenness_centrality(adj)
+    assert 0 <= deg[0] <= 1 and 0 <= bc[2] <= 1
+    
+    # 标签传播聚类
+    labels = label_propagation(adj)
+    assert set(labels.keys()) == set(adj.keys())
+    
+    # 独立级联影响力估计
+    spread = independent_cascade(adj, seeds={0}, p=0.5, R=50)
+    assert spread >= 1
+    
+    # Deffuant意见演化
+    opinions = np.random.rand(10)
+    edges = [(i, (i+1)%10) for i in range(10)]
+    opinions_final = deffuant_update(opinions.copy(), edges, mu=0.3, eps=0.4, steps=2000)
+    assert np.all(np.isfinite(opinions_final))
+    print("Social network algorithms verified.")
+
+if __name__ == "__main__":
+    social_network_verification()
+```
+
 ## 参考文献 / References
 
 1. Newman, M. E. J. (2010). Networks: An Introduction. Oxford University Press.
@@ -907,5 +1028,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

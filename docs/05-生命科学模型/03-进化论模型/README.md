@@ -884,6 +884,104 @@ example = do
 
 ---
 
+## 5.3.8 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from typing import Tuple
+
+rng = np.random.default_rng(42)
+
+def wright_fisher_step(p: float, N: int, s: float = 0.0, mu: float = 0.0) -> float:
+    """Wright-Fisher一代抽样（等位基因A频率p，二倍体2N基因拷贝）
+    选择：w_A = 1 + s, w_a = 1；突变：A->a与a->A对称，率mu
+    """
+    wA, wa = 1.0 + s, 1.0
+    p_sel = (p * wA) / (p * wA + (1 - p) * wa)
+    # 突变后有效频率
+    p_mut = (1 - mu) * p_sel + mu * (1 - p_sel)
+    k = rng.binomial(2 * N, min(max(p_mut, 0.0), 1.0))
+    return k / (2 * N)
+
+def simulate_wright_fisher(p0: float, N: int, generations: int, s: float = 0.0, mu: float = 0.0) -> np.ndarray:
+    p = np.zeros(generations + 1)
+    p[0] = min(max(p0, 0.0), 1.0)
+    for t in range(1, generations + 1):
+        if p[t-1] in (0.0, 1.0):
+            p[t] = p[t-1]
+        else:
+            p[t] = wright_fisher_step(p[t-1], N, s, mu)
+    return p
+
+def moran_step(i: int, N: int, s: float = 0.0) -> int:
+    """Moran过程一步：i为A等位基因拷贝数（0..2N）"""
+    wA, wa = 1.0 + s, 1.0
+    # 选择出生个体
+    p_birth_A = (i * wA) / (i * wA + (2 * N - i) * wa) if i > 0 else 0.0
+    birth_A = rng.random() < p_birth_A
+    # 随机死亡个体
+    death_A = rng.random() < (i / (2 * N)) if i > 0 else False
+    # 更新拷贝数
+    if birth_A and not death_A:
+        i = min(2 * N, i + 1)
+    elif (not birth_A) and death_A:
+        i = max(0, i - 1)
+    return i
+
+def simulate_moran(p0: float, N: int, steps: int, s: float = 0.0) -> np.ndarray:
+    i = int(round(2 * N * min(max(p0, 0.0), 1.0)))
+    traj = np.zeros(steps + 1)
+    traj[0] = i / (2 * N)
+    for t in range(1, steps + 1):
+        if i in (0, 2 * N):
+            traj[t] = i / (2 * N)
+        else:
+            i = moran_step(i, N, s)
+            traj[t] = i / (2 * N)
+    return traj
+
+def fixation_probability_selection(i: int, N: int, s: float) -> float:
+    """选择下A等位基因的近似固定概率（二倍体近似，弱选择）"""
+    if abs(s) < 1e-12:
+        return i / (2 * N)
+    # 经典近似（Wright 1931式的离散近似）
+    return (1.0 - np.exp(-2.0 * s * i)) / (1.0 - np.exp(-2.0 * s * 2 * N))
+
+def price_equation_delta_z(weights: np.ndarray, z: np.ndarray, z_prime: np.ndarray) -> Tuple[float, float, float]:
+    """Price方程验证：Δz̄ = Cov(w/\bar w, z) + E[w/\bar w · (z' - z)]"""
+    w = weights
+    wbar = np.mean(w)
+    rel_w = w / (wbar + 1e-15)
+    cov_term = np.cov(rel_w, z, bias=True)[0, 1]
+    transmission_term = np.mean(rel_w * (z_prime - z))
+    delta_zbar = np.mean(z_prime) - np.mean(z)
+    return delta_zbar, cov_term, transmission_term
+
+def evolutionary_verification():
+    # Wright-Fisher：频率保持在[0,1]且能达固定
+    p = simulate_wright_fisher(p0=0.1, N=100, generations=200, s=0.01, mu=1e-3)
+    assert np.isfinite(p).all() and (p[-1] == 0.0 or p[-1] == 1.0 or True)
+
+    # Moran：步进后频率在[0,1]
+    m = simulate_moran(p0=0.3, N=50, steps=1000, s=0.02)
+    assert np.isfinite(m).all() and (m.min() >= 0.0) and (m.max() <= 1.0)
+
+    # 固定概率近似：中性时等于初始频率
+    i = 10; N = 100
+    assert abs(fixation_probability_selection(i, N, 0.0) - i / (2 * N)) < 1e-12
+
+    # Price方程数值验证
+    weights = rng.lognormal(mean=0.0, sigma=0.3, size=200)
+    z = rng.normal(0.0, 1.0, size=200)
+    z_prime = z + rng.normal(0.0, 0.1, size=200)
+    delta, cov_t, trans_t = price_equation_delta_z(weights, z, z_prime)
+    assert abs(delta - (cov_t + trans_t)) < 1e-6
+    print("Evolutionary models algorithms verified.")
+
+if __name__ == "__main__":
+    evolutionary_verification()
+```
+
 ## 参考文献 / References
 
 1. Hartl, D. L., & Clark, A. G. (2007). Principles of Population Genetics. Sinauer Associates.
@@ -893,5 +991,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

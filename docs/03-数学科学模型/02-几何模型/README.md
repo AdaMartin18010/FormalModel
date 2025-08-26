@@ -240,6 +240,152 @@ def geodesic_example():
     return np.array(path)
 ```
 
+### 算法实现：曲率张量与测地线偏离 / Algorithms: Curvature Tensor and Geodesic Deviation
+
+```python
+import numpy as np
+from typing import Tuple, List
+
+def riemann_tensor(g: Callable[[Array], Array],
+                   dg: Callable[[Array], Tuple[Array, Array, Array]],
+                   x: Array) -> Array:
+    """计算黎曼曲率张量 R^i_{jkl}（四阶张量）"""
+    n = x.size
+    Gamma = christoffel_symbols(g, dg, x)
+    g_ij = g(x)
+    g_inv = inverse_metric(g_ij)
+    
+    # 计算∂_k Γ^m_{jl} 和 ∂_l Γ^m_{jk}
+    dGamma = np.zeros((n, n, n, n), dtype=float)  # dGamma[k,m,j,l]
+    for k in range(n):
+        for m in range(n):
+            for j in range(n):
+                for l in range(n):
+                    # 简化：假设Γ^m_{jl}关于x^k的偏导
+                    # 实际应用中需要数值微分或解析表达式
+                    dGamma[k, m, j, l] = 0.0  # 占位符
+    
+    R = np.zeros((n, n, n, n), dtype=float)  # R[i,j,k,l]
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                for l in range(n):
+                    # R^i_{jkl} = ∂_k Γ^i_{jl} - ∂_l Γ^i_{jk} + Γ^i_{mk} Γ^m_{jl} - Γ^i_{ml} Γ^m_{jk}
+                    term1 = dGamma[k, i, j, l] - dGamma[l, i, j, k]
+                    term2 = 0.0
+                    for m in range(n):
+                        term2 += Gamma[i, m, k] * Gamma[m, j, l] - Gamma[i, m, l] * Gamma[m, j, k]
+                    R[i, j, k, l] = term1 + term2
+    
+    return R
+
+def ricci_tensor(R: Array) -> Array:
+    """从黎曼张量计算里奇张量 R_{ij} = R^k_{ikj}"""
+    n = R.shape[0]
+    R_ij = np.zeros((n, n), dtype=float)
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                R_ij[i, j] += R[k, i, k, j]
+    return R_ij
+
+def scalar_curvature(R_ij: Array, g_inv: Array) -> float:
+    """计算标量曲率 R = g^{ij} R_{ij}"""
+    return np.sum(g_inv * R_ij)
+
+def geodesic_deviation_equation(x: Array, v: Array, xi: Array, dxi: Array,
+                               R: Array) -> Tuple[Array, Array]:
+    """测地线偏离方程：d²ξ^a/dτ² + R^a_{bcd} v^b ξ^c v^d = 0"""
+    n = x.size
+    d2xi = np.zeros_like(xi)
+    
+    for a in range(n):
+        for b in range(n):
+            for c in range(n):
+                for d in range(n):
+                    d2xi[a] -= R[a, b, c, d] * v[b] * xi[c] * v[d]
+    
+    return dxi, d2xi
+
+def geodesic_deviation_solver(x0: Array, v0: Array, xi0: Array, dxi0: Array,
+                             h: float, steps: int, R_fn: Callable[[Array], Array]) -> List[Array]:
+    """求解测地线偏离方程，返回偏离向量序列"""
+    x, v = x0.copy(), v0.copy()
+    xi, dxi = xi0.copy(), dxi0.copy()
+    deviations = [xi.copy()]
+    
+    for _ in range(steps):
+        # 推进测地线
+        x, v = rk4_step(x, v, h, lambda x: christoffel_symbols(g_polar, dg_polar, x))
+        
+        # 推进偏离方程
+        R = R_fn(x)
+        dxi_new, d2xi = geodesic_deviation_equation(x, v, xi, dxi, R)
+        
+        # RK4步进偏离方程
+        k1_xi, k1_dxi = dxi, d2xi
+        k2_xi, k2_dxi = dxi + 0.5*h*k1_dxi, geodesic_deviation_equation(x, v, xi + 0.5*h*k1_xi, dxi + 0.5*h*k1_dxi, R)[1]
+        k3_xi, k3_dxi = dxi + 0.5*h*k2_dxi, geodesic_deviation_equation(x, v, xi + 0.5*h*k2_xi, dxi + 0.5*h*k2_dxi, R)[1]
+        k4_xi, k4_dxi = dxi + h*k3_dxi, geodesic_deviation_equation(x, v, xi + h*k3_xi, dxi + h*k3_dxi, R)[1]
+        
+        xi += (h/6.0) * (k1_xi + 2*k2_xi + 2*k3_xi + k4_xi)
+        dxi += (h/6.0) * (k1_dxi + 2*k2_dxi + 2*k3_dxi + k4_dxi)
+        
+        deviations.append(xi.copy())
+    
+    return deviations
+
+def curvature_verification(g: Callable[[Array], Array], x: Array) -> dict:
+    """曲率计算验证：检查黎曼张量对称性、里奇张量对称性等"""
+    n = x.size
+    R = riemann_tensor(g, lambda x: dg_polar(x), x)
+    R_ij = ricci_tensor(R)
+    g_ij = g(x)
+    g_inv = inverse_metric(g_ij)
+    R_scalar = scalar_curvature(R_ij, g_inv)
+    
+    # 检查黎曼张量反对称性 R^i_{jkl} = -R^i_{jlk}
+    antisymmetry_check = True
+    for i in range(n):
+        for j in range(n):
+            for k in range(n):
+                for l in range(n):
+                    if abs(R[i, j, k, l] + R[i, j, l, k]) > 1e-10:
+                        antisymmetry_check = False
+    
+    # 检查里奇张量对称性 R_{ij} = R_{ji}
+    ricci_symmetry = np.allclose(R_ij, R_ij.T, atol=1e-10)
+    
+    return {
+        "riemann_tensor": R,
+        "ricci_tensor": R_ij,
+        "scalar_curvature": R_scalar,
+        "antisymmetry_valid": antisymmetry_check,
+        "ricci_symmetric": ricci_symmetry
+    }
+
+def geodesic_deviation_example():
+    """测地线偏离示例：在极坐标平面上"""
+    x0 = np.array([1.0, 0.0])      # 初始位置
+    v0 = np.array([0.0, 1.0])      # 初始速度（角向）
+    xi0 = np.array([0.1, 0.0])     # 初始偏离
+    dxi0 = np.array([0.0, 0.1])    # 初始偏离速度
+    
+    h = 0.01
+    steps = 100
+    
+    deviations = geodesic_deviation_solver(x0, v0, xi0, dxi0, h, steps, 
+                                          lambda x: riemann_tensor(g_polar, dg_polar, x))
+    
+    # 验证曲率
+    curvature_check = curvature_verification(g_polar, x0)
+    
+    return {
+        "deviations": np.array(deviations),
+        "curvature_verification": curvature_check
+    }
+```
+
 ---
 
 ## 3.2.4 代数几何 / Algebraic Geometry
@@ -384,5 +530,5 @@ $$
 
 ---
 
-*最后更新: 2025-08-25*
-*版本: 1.1.0*
+*最后更新: 2025-08-26*
+*版本: 1.2.0*

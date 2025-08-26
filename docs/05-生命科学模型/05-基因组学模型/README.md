@@ -741,6 +741,71 @@ example = do
 
 ---
 
+## 5.5.7 算法实现 / Algorithm Implementation
+
+```python
+import numpy as np
+from collections import Counter
+from typing import Dict, Tuple, List
+
+def gc_content(seq: str) -> float:
+    if not seq:
+        return 0.0
+    gc = sum(1 for c in seq.upper() if c in ('G','C'))
+    atgc = sum(1 for c in seq.upper() if c in ('A','T','G','C'))
+    return gc / atgc if atgc else 0.0
+
+def kmer_spectrum(seq: str, k: int) -> Dict[str, int]:
+    counts = Counter()
+    seq = seq.upper()
+    for i in range(0, max(0, len(seq) - k + 1)):
+        kmer = seq[i:i+k]
+        if set(kmer) <= set('ATGC') and len(kmer) == k:
+            counts[kmer] += 1
+    return dict(counts)
+
+def coverage_model_poisson(reads: int, genome_len: int, read_len: int) -> float:
+    """平均覆盖度C = (reads * read_len) / genome_len"""
+    return (reads * read_len) / max(1, genome_len)
+
+def sfs_from_genotypes(genotypes: List[str]) -> Dict[int, int]:
+    """简化SFS：按衍生等位基因计数（以第一等位基因为祖先）"""
+    if not genotypes:
+        return {}
+    # 假设二等位基因，如A/B，以第一字符为祖先
+    anc = genotypes[0][0]
+    counts = Counter()
+    for g in genotypes:
+        derived = sum(1 for a in g if a != anc)
+        counts[derived] += 1
+    return dict(counts)
+
+def simple_variant_call(depth_ref: int, depth_alt: int, min_depth: int = 10, min_af: float = 0.2) -> Tuple[bool, float]:
+    depth = depth_ref + depth_alt
+    if depth < min_depth:
+        return False, 0.0
+    af = depth_alt / depth
+    is_variant = af >= min_af
+    return is_variant, af
+
+def genomics_verification():
+    seq = "ATGCGCGATATNNNCG"
+    gc = gc_content(seq)
+    assert 0.0 <= gc <= 1.0
+    spec = kmer_spectrum("ATGCGC", k=3)
+    assert sum(spec.values()) == 4
+    cov = coverage_model_poisson(reads=1_000_000, genome_len=3_000_000, read_len=150)
+    assert cov > 0
+    sfs = sfs_from_genotypes(["AA","AB","BB","AA","AB"])
+    assert sum(sfs.values()) == 5
+    is_var, af = simple_variant_call(18, 7, min_depth=20, min_af=0.2)
+    assert is_var and 0.2 <= af <= 1.0
+    print("Genomics algorithms verified.")
+
+if __name__ == "__main__":
+    genomics_verification()
+```
+
 ## 参考文献 / References
 
 1. Altschul, S. F., et al. (1990). Basic local alignment search tool. Journal of Molecular Biology, 215(3), 403-410.
@@ -750,5 +815,5 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

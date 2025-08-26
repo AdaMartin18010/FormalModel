@@ -344,5 +344,417 @@ $$z_t = \frac{P_t^A - \beta P_t^B}{\sigma_{spread}}$$
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+## 8.6.8 算法实现 / Algorithm Implementation
+
+### 风险管理算法 / Risk Management Algorithms
+
+```python
+from typing import Dict, List, Any, Optional, Tuple
+import numpy as np
+import scipy.stats as stats
+from dataclasses import dataclass
+
+class VaRCalculator:
+    """VaR计算器"""
+    
+    def __init__(self, confidence_level: float = 0.95):
+        self.confidence_level = confidence_level
+    
+    def parametric_var(self, returns: np.ndarray, portfolio_value: float = 1.0) -> float:
+        """参数VaR"""
+        mean_return = np.mean(returns)
+        std_return = np.std(returns)
+        z_score = stats.norm.ppf(1 - self.confidence_level)
+        
+        var = portfolio_value * (mean_return - z_score * std_return)
+        return abs(var)
+    
+    def historical_var(self, returns: np.ndarray, portfolio_value: float = 1.0) -> float:
+        """历史VaR"""
+        percentile = (1 - self.confidence_level) * 100
+        var = np.percentile(returns, percentile)
+        return abs(portfolio_value * var)
+    
+    def monte_carlo_var(self, returns: np.ndarray, portfolio_value: float = 1.0, 
+                       n_simulations: int = 10000, time_horizon: int = 1) -> float:
+        """蒙特卡洛VaR"""
+        mean_return = np.mean(returns)
+        std_return = np.std(returns)
+        
+        # 生成模拟收益
+        simulated_returns = np.random.normal(
+            mean_return, std_return, (n_simulations, time_horizon)
+        )
+        
+        # 计算投资组合价值变化
+        portfolio_values = portfolio_value * np.prod(1 + simulated_returns, axis=1)
+        portfolio_changes = portfolio_values - portfolio_value
+        
+        # 计算VaR
+        percentile = (1 - self.confidence_level) * 100
+        var = np.percentile(portfolio_changes, percentile)
+        return abs(var)
+
+class CreditRiskModel:
+    """信用风险模型"""
+    
+    def __init__(self, risk_free_rate: float = 0.05):
+        self.risk_free_rate = risk_free_rate
+    
+    def merton_model(self, asset_value: float, debt_value: float, 
+                    asset_volatility: float, time_to_maturity: float) -> Dict[str, float]:
+        """Merton模型"""
+        # 计算d1和d2
+        d1 = (np.log(asset_value / debt_value) + 
+              (self.risk_free_rate + asset_volatility**2 / 2) * time_to_maturity) / \
+             (asset_volatility * np.sqrt(time_to_maturity))
+        
+        d2 = d1 - asset_volatility * np.sqrt(time_to_maturity)
+        
+        # 计算股权价值
+        equity_value = asset_value * stats.norm.cdf(d1) - \
+                      debt_value * np.exp(-self.risk_free_rate * time_to_maturity) * \
+                      stats.norm.cdf(d2)
+        
+        # 计算违约概率
+        default_probability = stats.norm.cdf(-d2)
+        
+        return {
+            'equity_value': equity_value,
+            'default_probability': default_probability,
+            'd1': d1,
+            'd2': d2
+        }
+    
+    def kmv_model(self, asset_value: float, debt_value: float, 
+                 asset_volatility: float, time_to_maturity: float) -> Dict[str, float]:
+        """KMV模型"""
+        # 简化的KMV模型实现
+        merton_result = self.merton_model(asset_value, debt_value, 
+                                        asset_volatility, time_to_maturity)
+        
+        # 计算距离违约
+        distance_to_default = (asset_value - debt_value) / (asset_value * asset_volatility)
+        
+        return {
+            **merton_result,
+            'distance_to_default': distance_to_default
+        }
+
+class GARCHModel:
+    """GARCH模型"""
+    
+    def __init__(self, omega: float = 0.0001, alpha: float = 0.1, beta: float = 0.8):
+        self.omega = omega
+        self.alpha = alpha
+        self.beta = beta
+        self.variances = []
+    
+    def fit(self, returns: np.ndarray) -> 'GARCHModel':
+        """拟合GARCH模型"""
+        n = len(returns)
+        self.variances = np.zeros(n)
+        
+        # 初始化方差
+        self.variances[0] = np.var(returns)
+        
+        # 递归计算方差
+        for t in range(1, n):
+            self.variances[t] = self.omega + \
+                               self.alpha * returns[t-1]**2 + \
+                               self.beta * self.variances[t-1]
+        
+        return self
+    
+    def forecast(self, steps: int = 1) -> np.ndarray:
+        """预测方差"""
+        if not self.variances:
+            raise ValueError("Model must be fitted before forecasting")
+        
+        forecasts = []
+        last_variance = self.variances[-1]
+        
+        for _ in range(steps):
+            forecast_variance = self.omega + \
+                              self.alpha * 0 + \
+                              self.beta * last_variance
+            forecasts.append(forecast_variance)
+            last_variance = forecast_variance
+        
+        return np.array(forecasts)
+
+### 投资组合算法 / Portfolio Algorithms
+
+class MarkowitzPortfolio:
+    """马科维茨投资组合优化"""
+    
+    def __init__(self, risk_free_rate: float = 0.02):
+        self.risk_free_rate = risk_free_rate
+    
+    def calculate_optimal_weights(self, returns: np.ndarray, 
+                                target_return: Optional[float] = None) -> np.ndarray:
+        """计算最优权重"""
+        n_assets = returns.shape[1]
+        
+        # 计算期望收益和协方差矩阵
+        expected_returns = np.mean(returns, axis=0)
+        covariance_matrix = np.cov(returns.T)
+        
+        if target_return is None:
+            # 最大化夏普比率
+            inv_cov = np.linalg.inv(covariance_matrix)
+            excess_returns = expected_returns - self.risk_free_rate
+            weights = inv_cov @ excess_returns
+            weights = weights / np.sum(weights)
+        else:
+            # 最小化风险，满足目标收益
+            # 简化实现，使用拉格朗日乘数法
+            inv_cov = np.linalg.inv(covariance_matrix)
+            ones = np.ones(n_assets)
+            
+            A = np.array([[2 * covariance_matrix, ones, expected_returns],
+                         [ones, 0, 0],
+                         [expected_returns, 0, 0]])
+            b = np.array([np.zeros(n_assets), 1, target_return])
+            
+            try:
+                solution = np.linalg.solve(A, b)
+                weights = solution[:n_assets]
+            except np.linalg.LinAlgError:
+                # 如果矩阵奇异，使用简化方法
+                weights = np.ones(n_assets) / n_assets
+        
+        return weights
+    
+    def calculate_portfolio_metrics(self, weights: np.ndarray, 
+                                  returns: np.ndarray) -> Dict[str, float]:
+        """计算投资组合指标"""
+        expected_returns = np.mean(returns, axis=0)
+        covariance_matrix = np.cov(returns.T)
+        
+        portfolio_return = np.sum(weights * expected_returns)
+        portfolio_variance = weights.T @ covariance_matrix @ weights
+        portfolio_volatility = np.sqrt(portfolio_variance)
+        sharpe_ratio = (portfolio_return - self.risk_free_rate) / portfolio_volatility
+        
+        return {
+            'return': portfolio_return,
+            'volatility': portfolio_volatility,
+            'sharpe_ratio': sharpe_ratio,
+            'variance': portfolio_variance
+        }
+
+class CAPMModel:
+    """资本资产定价模型"""
+    
+    def __init__(self, risk_free_rate: float = 0.02):
+        self.risk_free_rate = risk_free_rate
+    
+    def calculate_beta(self, asset_returns: np.ndarray, 
+                      market_returns: np.ndarray) -> float:
+        """计算贝塔系数"""
+        covariance = np.cov(asset_returns, market_returns)[0, 1]
+        market_variance = np.var(market_returns)
+        beta = covariance / market_variance
+        return beta
+    
+    def calculate_expected_return(self, beta: float, 
+                                market_return: float) -> float:
+        """计算期望收益"""
+        expected_return = self.risk_free_rate + beta * (market_return - self.risk_free_rate)
+        return expected_return
+    
+    def calculate_alpha(self, actual_return: float, expected_return: float) -> float:
+        """计算阿尔法"""
+        alpha = actual_return - expected_return
+        return alpha
+
+### 期权定价算法 / Option Pricing Algorithms
+
+class BlackScholesModel:
+    """Black-Scholes期权定价模型"""
+    
+    def __init__(self, risk_free_rate: float = 0.05):
+        self.risk_free_rate = risk_free_rate
+    
+    def calculate_option_price(self, S: float, K: float, T: float, 
+                             sigma: float, option_type: str = 'call') -> float:
+        """计算期权价格"""
+        d1 = (np.log(S / K) + (self.risk_free_rate + sigma**2 / 2) * T) / \
+             (sigma * np.sqrt(T))
+        d2 = d1 - sigma * np.sqrt(T)
+        
+        if option_type.lower() == 'call':
+            price = S * stats.norm.cdf(d1) - \
+                   K * np.exp(-self.risk_free_rate * T) * stats.norm.cdf(d2)
+        else:  # put
+            price = K * np.exp(-self.risk_free_rate * T) * stats.norm.cdf(-d2) - \
+                   S * stats.norm.cdf(-d1)
+        
+        return price
+    
+    def calculate_implied_volatility(self, S: float, K: float, T: float, 
+                                   option_price: float, option_type: str = 'call') -> float:
+        """计算隐含波动率"""
+        def objective(sigma):
+            return self.calculate_option_price(S, K, T, sigma, option_type) - option_price
+        
+        # 使用二分法求解
+        sigma_min, sigma_max = 0.001, 5.0
+        tolerance = 1e-6
+        max_iterations = 100
+        
+        for _ in range(max_iterations):
+            sigma_mid = (sigma_min + sigma_max) / 2
+            f_mid = objective(sigma_mid)
+            
+            if abs(f_mid) < tolerance:
+                return sigma_mid
+            
+            if f_mid > 0:
+                sigma_max = sigma_mid
+            else:
+                sigma_min = sigma_mid
+        
+        return sigma_mid
+
+class BinomialTreeModel:
+    """二叉树期权定价模型"""
+    
+    def __init__(self, risk_free_rate: float = 0.05):
+        self.risk_free_rate = risk_free_rate
+    
+    def calculate_option_price(self, S: float, K: float, T: float, 
+                             sigma: float, n_steps: int, option_type: str = 'call') -> float:
+        """计算期权价格"""
+        dt = T / n_steps
+        u = np.exp(sigma * np.sqrt(dt))
+        d = 1 / u
+        p = (np.exp(self.risk_free_rate * dt) - d) / (u - d)
+        
+        # 构建价格树
+        stock_prices = np.zeros((n_steps + 1, n_steps + 1))
+        option_prices = np.zeros((n_steps + 1, n_steps + 1))
+        
+        # 计算股票价格
+        for i in range(n_steps + 1):
+            for j in range(i + 1):
+                stock_prices[i, j] = S * (u ** (i - j)) * (d ** j)
+        
+        # 计算期权价格（从后往前）
+        for j in range(n_steps + 1):
+            if option_type.lower() == 'call':
+                option_prices[n_steps, j] = max(0, stock_prices[n_steps, j] - K)
+            else:  # put
+                option_prices[n_steps, j] = max(0, K - stock_prices[n_steps, j])
+        
+        for i in range(n_steps - 1, -1, -1):
+            for j in range(i + 1):
+                option_prices[i, j] = np.exp(-self.risk_free_rate * dt) * \
+                                    (p * option_prices[i + 1, j] + 
+                                     (1 - p) * option_prices[i + 1, j + 1])
+        
+        return option_prices[0, 0]
+
+def banking_finance_verification():
+    """银行金融模型验证"""
+    print("=== 银行金融模型验证 ===")
+    
+    # 风险管理验证
+    print("\n1. 风险管理验证:")
+    
+    # 生成模拟收益数据
+    np.random.seed(42)
+    returns = np.random.normal(0.001, 0.02, 1000)
+    
+    # VaR计算
+    var_calc = VaRCalculator(confidence_level=0.95)
+    parametric_var = var_calc.parametric_var(returns, portfolio_value=1000000)
+    historical_var = var_calc.historical_var(returns, portfolio_value=1000000)
+    monte_carlo_var = var_calc.monte_carlo_var(returns, portfolio_value=1000000)
+    
+    print(f"参数VaR: ${parametric_var:.2f}")
+    print(f"历史VaR: ${historical_var:.2f}")
+    print(f"蒙特卡洛VaR: ${monte_carlo_var:.2f}")
+    
+    # 信用风险模型
+    credit_model = CreditRiskModel()
+    merton_result = credit_model.merton_model(
+        asset_value=1000000, debt_value=800000, 
+        asset_volatility=0.3, time_to_maturity=1.0
+    )
+    print(f"Merton模型违约概率: {merton_result['default_probability']:.4f}")
+    
+    # GARCH模型
+    garch = GARCHModel()
+    garch.fit(returns)
+    forecast_variance = garch.forecast(steps=5)
+    print(f"GARCH预测方差: {forecast_variance}")
+    
+    # 投资组合验证
+    print("\n2. 投资组合验证:")
+    
+    # 生成多资产收益数据
+    n_assets = 5
+    n_periods = 1000
+    asset_returns = np.random.multivariate_normal(
+        mean=[0.001] * n_assets,
+        cov=np.eye(n_assets) * 0.02**2,
+        size=n_periods
+    )
+    
+    # 马科维茨投资组合
+    portfolio = MarkowitzPortfolio()
+    weights = portfolio.calculate_optimal_weights(asset_returns)
+    metrics = portfolio.calculate_portfolio_metrics(weights, asset_returns)
+    
+    print(f"最优权重: {weights}")
+    print(f"投资组合收益: {metrics['return']:.4f}")
+    print(f"投资组合波动率: {metrics['volatility']:.4f}")
+    print(f"夏普比率: {metrics['sharpe_ratio']:.4f}")
+    
+    # CAPM模型
+    market_returns = np.random.normal(0.001, 0.015, n_periods)
+    capm = CAPMModel()
+    beta = capm.calculate_beta(asset_returns[:, 0], market_returns)
+    expected_return = capm.calculate_expected_return(beta, np.mean(market_returns))
+    print(f"资产1的贝塔: {beta:.4f}")
+    print(f"期望收益: {expected_return:.4f}")
+    
+    # 期权定价验证
+    print("\n3. 期权定价验证:")
+    
+    # Black-Scholes模型
+    bs_model = BlackScholesModel()
+    call_price = bs_model.calculate_option_price(
+        S=100, K=100, T=1.0, sigma=0.2, option_type='call'
+    )
+    put_price = bs_model.calculate_option_price(
+        S=100, K=100, T=1.0, sigma=0.2, option_type='put'
+    )
+    print(f"看涨期权价格: ${call_price:.4f}")
+    print(f"看跌期权价格: ${put_price:.4f}")
+    
+    # 隐含波动率
+    implied_vol = bs_model.calculate_implied_volatility(
+        S=100, K=100, T=1.0, option_price=call_price, option_type='call'
+    )
+    print(f"隐含波动率: {implied_vol:.4f}")
+    
+    # 二叉树模型
+    binomial_model = BinomialTreeModel()
+    binomial_call_price = binomial_model.calculate_option_price(
+        S=100, K=100, T=1.0, sigma=0.2, n_steps=100, option_type='call'
+    )
+    print(f"二叉树看涨期权价格: ${binomial_call_price:.4f}")
+    
+    print("\n验证完成!")
+
+if __name__ == "__main__":
+    banking_finance_verification()
+```
+
+---
+
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

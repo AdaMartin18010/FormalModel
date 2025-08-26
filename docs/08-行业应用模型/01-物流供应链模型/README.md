@@ -536,5 +536,379 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+## 8.1.5 算法实现 / Algorithm Implementation
+
+### 库存管理算法 / Inventory Management Algorithms
+
+```python
+import numpy as np
+from typing import List, Tuple, Dict, Optional
+from dataclasses import dataclass
+from scipy import stats
+
+@dataclass
+class InventoryModel:
+    """库存管理模型"""
+    annual_demand: float
+    order_cost: float
+    holding_cost: float
+    lead_time: float
+    service_level: float
+
+def economic_order_quantity(model: InventoryModel) -> float:
+    """经济订货量计算"""
+    return np.sqrt(2 * model.annual_demand * model.order_cost / model.holding_cost)
+
+def total_inventory_cost(model: InventoryModel, order_quantity: float) -> float:
+    """总库存成本"""
+    ordering_cost = (model.annual_demand / order_quantity) * model.order_cost
+    holding_cost = (order_quantity / 2) * model.holding_cost
+    return ordering_cost + holding_cost
+
+def safety_stock_calculation(demand_std: float, lead_time: float, service_level: float) -> float:
+    """安全库存计算"""
+    z_score = stats.norm.ppf(service_level)
+    return z_score * demand_std * np.sqrt(lead_time)
+
+def reorder_point_calculation(avg_demand: float, lead_time: float, safety_stock: float) -> float:
+    """再订货点计算"""
+    return avg_demand * lead_time + safety_stock
+
+def multi_echelon_inventory_optimization(
+    demands: List[float],
+    lead_times: List[float],
+    holding_costs: List[float],
+    service_levels: List[float]
+) -> Tuple[List[float], List[float]]:
+    """多级库存优化"""
+    n_levels = len(demands)
+    safety_stocks = []
+    reorder_points = []
+    
+    for i in range(n_levels):
+        # 简化的安全库存计算
+        safety_stock = safety_stock_calculation(
+            demands[i] * 0.1,  # 假设需求标准差为平均需求的10%
+            lead_times[i],
+            service_levels[i]
+        )
+        safety_stocks.append(safety_stock)
+        
+        reorder_point = reorder_point_calculation(
+            demands[i],
+            lead_times[i],
+            safety_stock
+        )
+        reorder_points.append(reorder_point)
+    
+    return safety_stocks, reorder_points
+```
+
+### 运输优化算法 / Transportation Optimization Algorithms
+
+```python
+import numpy as np
+from typing import List, Tuple, Dict, Set
+from itertools import permutations
+import heapq
+
+class VehicleRoutingProblem:
+    """车辆路径问题"""
+    
+    def __init__(self, distances: Dict[Tuple[str, str], float], 
+                 demands: Dict[str, float], vehicle_capacity: float):
+        self.distances = distances
+        self.demands = demands
+        self.vehicle_capacity = vehicle_capacity
+        self.depot = 'depot'
+    
+    def nearest_neighbor_heuristic(self) -> List[List[str]]:
+        """最近邻启发式算法"""
+        unvisited = set(self.demands.keys())
+        routes = []
+        current_route = [self.depot]
+        current_load = 0
+        
+        while unvisited:
+            if not current_route:
+                current_route = [self.depot]
+                current_load = 0
+            
+            current = current_route[-1]
+            nearest = None
+            min_distance = float('inf')
+            
+            for customer in unvisited:
+                if current_load + self.demands[customer] <= self.vehicle_capacity:
+                    distance = self.distances.get((current, customer), float('inf'))
+                    if distance < min_distance:
+                        min_distance = distance
+                        nearest = customer
+            
+            if nearest is None:
+                # 返回仓库，开始新路径
+                current_route.append(self.depot)
+                routes.append(current_route)
+                current_route = []
+                current_load = 0
+            else:
+                current_route.append(nearest)
+                current_load += self.demands[nearest]
+                unvisited.remove(nearest)
+        
+        if current_route:
+            current_route.append(self.depot)
+            routes.append(current_route)
+        
+        return routes
+    
+    def calculate_total_distance(self, routes: List[List[str]]) -> float:
+        """计算总距离"""
+        total_distance = 0
+        for route in routes:
+            for i in range(len(route) - 1):
+                total_distance += self.distances.get((route[i], route[i+1]), 0)
+        return total_distance
+
+def transportation_network_optimization(
+    supply: Dict[str, float],
+    demand: Dict[str, float],
+    costs: Dict[Tuple[str, str], float]
+) -> Dict[Tuple[str, str], float]:
+    """运输网络优化（最小成本流）"""
+    # 简化的贪心算法
+    flows = {}
+    remaining_supply = supply.copy()
+    remaining_demand = demand.copy()
+    
+    # 按成本排序的边
+    sorted_edges = sorted(costs.items(), key=lambda x: x[1])
+    
+    for (source, sink), cost in sorted_edges:
+        if source in remaining_supply and sink in remaining_demand:
+            flow = min(remaining_supply[source], remaining_demand[sink])
+            if flow > 0:
+                flows[(source, sink)] = flow
+                remaining_supply[source] -= flow
+                remaining_demand[sink] -= flow
+                
+                if remaining_supply[source] == 0:
+                    del remaining_supply[source]
+                if remaining_demand[sink] == 0:
+                    del remaining_demand[sink]
+    
+    return flows
+
+def calculate_network_cost(flows: Dict[Tuple[str, str], float], 
+                          costs: Dict[Tuple[str, str], float]) -> float:
+    """计算网络总成本"""
+    total_cost = 0
+    for (source, sink), flow in flows.items():
+        total_cost += flow * costs.get((source, sink), 0)
+    return total_cost
+```
+
+### 供应链网络算法 / Supply Chain Network Algorithms
+
+```python
+import numpy as np
+from typing import List, Dict, Tuple, Optional
+from dataclasses import dataclass
+
+@dataclass
+class Supplier:
+    """供应商"""
+    id: str
+    capacity: float
+    cost: float
+    quality: float
+    delivery_time: float
+
+@dataclass
+class Customer:
+    """客户"""
+    id: str
+    demand: float
+    location: Tuple[float, float]
+
+class SupplyChainNetwork:
+    """供应链网络"""
+    
+    def __init__(self):
+        self.suppliers: List[Supplier] = []
+        self.customers: List[Customer] = []
+        self.transportation_costs: Dict[Tuple[str, str], float] = {}
+    
+    def add_supplier(self, supplier: Supplier):
+        """添加供应商"""
+        self.suppliers.append(supplier)
+    
+    def add_customer(self, customer: Customer):
+        """添加客户"""
+        self.customers.append(customer)
+    
+    def set_transportation_cost(self, from_id: str, to_id: str, cost: float):
+        """设置运输成本"""
+        self.transportation_costs[(from_id, to_id)] = cost
+    
+    def supplier_selection_multi_criteria(self, weights: Dict[str, float]) -> List[Supplier]:
+        """多准则供应商选择"""
+        if not self.suppliers:
+            return []
+        
+        # 标准化评分
+        costs = [s.cost for s in self.suppliers]
+        qualities = [s.quality for s in self.suppliers]
+        delivery_times = [s.delivery_time for s in self.suppliers]
+        
+        # 标准化到0-1范围
+        cost_normalized = [(max(costs) - c) / (max(costs) - min(costs)) for c in costs]
+        quality_normalized = [(q - min(qualities)) / (max(qualities) - min(qualities)) for q in qualities]
+        delivery_normalized = [(max(delivery_times) - d) / (max(delivery_times) - min(delivery_times)) for d in delivery_times]
+        
+        # 计算综合评分
+        scores = []
+        for i in range(len(self.suppliers)):
+            score = (weights.get('cost', 0.33) * cost_normalized[i] +
+                    weights.get('quality', 0.33) * quality_normalized[i] +
+                    weights.get('delivery', 0.34) * delivery_normalized[i])
+            scores.append(score)
+        
+        # 按评分排序
+        sorted_suppliers = [s for _, s in sorted(zip(scores, self.suppliers), reverse=True)]
+        return sorted_suppliers
+    
+    def demand_forecasting_exponential_smoothing(
+        self, historical_demand: List[float], alpha: float = 0.3
+    ) -> List[float]:
+        """指数平滑需求预测"""
+        if not historical_demand:
+            return []
+        
+        forecasts = [historical_demand[0]]  # 初始预测
+        
+        for i in range(1, len(historical_demand)):
+            forecast = alpha * historical_demand[i-1] + (1 - alpha) * forecasts[i-1]
+            forecasts.append(forecast)
+        
+        # 预测下一个周期
+        next_forecast = alpha * historical_demand[-1] + (1 - alpha) * forecasts[-1]
+        forecasts.append(next_forecast)
+        
+        return forecasts
+    
+    def optimize_network_flow(self) -> Dict[Tuple[str, str], float]:
+        """优化网络流量分配"""
+        flows = {}
+        
+        for customer in self.customers:
+            remaining_demand = customer.demand
+            
+            # 按成本排序的供应商
+            available_suppliers = []
+            for supplier in self.suppliers:
+                if supplier.capacity > 0:
+                    cost = self.transportation_costs.get((supplier.id, customer.id), float('inf'))
+                    available_suppliers.append((supplier, cost))
+            
+            available_suppliers.sort(key=lambda x: x[1])
+            
+            for supplier, cost in available_suppliers:
+                if remaining_demand <= 0:
+                    break
+                
+                flow = min(remaining_demand, supplier.capacity)
+                flows[(supplier.id, customer.id)] = flow
+                remaining_demand -= flow
+                supplier.capacity -= flow
+        
+        return flows
+
+def logistics_verification():
+    """物流供应链模型验证"""
+    print("=== 物流供应链模型验证 ===")
+    
+    # 库存管理验证
+    print("\n1. 库存管理验证:")
+    inventory_model = InventoryModel(
+        annual_demand=1000.0,
+        order_cost=50.0,
+        holding_cost=2.0,
+        lead_time=5.0,
+        service_level=0.95
+    )
+    
+    eoq = economic_order_quantity(inventory_model)
+    total_cost = total_inventory_cost(inventory_model, eoq)
+    safety_stock = safety_stock_calculation(100.0, 5.0, 0.95)
+    reorder_point = reorder_point_calculation(1000.0/12, 5.0, safety_stock)
+    
+    print(f"经济订货量: {eoq:.2f}")
+    print(f"总成本: {total_cost:.2f}")
+    print(f"安全库存: {safety_stock:.2f}")
+    print(f"再订货点: {reorder_point:.2f}")
+    
+    # 运输优化验证
+    print("\n2. 运输优化验证:")
+    distances = {
+        ('depot', 'A'): 10, ('A', 'depot'): 10,
+        ('depot', 'B'): 15, ('B', 'depot'): 15,
+        ('depot', 'C'): 20, ('C', 'depot'): 20,
+        ('A', 'B'): 8, ('B', 'A'): 8,
+        ('A', 'C'): 12, ('C', 'A'): 12,
+        ('B', 'C'): 10, ('C', 'B'): 10
+    }
+    demands = {'A': 50, 'B': 30, 'C': 40}
+    
+    vrp = VehicleRoutingProblem(distances, demands, 100)
+    routes = vrp.nearest_neighbor_heuristic()
+    total_distance = vrp.calculate_total_distance(routes)
+    
+    print(f"路径规划: {routes}")
+    print(f"总距离: {total_distance}")
+    
+    # 供应链网络验证
+    print("\n3. 供应链网络验证:")
+    network = SupplyChainNetwork()
+    
+    # 添加供应商
+    network.add_supplier(Supplier("S1", 200, 10, 0.9, 3))
+    network.add_supplier(Supplier("S2", 150, 12, 0.95, 5))
+    network.add_supplier(Supplier("S3", 180, 8, 0.85, 2))
+    
+    # 添加客户
+    network.add_customer(Customer("C1", 100, (0, 0)))
+    network.add_customer(Customer("C2", 80, (10, 10)))
+    
+    # 设置运输成本
+    network.set_transportation_cost("S1", "C1", 5)
+    network.set_transportation_cost("S1", "C2", 8)
+    network.set_transportation_cost("S2", "C1", 6)
+    network.set_transportation_cost("S2", "C2", 7)
+    network.set_transportation_cost("S3", "C1", 4)
+    network.set_transportation_cost("S3", "C2", 9)
+    
+    # 供应商选择
+    weights = {'cost': 0.4, 'quality': 0.4, 'delivery': 0.2}
+    selected_suppliers = network.supplier_selection_multi_criteria(weights)
+    print(f"供应商排序: {[s.id for s in selected_suppliers]}")
+    
+    # 需求预测
+    historical_demand = [100, 110, 95, 105, 120, 115, 125, 130, 140, 135]
+    forecasts = network.demand_forecasting_exponential_smoothing(historical_demand, 0.3)
+    print(f"需求预测: {forecasts[-5:]}")
+    
+    # 网络优化
+    flows = network.optimize_network_flow()
+    print(f"流量分配: {flows}")
+    
+    print("\n验证完成!")
+
+if __name__ == "__main__":
+    logistics_verification()
+```
+
+---
+
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

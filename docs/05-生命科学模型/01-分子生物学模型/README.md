@@ -39,6 +39,8 @@
       - [基础研究 / Basic Research](#基础研究--basic-research)
       - [生物技术 / Biotechnology](#生物技术--biotechnology)
       - [医学应用 / Medical Applications](#医学应用--medical-applications)
+  - [5.1.9 算法实现 / Algorithm Implementation](#519-算法实现--algorithm-implementation)
+    - [基因表达与Hill调控 / Gene Expression with Hill Regulation](#基因表达与hill调控--gene-expression-with-hill-regulation)
   - [参考文献 / References](#参考文献--references)
 
 ---

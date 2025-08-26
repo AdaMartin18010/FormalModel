@@ -820,3 +820,672 @@ example = do
 
 *最后更新: 2025-08-01*
 *版本: 1.0.0*
+
+---
+
+## 8.2.6 算法实现 / Algorithm Implementation
+
+### 交通流模型算法 / Traffic Flow Model Algorithms
+
+```python
+import numpy as np
+from typing import List, Tuple, Dict, Optional
+from dataclasses import dataclass
+from scipy.integrate import odeint
+import heapq
+
+@dataclass
+class TrafficFlowModel:
+    """交通流模型"""
+    free_flow_speed: float  # 自由流速度 (km/h)
+    jam_density: float      # 阻塞密度 (veh/km)
+    capacity: float         # 通行能力 (veh/h)
+
+def greenshields_speed(model: TrafficFlowModel, density: float) -> float:
+    """Greenshields速度-密度关系"""
+    if density >= model.jam_density:
+        return 0.0
+    return model.free_flow_speed * (1 - density / model.jam_density)
+
+def greenshields_flow(model: TrafficFlowModel, density: float) -> float:
+    """Greenshields流量-密度关系"""
+    speed = greenshields_speed(model, density)
+    return density * speed
+
+def max_flow_rate(model: TrafficFlowModel) -> float:
+    """最大流量"""
+    optimal_density = model.jam_density / 2
+    return greenshields_flow(model, optimal_density)
+
+def lwr_model_simulation(
+    initial_density: np.ndarray,
+    dx: float,
+    dt: float,
+    total_time: float,
+    model: TrafficFlowModel
+) -> np.ndarray:
+    """LWR模型数值模拟"""
+    nx = len(initial_density)
+    nt = int(total_time / dt)
+    
+    # 初始化密度场
+    density = np.zeros((nt, nx))
+    density[0] = initial_density
+    
+    # 时间推进
+    for n in range(nt - 1):
+        for i in range(nx):
+            # 简化的有限差分格式
+            if i == 0:
+                # 左边界条件
+                density[n+1, i] = density[n, i] - dt/dx * (greenshields_flow(model, density[n, i+1]) - greenshields_flow(model, density[n, i]))
+            elif i == nx - 1:
+                # 右边界条件
+                density[n+1, i] = density[n, i] - dt/dx * (greenshields_flow(model, density[n, i]) - greenshields_flow(model, density[n, i-1]))
+            else:
+                # 内部点
+                density[n+1, i] = density[n, i] - dt/dx * (greenshields_flow(model, density[n, i+1]) - greenshields_flow(model, density[n, i-1])) / 2
+    
+    return density
+
+class IntelligentDriverModel:
+    """智能驾驶模型"""
+    
+    def __init__(self, desired_speed: float, safe_time_headway: float, 
+                 max_acceleration: float, comfortable_deceleration: float,
+                 minimum_spacing: float, acceleration_exponent: float = 4):
+        self.v0 = desired_speed
+        self.T = safe_time_headway
+        self.a = max_acceleration
+        self.b = comfortable_deceleration
+        self.s0 = minimum_spacing
+        self.delta = acceleration_exponent
+    
+    def desired_gap(self, speed: float, speed_diff: float) -> float:
+        """期望间距"""
+        return self.s0 + speed * self.T + (speed * speed_diff) / (2 * np.sqrt(self.a * self.b))
+    
+    def acceleration(self, speed: float, gap: float, speed_diff: float) -> float:
+        """加速度计算"""
+        desired_gap = self.desired_gap(speed, speed_diff)
+        free_road_term = 1 - (speed / self.v0) ** self.delta
+        interaction_term = (desired_gap / gap) ** 2
+        
+        return self.a * (free_road_term - interaction_term)
+    
+    def simulate_car_following(self, lead_vehicle_trajectory: List[Tuple[float, float]], 
+                              initial_speed: float, initial_position: float,
+                              dt: float) -> List[Tuple[float, float, float]]:
+        """跟车模拟"""
+        trajectory = []
+        current_speed = initial_speed
+        current_position = initial_position
+        
+        for t, lead_pos in lead_vehicle_trajectory:
+            # 计算间距和速度差
+            gap = lead_pos - current_position
+            speed_diff = 0  # 简化假设前车速度恒定
+            
+            if gap > 0:
+                # 计算加速度
+                acc = self.acceleration(current_speed, gap, speed_diff)
+                
+                # 更新速度和位置
+                current_speed = max(0, current_speed + acc * dt)
+                current_position += current_speed * dt
+            
+            trajectory.append((t, current_position, current_speed))
+        
+        return trajectory
+```
+
+### 路径规划算法 / Route Planning Algorithms
+
+```python
+import numpy as np
+from typing import List, Tuple, Dict, Set, Optional
+import heapq
+from collections import defaultdict
+
+class Graph:
+    """图结构"""
+    
+    def __init__(self):
+        self.edges = defaultdict(list)
+        self.weights = {}
+    
+    def add_edge(self, u: str, v: str, weight: float):
+        """添加边"""
+        self.edges[u].append(v)
+        self.edges[v].append(u)
+        self.weights[(u, v)] = weight
+        self.weights[(v, u)] = weight
+    
+    def get_neighbors(self, node: str) -> List[Tuple[str, float]]:
+        """获取邻居节点"""
+        neighbors = []
+        for neighbor in self.edges[node]:
+            weight = self.weights.get((node, neighbor), float('inf'))
+            neighbors.append((neighbor, weight))
+        return neighbors
+
+def dijkstra_shortest_path(graph: Graph, start: str, end: str) -> Optional[Tuple[float, List[str]]]:
+    """Dijkstra最短路径算法"""
+    distances = {node: float('inf') for node in graph.edges}
+    distances[start] = 0
+    previous = {}
+    pq = [(0, start)]
+    visited = set()
+    
+    while pq:
+        current_distance, current = heapq.heappop(pq)
+        
+        if current in visited:
+            continue
+        
+        visited.add(current)
+        
+        if current == end:
+            break
+        
+        for neighbor, weight in graph.get_neighbors(current):
+            distance = current_distance + weight
+            
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                previous[neighbor] = current
+                heapq.heappush(pq, (distance, neighbor))
+    
+    if distances[end] == float('inf'):
+        return None
+    
+    # 重建路径
+    path = []
+    current = end
+    while current is not None:
+        path.append(current)
+        current = previous.get(current)
+    path.reverse()
+    
+    return distances[end], path
+
+def a_star_shortest_path(graph: Graph, start: str, end: str, 
+                        heuristic: Dict[str, float]) -> Optional[Tuple[float, List[str]]]:
+    """A*最短路径算法"""
+    distances = {node: float('inf') for node in graph.edges}
+    distances[start] = 0
+    previous = {}
+    pq = [(heuristic.get(start, 0), 0, start)]
+    visited = set()
+    
+    while pq:
+        _, current_distance, current = heapq.heappop(pq)
+        
+        if current in visited:
+            continue
+        
+        visited.add(current)
+        
+        if current == end:
+            break
+        
+        for neighbor, weight in graph.get_neighbors(current):
+            distance = current_distance + weight
+            
+            if distance < distances[neighbor]:
+                distances[neighbor] = distance
+                previous[neighbor] = current
+                f_score = distance + heuristic.get(neighbor, 0)
+                heapq.heappush(pq, (f_score, distance, neighbor))
+    
+    if distances[end] == float('inf'):
+        return None
+    
+    # 重建路径
+    path = []
+    current = end
+    while current is not None:
+        path.append(current)
+        current = previous.get(current)
+    path.reverse()
+    
+    return distances[end], path
+
+def floyd_warshall_all_pairs(graph: Graph) -> Dict[Tuple[str, str], float]:
+    """Floyd-Warshall全对最短路径"""
+    nodes = list(graph.edges.keys())
+    n = len(nodes)
+    
+    # 初始化距离矩阵
+    distances = {}
+    for i in nodes:
+        for j in nodes:
+            if i == j:
+                distances[(i, j)] = 0
+            else:
+                distances[(i, j)] = graph.weights.get((i, j), float('inf'))
+    
+    # Floyd-Warshall算法
+    for k in nodes:
+        for i in nodes:
+            for j in nodes:
+                if distances[(i, k)] + distances[(k, j)] < distances[(i, j)]:
+                    distances[(i, j)] = distances[(i, k)] + distances[(k, j)]
+    
+    return distances
+
+def multi_objective_route_planning(
+    graph: Graph,
+    start: str,
+    end: str,
+    objectives: List[callable],
+    weights: List[float]
+) -> Optional[Tuple[float, List[str]]]:
+    """多目标路径规划"""
+    # 计算每个目标的最短路径
+    objective_paths = []
+    objective_costs = []
+    
+    for objective in objectives:
+        # 创建加权图
+        weighted_graph = Graph()
+        for node in graph.edges:
+            for neighbor, weight in graph.get_neighbors(node):
+                weighted_weight = objective(weight)
+                weighted_graph.add_edge(node, neighbor, weighted_weight)
+        
+        # 计算最短路径
+        result = dijkstra_shortest_path(weighted_graph, start, end)
+        if result:
+            cost, path = result
+            objective_paths.append(path)
+            objective_costs.append(cost)
+        else:
+            return None
+    
+    # 计算综合成本
+    total_cost = sum(w * c for w, c in zip(weights, objective_costs))
+    
+    # 返回第一个目标的最短路径（简化处理）
+    return total_cost, objective_paths[0]
+```
+
+### 公共交通算法 / Public Transit Algorithms
+
+```python
+import numpy as np
+from typing import List, Tuple, Dict, Set
+from dataclasses import dataclass
+from collections import defaultdict
+
+@dataclass
+class BusRoute:
+    """公交线路"""
+    route_id: str
+    stops: List[str]
+    headway: float  # 发车间隔（分钟）
+    travel_times: List[float]  # 站间旅行时间
+
+@dataclass
+class TransitNetwork:
+    """公交网络"""
+    routes: List[BusRoute]
+    transfer_times: Dict[Tuple[str, str], float]  # 换乘时间
+
+class PublicTransitOptimizer:
+    """公共交通优化器"""
+    
+    def __init__(self, network: TransitNetwork):
+        self.network = network
+        self.stop_routes = self._build_stop_routes()
+    
+    def _build_stop_routes(self) -> Dict[str, List[str]]:
+        """构建站点-线路映射"""
+        stop_routes = defaultdict(list)
+        for route in self.network.routes:
+            for stop in route.stops:
+                stop_routes[stop].append(route.route_id)
+        return dict(stop_routes)
+    
+    def calculate_wait_time(self, route_id: str) -> float:
+        """计算等待时间"""
+        route = next(r for r in self.network.routes if r.route_id == route_id)
+        return route.headway / 2  # 平均等待时间
+    
+    def calculate_travel_time(self, origin: str, destination: str) -> float:
+        """计算旅行时间"""
+        # 简化的旅行时间计算
+        if origin == destination:
+            return 0.0
+        
+        # 查找直达线路
+        for route in self.network.routes:
+            if origin in route.stops and destination in route.stops:
+                origin_idx = route.stops.index(origin)
+                dest_idx = route.stops.index(destination)
+                
+                if origin_idx < dest_idx:
+                    # 计算旅行时间
+                    travel_time = sum(route.travel_times[origin_idx:dest_idx])
+                    wait_time = self.calculate_wait_time(route.route_id)
+                    return travel_time + wait_time
+        
+        # 需要换乘的情况（简化处理）
+        return float('inf')
+    
+    def optimize_headway(self, route_id: str, passenger_demand: float, 
+                        vehicle_capacity: float) -> float:
+        """优化发车间隔"""
+        route = next(r for r in self.network.routes if r.route_id == route_id)
+        
+        # 基于乘客需求的发车间隔优化
+        # 目标：最小化等待时间，同时满足容量约束
+        min_headway = 2.0  # 最小发车间隔（分钟）
+        max_headway = 30.0  # 最大发车间隔（分钟）
+        
+        # 简化的优化公式
+        optimal_headway = max(min_headway, 
+                            min(max_headway, 
+                                np.sqrt(2 * route.headway * passenger_demand / vehicle_capacity)))
+        
+        return optimal_headway
+    
+    def optimize_route_coverage(self, population_centers: Dict[str, float], 
+                               max_routes: int) -> List[BusRoute]:
+        """优化线路覆盖"""
+        # 简化的贪心算法
+        uncovered_centers = set(population_centers.keys())
+        selected_routes = []
+        
+        while len(selected_routes) < max_routes and uncovered_centers:
+            best_route = None
+            best_coverage = 0
+            
+            # 评估每条线路的覆盖效果
+            for route in self.network.routes:
+                coverage = len(set(route.stops) & uncovered_centers)
+                if coverage > best_coverage:
+                    best_coverage = coverage
+                    best_route = route
+            
+            if best_route:
+                selected_routes.append(best_route)
+                uncovered_centers -= set(best_route.stops)
+            else:
+                break
+        
+        return selected_routes
+
+def calculate_transfer_penalty(transfer_time: float, base_penalty: float = 5.0) -> float:
+    """计算换乘惩罚"""
+    return base_penalty + transfer_time * 0.5
+
+def optimize_transfer_times(network: TransitNetwork) -> Dict[Tuple[str, str], float]:
+    """优化换乘时间"""
+    optimized_transfers = {}
+    
+    for route1 in network.routes:
+        for route2 in network.routes:
+            if route1.route_id != route2.route_id:
+                # 找到共同站点
+                common_stops = set(route1.stops) & set(route2.stops)
+                
+                for stop in common_stops:
+                    # 计算最优换乘时间
+                    route1_idx = route1.stops.index(stop)
+                    route2_idx = route2.stops.index(stop)
+                    
+                    # 简化的换乘时间优化
+                    optimal_transfer = 2.0  # 最小换乘时间
+                    optimized_transfers[(route1.route_id, route2.route_id)] = optimal_transfer
+    
+    return optimized_transfers
+```
+
+### 智能交通系统算法 / Intelligent Transportation System Algorithms
+
+```python
+import numpy as np
+from typing import List, Tuple, Dict, Optional
+from dataclasses import dataclass
+from scipy.optimize import minimize
+import cvxpy as cp
+
+@dataclass
+class TrafficSignal:
+    """交通信号"""
+    intersection_id: str
+    phases: List[List[str]]  # 相位定义
+    cycle_length: float      # 周期长度（秒）
+    green_times: List[float] # 绿灯时间
+
+class TrafficSignalController:
+    """交通信号控制器"""
+    
+    def __init__(self, intersection_id: str, phases: List[List[str]], 
+                 cycle_length: float = 90.0):
+        self.intersection_id = intersection_id
+        self.phases = phases
+        self.cycle_length = cycle_length
+        self.n_phases = len(phases)
+    
+    def calculate_delay(self, flow_rate: float, green_time: float, 
+                       cycle_length: float) -> float:
+        """计算延误"""
+        if flow_rate <= 0:
+            return 0.0
+        
+        # Webster延误公式（简化版）
+        saturation_flow = 1800  # 饱和流量（辆/小时）
+        capacity = saturation_flow * green_time / cycle_length
+        
+        if flow_rate >= capacity:
+            return float('inf')  # 过饱和
+        
+        # 均匀延误
+        uniform_delay = 0.5 * cycle_length * (1 - green_time / cycle_length) ** 2 / (1 - flow_rate / capacity)
+        
+        # 随机延误（简化）
+        random_delay = 0.1 * uniform_delay
+        
+        return uniform_delay + random_delay
+    
+    def optimize_signal_timing(self, flows: List[float]) -> List[float]:
+        """优化信号配时"""
+        if len(flows) != self.n_phases:
+            raise ValueError("流量数量与相位数量不匹配")
+        
+        # 简化的优化：按流量比例分配绿灯时间
+        total_flow = sum(flows)
+        if total_flow == 0:
+            # 平均分配
+            green_times = [self.cycle_length / self.n_phases] * self.n_phases
+        else:
+            # 按流量比例分配
+            green_times = [flow / total_flow * self.cycle_length for flow in flows]
+        
+        # 确保最小绿灯时间
+        min_green = 10.0
+        for i in range(len(green_times)):
+            green_times[i] = max(min_green, green_times[i])
+        
+        # 调整总时间
+        total_green = sum(green_times)
+        if total_green > self.cycle_length:
+            # 按比例缩减
+            scale = self.cycle_length / total_green
+            green_times = [g * scale for g in green_times]
+        
+        return green_times
+    
+    def calculate_total_delay(self, flows: List[float], green_times: List[float]) -> float:
+        """计算总延误"""
+        total_delay = 0.0
+        for i, (flow, green_time) in enumerate(zip(flows, green_times)):
+            delay = self.calculate_delay(flow, green_time, self.cycle_length)
+            if delay != float('inf'):
+                total_delay += delay * flow
+        
+        return total_delay
+
+class TrafficPredictor:
+    """交通预测器"""
+    
+    def __init__(self, historical_data: List[float], window_size: int = 24):
+        self.historical_data = historical_data
+        self.window_size = window_size
+    
+    def exponential_smoothing_forecast(self, alpha: float = 0.3) -> List[float]:
+        """指数平滑预测"""
+        if not self.historical_data:
+            return []
+        
+        forecasts = [self.historical_data[0]]
+        
+        for i in range(1, len(self.historical_data)):
+            forecast = alpha * self.historical_data[i-1] + (1 - alpha) * forecasts[i-1]
+            forecasts.append(forecast)
+        
+        # 预测下一个值
+        next_forecast = alpha * self.historical_data[-1] + (1 - alpha) * forecasts[-1]
+        forecasts.append(next_forecast)
+        
+        return forecasts
+    
+    def moving_average_forecast(self) -> List[float]:
+        """移动平均预测"""
+        if len(self.historical_data) < self.window_size:
+            return self.historical_data
+        
+        forecasts = []
+        for i in range(self.window_size, len(self.historical_data)):
+            avg = np.mean(self.historical_data[i-self.window_size:i])
+            forecasts.append(avg)
+        
+        # 预测下一个值
+        next_forecast = np.mean(self.historical_data[-self.window_size:])
+        forecasts.append(next_forecast)
+        
+        return forecasts
+    
+    def seasonal_decomposition(self, period: int = 24) -> Tuple[List[float], List[float], List[float]]:
+        """季节性分解"""
+        if len(self.historical_data) < 2 * period:
+            return self.historical_data, [0] * len(self.historical_data), [0] * len(self.historical_data)
+        
+        # 简化的季节性分解
+        trend = []
+        seasonal = []
+        residual = []
+        
+        # 计算趋势（移动平均）
+        for i in range(len(self.historical_data)):
+            start = max(0, i - period // 2)
+            end = min(len(self.historical_data), i + period // 2 + 1)
+            trend.append(np.mean(self.historical_data[start:end]))
+        
+        # 计算季节性
+        seasonal_pattern = []
+        for i in range(period):
+            pattern_values = []
+            for j in range(i, len(self.historical_data), period):
+                if j < len(self.historical_data):
+                    pattern_values.append(self.historical_data[j] - trend[j])
+            if pattern_values:
+                seasonal_pattern.append(np.mean(pattern_values))
+            else:
+                seasonal_pattern.append(0)
+        
+        # 应用季节性模式
+        for i in range(len(self.historical_data)):
+            seasonal_idx = i % period
+            seasonal.append(seasonal_pattern[seasonal_idx])
+            residual.append(self.historical_data[i] - trend[i] - seasonal[i])
+        
+        return trend, seasonal, residual
+
+def transportation_verification():
+    """交通运输模型验证"""
+    print("=== 交通运输模型验证 ===")
+    
+    # 交通流模型验证
+    print("\n1. 交通流模型验证:")
+    traffic_model = TrafficFlowModel(
+        free_flow_speed=60.0,
+        jam_density=120.0,
+        capacity=1800.0
+    )
+    
+    density = 30.0
+    speed = greenshields_speed(traffic_model, density)
+    flow = greenshields_flow(traffic_model, density)
+    max_flow = max_flow_rate(traffic_model)
+    
+    print(f"密度: {density} 车辆/公里")
+    print(f"速度: {speed:.2f} 公里/小时")
+    print(f"流量: {flow:.2f} 车辆/小时")
+    print(f"最大流量: {max_flow:.2f} 车辆/小时")
+    
+    # 路径规划验证
+    print("\n2. 路径规划验证:")
+    graph = Graph()
+    graph.add_edge("A", "B", 10)
+    graph.add_edge("B", "C", 15)
+    graph.add_edge("A", "C", 25)
+    graph.add_edge("B", "D", 20)
+    graph.add_edge("C", "D", 10)
+    
+    result = dijkstra_shortest_path(graph, "A", "D")
+    if result:
+        distance, path = result
+        print(f"最短距离: {distance}")
+        print(f"路径: {' -> '.join(path)}")
+    
+    # 公共交通验证
+    print("\n3. 公共交通验证:")
+    routes = [
+        BusRoute("R1", ["A", "B", "C"], 10.0, [5.0, 8.0]),
+        BusRoute("R2", ["B", "D", "E"], 15.0, [12.0, 6.0])
+    ]
+    network = TransitNetwork(routes, {})
+    optimizer = PublicTransitOptimizer(network)
+    
+    wait_time = optimizer.calculate_wait_time("R1")
+    travel_time = optimizer.calculate_travel_time("A", "C")
+    
+    print(f"等待时间: {wait_time:.2f} 分钟")
+    print(f"旅行时间: {travel_time:.2f} 分钟")
+    
+    # 交通信号验证
+    print("\n4. 交通信号验证:")
+    phases = [["North", "South"], ["East", "West"]]
+    controller = TrafficSignalController("I1", phases, 90.0)
+    
+    flows = [800.0, 600.0]
+    green_times = controller.optimize_signal_timing(flows)
+    total_delay = controller.calculate_total_delay(flows, green_times)
+    
+    print(f"绿灯时间: {green_times}")
+    print(f"总延误: {total_delay:.2f} 秒")
+    
+    # 交通预测验证
+    print("\n5. 交通预测验证:")
+    historical_data = [100, 110, 95, 105, 120, 115, 125, 130, 140, 135]
+    predictor = TrafficPredictor(historical_data)
+    
+    es_forecast = predictor.exponential_smoothing_forecast(0.3)
+    ma_forecast = predictor.moving_average_forecast()
+    
+    print(f"指数平滑预测: {es_forecast[-3:]}")
+    print(f"移动平均预测: {ma_forecast[-3:]}")
+    
+    print("\n验证完成!")
+
+if __name__ == "__main__":
+    transportation_verification()
+```
+
+---
+
+*最后更新: 2025-08-26*
+*版本: 1.1.0*

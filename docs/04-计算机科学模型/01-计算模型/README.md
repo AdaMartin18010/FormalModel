@@ -37,6 +37,8 @@
       - [理论计算机科学 / Theoretical Computer Science](#理论计算机科学--theoretical-computer-science)
       - [软件工程 / Software Engineering](#软件工程--software-engineering)
       - [人工智能 / Artificial Intelligence](#人工智能--artificial-intelligence)
+  - [4.1.9 算法实现 / Algorithm Implementation](#419-算法实现--algorithm-implementation)
+    - [图灵机算法 / Turing Machine Algorithms](#图灵机算法--turing-machine-algorithms)
   - [参考文献 / References](#参考文献--references)
 
 ---

@@ -1,5 +1,12 @@
 # 8.10 教育学习模型 / Education & Learning Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.10](../../../content/CHAPTER_09_OUTLINE.md#910-教育学习模型--education-and-learning-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.10 教育学习模型 / Education \& Learning Models](#810-教育学习模型--education--learning-models)
@@ -760,6 +767,41 @@ example = do
 2. Embretson, S. E., & Reise, S. P. (2000). Item Response Theory. Psychology Press.
 3. Brusilovsky, P. (2001). Adaptive Hypermedia. User Modeling and User-Adapted Interaction.
 4. Baker, R. S., & Siemens, G. (2014). Educational Data Mining and Learning Analytics. Cambridge Handbook of the Learning Sciences.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖学习效果评估、个性化教学、知识图谱、智能辅导的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 教育数据：学习行为、成绩记录、知识掌握度、学习路径、交互数据。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 学习效果：知识掌握度、技能提升、学习效率、长期记忆保持率。
+- 个性化指标：适应性匹配度、学习路径优化、难度调节准确性、兴趣匹配度。
+- 交互指标：参与度、完成率、反馈响应、学习动机、满意度。
+- 系统指标：推荐准确率、内容质量、平台可用性、响应时间。
+
+### 任务级协议 / Task-level Protocols
+
+1) 学习效果评估：前后测对比、知识迁移能力、技能应用、长期保持效果。
+2) 个性化教学：学习风格匹配、难度自适应、内容推荐精度、学习路径优化。
+3) 知识图谱：概念关系准确性、知识覆盖度、推理能力、更新维护效率。
+4) 智能辅导：问题解答质量、学习建议有效性、情感支持、学习动机激发。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、学习曲线、知识掌握度热图、个性化推荐效果、学习路径可视化。
 
 ---
 

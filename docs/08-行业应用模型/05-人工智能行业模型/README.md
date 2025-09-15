@@ -1,5 +1,13 @@
 # 8.5 人工智能行业模型 / AI Industry Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.5](../../../content/CHAPTER_09_OUTLINE.md#95-人工智能行业模型--artificial-intelligence-industry-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.5 人工智能行业模型 / AI Industry Models](#85-人工智能行业模型--ai-industry-models)
@@ -546,6 +554,39 @@ fn main() {
 6. LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature.
 7. Silver, D., et al. (2016). Mastering the game of Go with deep neural networks and tree search. Nature.
 8. Devlin, J., et al. (2018). Bert: Pre-training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖机器学习、深度学习、强化学习、自然语言处理的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 训练数据：标注数据集、特征工程、数据增强、标签质量。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 准确率指标：准确率、精确率、召回率、F1分数、AUC-ROC。
+- 性能指标：推理时间、内存占用、模型大小、训练时间、收敛速度。
+- 鲁棒性指标：对抗攻击抵抗、数据分布偏移、噪声容忍度、泛化能力。
+- 公平性指标：群体公平性、个体公平性、机会均等、预测偏差。
+
+### 任务级协议 / Task-level Protocols
+
+1) 监督学习：分类/回归精度、交叉验证稳定性、特征重要性分析。
+2) 无监督学习：聚类质量、降维效果、异常检测、数据重构误差。
+3) 强化学习：累积奖励、策略稳定性、探索效率、环境适应性。
+4) 自然语言处理：BLEU、ROUGE、困惑度、语义相似度、任务特定指标。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、学习曲线、混淆矩阵、特征重要性图、性能对比。
 
 ---
 

@@ -1,5 +1,12 @@
 # 8.2 交通运输模型 / Transportation Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.2](../../../content/CHAPTER_09_OUTLINE.md#92-交通运输模型--transportation-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.2 交通运输模型 / Transportation Models](#82-交通运输模型--transportation-models)
@@ -815,6 +822,41 @@ example = do
 2. Daganzo, C. F. (1997). Fundamentals of transportation and traffic operations. Pergamon.
 3. Sheffi, Y. (1985). Urban transportation networks: Equilibrium analysis with mathematical programming methods. Prentice Hall.
 4. Vuchic, V. R. (2005). Urban transit: Operations, planning, and economics. Wiley.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖交通流建模、路径规划、信号控制、公共交通优化的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 交通数据：车辆轨迹、流量计数、信号配时、OD矩阵、事故记录。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 效率指标：平均行程时间、延误时间、通行能力、饱和度。
+- 安全指标：事故率、冲突点、安全裕度、风险指数。
+- 环境指标：排放量、燃油消耗、噪音水平、空气质量影响。
+- 稳健性：参数敏感性、异常事件处理、系统鲁棒性。
+
+### 任务级协议 / Task-level Protocols
+
+1) 交通流建模：速度-密度关系拟合、流量预测精度、瓶颈识别准确性。
+2) 路径规划：最短路径计算时间、路径质量、动态重规划响应时间。
+3) 信号控制：延误减少率、排队长度、绿波协调效果、自适应性能。
+4) 公共交通：准点率、载客率、换乘便利性、系统可靠性。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、交通流-效率权衡曲线、路径可视化、延误分布图。
 
 ---
 

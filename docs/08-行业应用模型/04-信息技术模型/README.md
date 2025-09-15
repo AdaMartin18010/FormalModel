@@ -1,5 +1,12 @@
 # 8.4 信息技术模型 / Information Technology Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.4](../../../content/CHAPTER_09_OUTLINE.md#94-信息技术模型--information-technology-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.4 信息技术模型 / Information Technology Models](#84-信息技术模型--information-technology-models)
@@ -674,6 +681,39 @@ if __name__ == "__main__":
 8. Martin, R. C. (2017). Clean Architecture. Prentice Hall.
 9. Evans, E. (2003). Domain-Driven Design. Addison-Wesley.
 10. Hunt, A., & Thomas, D. (1999). The Pragmatic Programmer. Addison-Wesley.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖软件架构、网络性能、数据库优化、安全防护的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 系统数据：性能指标、日志记录、网络流量、安全事件、用户行为。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 性能指标：响应时间、吞吐量、并发数、资源利用率、延迟分布。
+- 可靠性指标：可用性、故障率、恢复时间、数据一致性、容错能力。
+- 安全指标：漏洞检测率、攻击防护率、加密强度、访问控制有效性。
+- 可维护性：代码质量、测试覆盖率、文档完整性、重构安全性。
+
+### 任务级协议 / Task-level Protocols
+
+1) 软件架构评估：模块耦合度、内聚性、可扩展性、性能瓶颈识别。
+2) 网络性能测试：带宽利用率、丢包率、延迟抖动、QoS保证。
+3) 数据库优化：查询性能、索引效率、事务处理、数据完整性。
+4) 安全防护：威胁检测、入侵防护、数据加密、身份认证。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、性能-资源权衡曲线、安全态势图、架构可视化。
 
 ---
 

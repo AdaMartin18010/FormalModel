@@ -98,6 +98,24 @@
 - [9.3 Lean实现 / Lean Implementation](09-实现示例/03-Lean实现/README.md)
 - [9.4 形式化验证 / Formal Verification](09-实现示例/04-形式化验证/README.md)
 
+## 快速入口 / Quick Entrypoints
+
+- 全局索引: [GLOBAL_INDEX.md](GLOBAL_INDEX.md)
+- 形式化完善总结: [FORMAL_ENHANCEMENT_SUMMARY.md](FORMAL_ENHANCEMENT_SUMMARY.md)
+- 项目重新定义: [PROJECT_REDEFINITION.md](PROJECT_REDEFINITION.md)
+- 项目管理概览: [00-项目管理/定位/PROJECT_SUMMARY.md](00-项目管理/定位/PROJECT_SUMMARY.md)
+- 状态与进展: [00-项目管理/状态与进展/PROGRESS.md](00-项目管理/状态与进展/PROGRESS.md)
+
+## 贡献入口 / Contributing Entrypoints
+
+- 贡献指南: [00-项目管理/组织/CONTRIBUTING.md](00-项目管理/组织/CONTRIBUTING.md)
+- 代码与文档规范: [09-实现示例/CODE_STANDARDS.md](09-实现示例/CODE_STANDARDS.md)
+- 证明与质量标准: [01-基础理论/02-形式化方法论/MATHEMATICAL_PROOF_STANDARDS.md](01-基础理论/02-形式化方法论/MATHEMATICAL_PROOF_STANDARDS.md)
+
+---
+
+最后更新: 2025-09-15
+
 ### 10. 参考文献 / References
 
 - [10.1 学术论文 / Academic Papers](10-参考文献/01-学术论文/README.md)

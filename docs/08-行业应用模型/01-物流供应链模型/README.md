@@ -1,5 +1,12 @@
 # 8.1 物流供应链模型 / Logistics & Supply Chain Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.1](../../../content/CHAPTER_09_OUTLINE.md#91-物流供应链模型--logistics-and-supply-chain-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.1 物流供应链模型 / Logistics \& Supply Chain Models](#81-物流供应链模型--logistics--supply-chain-models)
@@ -533,6 +540,41 @@ example = do
 2. Silver, E. A., Pyke, D. F., & Peterson, R. (1998). Inventory management and production planning and scheduling. Wiley.
 3. Toth, P., & Vigo, D. (2002). The vehicle routing problem. SIAM.
 4. Simchi-Levi, D., Kaminsky, P., & Simchi-Levi, E. (2008). Designing and managing the supply chain: Concepts, strategies, and case studies. McGraw-Hill.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖库存管理、路径优化、需求预测、供应链协调的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 运营数据：历史订单、库存水平、运输成本、需求模式、供应商绩效。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 成本效益：总成本降低率、库存周转率、缺货率、服务水平。
+- 效率指标：路径长度、车辆利用率、配送时间、资源利用率。
+- 预测精度：MAPE、RMSE、MAE（需求预测）、方向准确率。
+- 稳健性：参数敏感性、季节性适应度、异常值处理能力。
+
+### 任务级协议 / Task-level Protocols
+
+1) 库存优化：安全库存覆盖率、EOQ偏差、缺货成本、持有成本；多级库存协调评估。
+2) 车辆路径规划：总距离、时间窗违反、车辆数、负载均衡；动态重路由能力。
+3) 需求预测：MAPE、RMSE、趋势捕捉、季节性分解；促销/异常事件影响评估。
+4) 供应链协调：牛鞭效应抑制、信息共享价值、协调成本、响应时间。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、成本-服务水平权衡曲线、路径可视化、预测对比图。
 
 ---
 

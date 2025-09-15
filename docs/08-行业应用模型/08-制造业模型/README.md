@@ -1,5 +1,12 @@
 # 8.8 制造业模型 / Manufacturing Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.8](../../../content/CHAPTER_09_OUTLINE.md#98-制造业模型--manufacturing-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.8 制造业模型 / Manufacturing Models](#88-制造业模型--manufacturing-models)
@@ -757,6 +764,41 @@ example = do
 2. Montgomery, D. C. (2012). Introduction to Statistical Quality Control. Wiley.
 3. Chopra, S., & Meindl, P. (2015). Supply Chain Management. Pearson.
 4. Womack, J. P., & Jones, D. T. (2003). Lean Thinking. Free Press.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖生产调度、质量控制、设备维护、供应链管理的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 生产数据：设备状态、质量指标、生产计划、物料消耗、故障记录。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 效率指标：设备综合效率(OEE)、产能利用率、生产周期时间、换线时间。
+- 质量指标：合格率、缺陷率、返工率、客户满意度、质量成本。
+- 成本指标：单位成本、库存周转率、物料损耗率、能源消耗、维护成本。
+- 可靠性指标：设备可用率、故障间隔时间、平均修复时间、预测准确率。
+
+### 任务级协议 / Task-level Protocols
+
+1) 生产调度：完工时间、延迟率、资源利用率、调度稳定性、重调度频率。
+2) 质量控制：过程能力指数(CPK)、控制图有效性、异常检测率、质量预测精度。
+3) 设备维护：故障预测准确率、维护成本、设备寿命、预防性维护效果。
+4) 供应链管理：准时交付率、库存水平、供应商绩效、需求预测精度。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、OEE趋势图、质量控制图、设备状态可视化、成本分析。
 
 ---
 

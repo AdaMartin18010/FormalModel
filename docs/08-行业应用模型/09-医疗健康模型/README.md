@@ -1,5 +1,12 @@
 # 8.9 医疗健康模型 / Healthcare Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.9](../../../content/CHAPTER_09_OUTLINE.md#99-医疗健康模型--healthcare-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.9 医疗健康模型 / Healthcare Models](#89-医疗健康模型--healthcare-models)
@@ -725,6 +732,41 @@ example = do
 2. Rowland, M., & Tozer, T. N. (2011). Clinical Pharmacokinetics and Pharmacodynamics. Lippincott.
 3. Anderson, R. M., & May, R. M. (1991). Infectious Diseases of Humans. Oxford University Press.
 4. Altman, R. B. (2012). Translational Bioinformatics. PLoS Computational Biology.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖疾病诊断、药物发现、医疗影像、健康监测的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 医疗数据：病历记录、影像数据、基因序列、生理信号、药物信息。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 诊断指标：准确率、敏感性、特异性、阳性预测值、阴性预测值、AUC-ROC。
+- 临床指标：诊断时间、治疗成功率、并发症率、生存率、生活质量评分。
+- 安全指标：药物不良反应、误诊率、漏诊率、医疗事故率、患者安全事件。
+- 效率指标：诊断速度、资源利用率、成本效益、工作流程优化。
+
+### 任务级协议 / Task-level Protocols
+
+1) 疾病诊断：多疾病分类精度、罕见病检测、早期诊断能力、误诊分析。
+2) 药物发现：分子活性预测、ADMET性质、临床试验成功率、上市时间。
+3) 医疗影像：病灶检测、分割精度、诊断一致性、放射科医生对比。
+4) 健康监测：实时监测准确性、异常检测、预警系统、长期趋势分析。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、ROC曲线、混淆矩阵、临床决策支持可视化、安全性报告。
 
 ---
 

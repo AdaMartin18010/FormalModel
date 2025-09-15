@@ -1,5 +1,13 @@
 # 8.7 经济供需模型 / Economic Supply-Demand Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.7](../../../content/CHAPTER_09_OUTLINE.md#97-经济供需模型--economic-supply-and-demand-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.7 经济供需模型 / Economic Supply-Demand Models](#87-经济供需模型--economic-supply-demand-models)
@@ -618,6 +626,39 @@ example = do
 2. Mankiw, N. G. (2014). Principles of Economics. Cengage Learning.
 3. Mas-Colell, A., Whinston, M. D., & Green, J. R. (1995). Microeconomic Theory. Oxford University Press.
 4. Blanchard, O. (2017). Macroeconomics. Pearson.
+
+---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖供需平衡、市场均衡、价格发现、经济预测的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 经济数据：价格序列、交易量、GDP、通胀率、就业数据、政策指标。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 预测精度：MAPE、RMSE、MAE、方向准确率、趋势捕捉能力。
+- 均衡指标：市场出清度、价格收敛性、供需匹配度、效率损失。
+- 稳定性指标：系统鲁棒性、冲击响应、恢复时间、波动性控制。
+- 政策效果：政策传导效率、目标达成度、副作用评估、长期影响。
+
+### 任务级协议 / Task-level Protocols
+
+1) 供需建模：弹性系数估计、均衡点预测、市场出清时间、价格发现效率。
+2) 市场均衡：纳什均衡收敛、帕累托效率、社会福利最大化、分配公平性。
+3) 价格预测：短期/长期预测精度、波动率预测、极端事件捕捉、季节性调整。
+4) 政策仿真：政策冲击响应、传导机制分析、多目标权衡、风险评估。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、供需曲线图、均衡点可视化、政策效果对比。
 
 ---
 

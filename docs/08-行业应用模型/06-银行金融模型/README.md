@@ -1,5 +1,12 @@
 # 8.6 银行金融模型 / Banking & Finance Models
 
+> 交叉引用 / Cross-References
+>
+> - 章节大纲: [content/CHAPTER_09_OUTLINE.md 9.6](../../../content/CHAPTER_09_OUTLINE.md#96-银行金融模型--banking-and-finance-models)
+> - 全局索引: [docs/GLOBAL_INDEX.md](../../GLOBAL_INDEX.md)
+> - 实现映射: [docs/09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md](../../09-实现示例/INDUSTRY_IMPLEMENTATION_MAPPING.md)
+> - 评测协议标准: [docs/EVALUATION_PROTOCOLS_STANDARDS.md](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
 ## 目录 / Table of Contents
 
 - [8.6 银行金融模型 / Banking \& Finance Models](#86-银行金融模型--banking--finance-models)
@@ -33,6 +40,7 @@
     - [机器学习金融应用 / Machine Learning in Finance](#机器学习金融应用--machine-learning-in-finance)
     - [高频交易模型 / High-Frequency Trading Models](#高频交易模型--high-frequency-trading-models)
   - [参考文献 / References](#参考文献--references)
+  - [评测协议与指标 / Evaluation Protocols & Metrics](#评测协议与指标--evaluation-protocols--metrics)
 
 ---
 
@@ -343,6 +351,39 @@ $$z_t = \frac{P_t^A - \beta P_t^B}{\sigma_{spread}}$$
 5. Black, F., & Scholes, M. (1973). The Pricing of Options and Corporate Liabilities. Journal of Political Economy.
 
 ---
+
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖风险管理、投资组合、衍生品定价与利率模型的核心评测场景。
+- 可复现实证：同一数据、同一协议下，模型实现结果可对比。
+
+### 数据与划分 / Data & Splits
+
+- 市场数据：日频收盘价、收益率、无风险利率、波动率指数等。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，按时间顺序滚动划窗。
+
+### 通用指标 / Common Metrics
+
+- 收益与风险：年化收益、年化波动率、最大回撤(MDD)、夏普、索提诺。
+- 风险预测：VaR覆盖率、违约比、Kupiec/Christoffersen检验p值。
+- 定价误差：MAE、RMSE、MAPE（期权隐含波/价格）。
+- 稳健性：参数±10%敏感性、样本外稳定度。
+
+### 任务级协议 / Task-level Protocols
+
+1) 信用风险评分：AUC、KS、Brier、校准误差(EMD/HL)，按放款时间滚动评估，报告群组公平性差异(ΔAUC)。
+2) 投资组合优化：目标收益最小方差、风险预算偏移、换手率、实际夏普；月度再平衡并计入交易成本与权重/行业约束。
+3) 期权定价与对冲：定价RMSE、Delta/Gamma对冲PnL方差、Vega残差；逐日重估与对冲，Monte Carlo极端情景评估。
+4) 利率曲线拟合：曲线RMSE、外推稳定性、套保误差、期限结构一致性；多曲线Bootstrap联动校验。
+
+### 复现实操 / Reproducibility
+
+- 提供数据schema、预处理与评测脚本；固定随机种子与版本。
+- 输出：指标汇总表、区间置信度、收益-风险散点、回撤曲线、误差分布图。
 
 ## 8.6.8 算法实现 / Algorithm Implementation
 

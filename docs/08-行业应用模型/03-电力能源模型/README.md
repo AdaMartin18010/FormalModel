@@ -2490,6 +2490,39 @@ if __name__ == "__main__":
 
 ---
 
+## 评测协议与指标 / Evaluation Protocols & Metrics
+
+> 注：更多统一规范见[评测协议标准](../../EVALUATION_PROTOCOLS_STANDARDS.md)
+
+### 范围与目标 / Scope & Goals
+
+- 覆盖输配电仿真、经济调度、可靠性与市场机制的核心评测场景。
+- 强调跨时序稳定性与N-1安全约束下的优化可行性与可复现性。
+
+### 数据与划分 / Data & Splits
+
+- 时间序列：负荷、风光出力、市场报价、网络拓扑与设备参数。
+- 划分：训练(60%) / 验证(20%) / 测试(20%)，严格按时间顺序滚动窗口。
+
+### 通用指标 / Common Metrics
+
+- 运行经济性：总运行成本、市场清算价格偏差(MAE/RMSE)。
+- 安全与稳定：N-1校验通过率、电压/潮流越限率、稳定裕度。
+- 可靠性：SAIDI/SAIFI、失负荷概率(LOLP)、期望未供电量(EENS)。
+
+### 任务级协议 / Task-level Protocols
+
+- 潮流/最优潮流(OPF)：可行率、收敛步数、目标值与参考解差异。
+- 经济调度/单元组合：启停次数、爬坡约束违约率、成本最优性Gap。
+- 预测任务：负荷/出力/价格预测的MAE、RMSE、MAPE、Pinball Loss。
+
+### 复现实操 / Reproducibility
+
+- 锁定依赖版本与随机种子；提供输入数据Schema与结果报告模板。
+- 输出包含：环境信息、模型配置、约束统计、评测脚本与可视化。
+
+> 详细协议与复现实操参考：`docs/EVALUATION_PROTOCOLS_STANDARDS.md` 中的「电力能源」与通用流程
+
 ## 8.3.25 算法实现 / Algorithm Implementation
 
 ### 电力系统分析算法 / Power System Analysis Algorithms

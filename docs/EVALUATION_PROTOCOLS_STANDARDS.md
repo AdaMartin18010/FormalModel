@@ -126,6 +126,23 @@ data_schema:
 - **个性化**: 适应性匹配度、学习路径优化
 - **交互指标**: 参与度、完成率
 
+---
+
+## 行业回链 / Industry Backlinks
+
+> 为便于往返导航，以下链接直达各行业README中的“评测协议与指标”小节。
+
+- 物流供应链: [docs/08-行业应用模型/01-物流供应链模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/01-物流供应链模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 交通运输: [docs/08-行业应用模型/02-交通运输模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/02-交通运输模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 电力能源: [docs/08-行业应用模型/03-电力能源模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/03-电力能源模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 信息技术: [docs/08-行业应用模型/04-信息技术模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/04-信息技术模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 人工智能: [docs/08-行业应用模型/05-人工智能行业模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/05-人工智能行业模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 银行金融: [docs/08-行业应用模型/06-银行金融模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/06-银行金融模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 经济供需: [docs/08-行业应用模型/07-经济供需模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/07-经济供需模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 制造业: [docs/08-行业应用模型/08-制造业模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/08-制造业模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 医疗健康: [docs/08-行业应用模型/09-医疗健康模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/09-医疗健康模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+- 教育学习: [docs/08-行业应用模型/10-教育学习模型/README.md#评测协议与指标--evaluation-protocols--metrics](./08-行业应用模型/10-教育学习模型/README.md#评测协议与指标--evaluation-protocols--metrics)
+
 ## 评测流程 / Evaluation Process
 
 ### 1. 环境准备 / Environment Setup

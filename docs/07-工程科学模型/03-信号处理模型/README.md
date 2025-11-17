@@ -4,6 +4,8 @@
 
 - [7.3 信号处理模型 / Signal Processing Models](#73-信号处理模型--signal-processing-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [信号处理模型框架图 / Framework Diagram of Signal Processing Models](#信号处理模型框架图--framework-diagram-of-signal-processing-models)
+  - [信号处理流程图 / Flowchart of Signal Processing](#信号处理流程图--flowchart-of-signal-processing)
   - [7.3.1 傅里叶变换模型 / Fourier Transform Models](#731-傅里叶变换模型--fourier-transform-models)
     - [连续傅里叶变换 / Continuous Fourier Transform](#连续傅里叶变换--continuous-fourier-transform)
     - [离散傅里叶变换 / Discrete Fourier Transform](#离散傅里叶变换--discrete-fourier-transform)
@@ -35,9 +37,101 @@
       - [音频处理 / Audio Processing](#音频处理--audio-processing)
       - [图像处理 / Image Processing](#图像处理--image-processing)
       - [通信系统 / Communication Systems](#通信系统--communication-systems)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 信号处理模型框架图 / Framework Diagram of Signal Processing Models
+
+```mermaid
+graph TB
+    A[信号处理模型] --> B[傅里叶变换]
+    A --> C[滤波器]
+    A --> D[小波变换]
+    A --> E[数字信号处理]
+    A --> F[自适应信号处理]
+    A --> G[统计信号处理]
+
+    B --> H[连续FT]
+    B --> I[离散FT]
+    B --> J[快速FT]
+
+    C --> K[IIR滤波器]
+    C --> L[FIR滤波器]
+    C --> M[滤波器设计]
+
+    D --> N[连续小波]
+    D --> O[离散小波]
+    D --> P[多分辨率分析]
+
+    E --> Q[采样定理]
+    E --> R[量化]
+    E --> S[数字滤波器]
+
+    F --> T[LMS算法]
+    F --> U[RLS算法]
+    F --> V[自适应滤波器]
+
+    G --> W[功率谱估计]
+    G --> X[维纳滤波]
+    G --> Y[卡尔曼滤波]
+
+    H --> Z[信号处理理论]
+    K --> Z
+    N --> Z
+    Q --> Z
+
+    Z --> AA[信号处理应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style Z fill:#e8f5e9
+    style AA fill:#e8f5e9
+```
+
+## 信号处理流程图 / Flowchart of Signal Processing
+
+```mermaid
+flowchart TD
+    Start([信号输入<br/>x(t)]) --> Pre[预处理<br/>去噪/归一化]
+    Pre --> Transform{变换选择}
+
+    Transform -->|频域| FFT[FFT变换<br/>X[k] = Σx[n]e^(-j2πkn/N)]
+    Transform -->|时频域| Wavelet[小波变换<br/>CWT/DWT]
+    Transform -->|时域| Filter[滤波器处理]
+
+    FFT --> Freq[频域分析<br/>频谱/功率谱]
+    Wavelet --> TimeFreq[时频分析<br/>时频图]
+    Filter --> Filtered[滤波后信号<br/>y[n]]
+
+    Freq --> Feature[特征提取]
+    TimeFreq --> Feature
+    Filtered --> Feature
+
+    Feature --> Process{处理类型}
+
+    Process -->|自适应| Adaptive[自适应处理<br/>LMS/RLS]
+    Process -->|统计| Statistical[统计处理<br/>维纳滤波/卡尔曼滤波]
+    Process -->|直接| Output[输出信号<br/>y(t)]
+
+    Adaptive --> Output
+    Statistical --> Output
+
+    Output --> End([处理完成])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Feature fill:#e8f5e9
+```
 
 ## 7.3.1 傅里叶变换模型 / Fourier Transform Models
 
@@ -224,11 +318,11 @@ impl Signal {
     pub fn new(data: Vec<f64>, sampling_rate: f64) -> Self {
         Self { data, sampling_rate }
     }
-    
+
     pub fn length(&self) -> usize {
         self.data.len()
     }
-    
+
     pub fn duration(&self) -> f64 {
         self.length() as f64 / self.sampling_rate
     }
@@ -243,11 +337,11 @@ impl FFT {
     pub fn new(n: usize) -> Self {
         Self { n }
     }
-    
+
     pub fn fft(&self, x: &[f64]) -> Vec<f64> {
         let mut x_complex: Vec<f64> = x.to_vec();
         let mut y_complex: Vec<f64> = vec![0.0; self.n];
-        
+
         // 位反转
         for i in 0..self.n {
             let j = self.bit_reverse(i);
@@ -255,12 +349,12 @@ impl FFT {
                 x_complex.swap(i, j);
             }
         }
-        
+
         // FFT计算
         for stage in 1..=self.n.trailing_zeros() {
             let m = 1 << stage;
             let w_m = (-2.0 * PI / m as f64).cos();
-            
+
             for k in (0..self.n).step_by(m) {
                 let mut w = 1.0;
                 for j in 0..m/2 {
@@ -272,10 +366,10 @@ impl FFT {
                 }
             }
         }
-        
+
         x_complex
     }
-    
+
     fn bit_reverse(&self, mut x: usize) -> usize {
         let mut result = 0;
         for _ in 0..self.n.trailing_zeros() {
@@ -284,17 +378,17 @@ impl FFT {
         }
         result
     }
-    
+
     pub fn power_spectrum(&self, x: &[f64]) -> Vec<f64> {
         let fft_result = self.fft(x);
         let mut power = vec![0.0; self.n / 2];
-        
+
         for i in 0..self.n / 2 {
             let real = fft_result[2 * i];
             let imag = fft_result[2 * i + 1];
             power[i] = (real * real + imag * imag).sqrt();
         }
-        
+
         power
     }
 }
@@ -313,31 +407,31 @@ impl FIRFilter {
             buffer: vec![0.0; buffer_size],
         }
     }
-    
+
     pub fn filter(&mut self, input: f64) -> f64 {
         // 更新缓冲区
         for i in (1..self.buffer.len()).rev() {
             self.buffer[i] = self.buffer[i - 1];
         }
         self.buffer[0] = input;
-        
+
         // 卷积计算
         let mut output = 0.0;
         for i in 0..self.coefficients.len() {
             output += self.coefficients[i] * self.buffer[i];
         }
-        
+
         output
     }
-    
+
     pub fn filter_signal(&mut self, signal: &Signal) -> Signal {
         let mut filtered_data = Vec::new();
-        
+
         for &sample in &signal.data {
             let filtered_sample = self.filter(sample);
             filtered_data.push(filtered_sample);
         }
-        
+
         Signal::new(filtered_data, signal.sampling_rate)
     }
 }
@@ -360,38 +454,38 @@ impl IIRFilter {
             y_buffer: vec![0.0; max_order],
         }
     }
-    
+
     pub fn filter(&mut self, input: f64) -> f64 {
         // 更新输入缓冲区
         for i in (1..self.x_buffer.len()).rev() {
             self.x_buffer[i] = self.x_buffer[i - 1];
         }
         self.x_buffer[0] = input;
-        
+
         // 计算输出
         let mut output = 0.0;
-        
+
         // 分子部分
         for i in 0..self.b_coeffs.len() {
             output += self.b_coeffs[i] * self.x_buffer[i];
         }
-        
+
         // 分母部分
         for i in 1..self.a_coeffs.len() {
             output -= self.a_coeffs[i] * self.y_buffer[i - 1];
         }
-        
+
         // 归一化
         if self.a_coeffs[0] != 0.0 {
             output /= self.a_coeffs[0];
         }
-        
+
         // 更新输出缓冲区
         for i in (1..self.y_buffer.len()).rev() {
             self.y_buffer[i] = self.y_buffer[i - 1];
         }
         self.y_buffer[0] = output;
-        
+
         output
     }
 }
@@ -409,45 +503,45 @@ impl WaveletTransform {
             decomposition_levels,
         }
     }
-    
+
     pub fn dwt(&self, signal: &[f64]) -> (Vec<f64>, Vec<f64>) {
         let n = signal.len();
         let mut approximation = signal.to_vec();
         let mut detail = vec![0.0; n / 2];
-        
+
         // 简化的DWT实现（使用Haar小波）
         for i in 0..n / 2 {
             approximation[i] = (signal[2 * i] + signal[2 * i + 1]) / 2.0;
             detail[i] = (signal[2 * i] - signal[2 * i + 1]) / 2.0;
         }
-        
+
         approximation.truncate(n / 2);
         (approximation, detail)
     }
-    
+
     pub fn idwt(&self, approximation: &[f64], detail: &[f64]) -> Vec<f64> {
         let n = approximation.len() * 2;
         let mut reconstructed = vec![0.0; n];
-        
+
         // 简化的IDWT实现
         for i in 0..approximation.len() {
             reconstructed[2 * i] = approximation[i] + detail[i];
             reconstructed[2 * i + 1] = approximation[i] - detail[i];
         }
-        
+
         reconstructed
     }
-    
+
     pub fn decompose(&self, signal: &[f64]) -> Vec<Vec<f64>> {
         let mut coefficients = Vec::new();
         let mut current_signal = signal.to_vec();
-        
+
         for level in 0..self.decomposition_levels {
             let (approx, detail) = self.dwt(&current_signal);
             coefficients.push(detail);
             current_signal = approx;
         }
-        
+
         coefficients.push(current_signal);
         coefficients
     }
@@ -470,31 +564,31 @@ impl AdaptiveFilter {
             buffer: vec![0.0; filter_length],
         }
     }
-    
+
     pub fn lms_update(&mut self, input: f64, desired: f64) -> f64 {
         // 更新缓冲区
         for i in (1..self.buffer.len()).rev() {
             self.buffer[i] = self.buffer[i - 1];
         }
         self.buffer[0] = input;
-        
+
         // 计算输出
         let mut output = 0.0;
         for i in 0..self.filter_length {
             output += self.weights[i] * self.buffer[i];
         }
-        
+
         // 计算误差
         let error = desired - output;
-        
+
         // 更新权重
         for i in 0..self.filter_length {
             self.weights[i] += self.learning_rate * error * self.buffer[i];
         }
-        
+
         output
     }
-    
+
     pub fn get_weights(&self) -> &[f64] {
         &self.weights
     }
@@ -525,7 +619,7 @@ impl KalmanFilter {
             x: vec![0.0; state_dim],
         }
     }
-    
+
     pub fn predict(&mut self) {
         // 状态预测
         let mut x_pred = vec![0.0; self.state_dim];
@@ -535,7 +629,7 @@ impl KalmanFilter {
             }
         }
         self.x = x_pred;
-        
+
         // 协方差预测
         let mut p_pred = vec![vec![0.0; self.state_dim]; self.state_dim];
         for i in 0..self.state_dim {
@@ -545,7 +639,7 @@ impl KalmanFilter {
                 }
             }
         }
-        
+
         for i in 0..self.state_dim {
             for j in 0..self.state_dim {
                 self.p[i][j] = 0.0;
@@ -556,7 +650,7 @@ impl KalmanFilter {
             }
         }
     }
-    
+
     pub fn update(&mut self, measurement: &[f64]) -> Vec<f64> {
         // 计算卡尔曼增益
         let mut s = vec![vec![0.0; self.measurement_dim]; self.measurement_dim];
@@ -568,7 +662,7 @@ impl KalmanFilter {
                 s[i][j] += self.r[i][j];
             }
         }
-        
+
         // 简化的卡尔曼增益计算
         let mut k = vec![vec![0.0; self.measurement_dim]; self.state_dim];
         for i in 0..self.state_dim {
@@ -576,7 +670,7 @@ impl KalmanFilter {
                 k[i][j] = self.p[i][j] / s[j][j];
             }
         }
-        
+
         // 状态更新
         let mut innovation = vec![0.0; self.measurement_dim];
         for i in 0..self.measurement_dim {
@@ -585,13 +679,13 @@ impl KalmanFilter {
                 innovation[i] -= self.h[i][j] * self.x[j];
             }
         }
-        
+
         for i in 0..self.state_dim {
             for j in 0..self.measurement_dim {
                 self.x[i] += k[i][j] * innovation[j];
             }
         }
-        
+
         // 协方差更新
         for i in 0..self.state_dim {
             for j in 0..self.state_dim {
@@ -600,7 +694,7 @@ impl KalmanFilter {
                 }
             }
         }
-        
+
         self.x.clone()
     }
 }
@@ -612,7 +706,7 @@ fn main() {
     let duration = 1.0;
     let n_samples = (sampling_rate * duration) as usize;
     let mut signal_data = Vec::new();
-    
+
     for i in 0..n_samples {
         let t = i as f64 / sampling_rate;
         let frequency = 10.0;
@@ -620,69 +714,69 @@ fn main() {
         let sample = amplitude * (2.0 * PI * frequency * t).sin();
         signal_data.push(sample);
     }
-    
+
     let signal = Signal::new(signal_data, sampling_rate);
     println!("Signal length: {}", signal.length());
     println!("Signal duration: {:.3} seconds", signal.duration());
-    
+
     // FFT分析
     let fft = FFT::new(signal.length());
     let power_spectrum = fft.power_spectrum(&signal.data);
     println!("Power spectrum max: {:.3}", power_spectrum.iter().fold(0.0, |a, &b| a.max(b)));
-    
+
     // FIR滤波器
     let filter_coeffs = vec![0.1, 0.2, 0.4, 0.2, 0.1];
     let mut fir_filter = FIRFilter::new(filter_coeffs);
     let filtered_signal = fir_filter.filter_signal(&signal);
     println!("Filtered signal length: {}", filtered_signal.length());
-    
+
     // IIR滤波器
     let b_coeffs = vec![0.1, 0.2, 0.1];
     let a_coeffs = vec![1.0, -0.5, 0.2];
     let mut iir_filter = IIRFilter::new(b_coeffs, a_coeffs);
-    
+
     for &sample in &signal.data[..10] {
         let filtered = iir_filter.filter(sample);
         println!("Input: {:.3}, Output: {:.3}", sample, filtered);
     }
-    
+
     // 小波变换
     let wavelet = WaveletTransform::new("haar".to_string(), 3);
     let coefficients = wavelet.decompose(&signal.data);
     println!("Wavelet decomposition levels: {}", coefficients.len());
-    
+
     // 自适应滤波器
     let mut adaptive_filter = AdaptiveFilter::new(10, 0.01);
     let desired_signal = vec![1.0, 0.0, 1.0, 0.0, 1.0];
     let noisy_signal = vec![1.1, 0.1, 0.9, -0.1, 1.05];
-    
+
     for (input, desired) in noisy_signal.iter().zip(desired_signal.iter()) {
         let output = adaptive_filter.lms_update(*input, *desired);
         println!("Input: {:.3}, Desired: {:.3}, Output: {:.3}", input, desired, output);
     }
-    
+
     // 卡尔曼滤波器
     let mut kalman = KalmanFilter::new(2, 1);
-    
+
     // 设置状态转移矩阵（简化的匀速运动模型）
     kalman.f[0][0] = 1.0;
     kalman.f[0][1] = 0.01;
     kalman.f[1][1] = 1.0;
-    
+
     // 设置观测矩阵
     kalman.h[0][0] = 1.0;
-    
+
     // 设置噪声协方差
     kalman.q[0][0] = 0.1;
     kalman.q[1][1] = 0.1;
     kalman.r[0][0] = 1.0;
-    
+
     let measurements = vec![1.0, 1.1, 1.2, 1.3, 1.4];
-    
+
     for measurement in measurements {
         kalman.predict();
         let state = kalman.update(&[measurement]);
-        println!("Measurement: {:.3}, Estimated position: {:.3}, velocity: {:.3}", 
+        println!("Measurement: {:.3}, Estimated position: {:.3}, velocity: {:.3}",
                 measurement, state[0], state[1]);
     }
 }
@@ -722,14 +816,14 @@ newFFT :: Int -> FFT
 newFFT size = FFT size
 
 fft :: FFT -> [Double] -> [Complex Double]
-fft fft_obj data = 
+fft fft_obj data =
     let n = fftSize fft_obj
         complex_data = zipWith (:+) data (replicate n 0.0)
     in fft_recursive complex_data
   where
     fft_recursive [] = []
     fft_recursive [x] = [x]
-    fft_recursive xs = 
+    fft_recursive xs =
         let n = length xs
             even_indices = [xs !! i | i <- [0,2..n-1]]
             odd_indices = [xs !! i | i <- [1,3..n-1]]
@@ -741,7 +835,7 @@ fft fft_obj data =
            zipWith (-) even_fft (zipWith (*) twiddle_factors odd_fft)
 
 powerSpectrum :: FFT -> [Double] -> [Double]
-powerSpectrum fft_obj data = 
+powerSpectrum fft_obj data =
     let fft_result = fft fft_obj data
         n = fftSize fft_obj
     in take (n `div` 2) $ map magnitude fft_result
@@ -756,13 +850,13 @@ newFIRFilter :: [Double] -> FIRFilter
 newFIRFilter coeffs = FIRFilter coeffs (replicate (length coeffs) 0.0)
 
 filterSample :: FIRFilter -> Double -> (FIRFilter, Double)
-filterSample filter input = 
+filterSample filter input =
     let new_buffer = input : init (buffer filter)
         output = sum $ zipWith (*) (coefficients filter) new_buffer
     in (filter { buffer = new_buffer }, output)
 
 filterSignal :: FIRFilter -> Signal -> Signal
-filterSignal filter signal = 
+filterSignal filter signal =
     let (_, filtered_data) = foldl (\(f, acc) sample ->
             let (new_f, output) = filterSample f sample
             in (new_f, acc ++ [output])) (filter, []) (signalData signal)
@@ -785,13 +879,13 @@ newIIRFilter b_coeffs a_coeffs = IIRFilter {
 }
 
 iirFilterSample :: IIRFilter -> Double -> (IIRFilter, Double)
-iirFilterSample filter input = 
+iirFilterSample filter input =
     let new_x_buffer = input : init (xBuffer filter)
         numerator = sum $ zipWith (*) (bCoeffs filter) new_x_buffer
         denominator = sum $ zipWith (*) (tail (aCoeffs filter)) (yBuffer filter)
         output = (numerator - denominator) / head (aCoeffs filter)
         new_y_buffer = output : init (yBuffer filter)
-    in (filter { 
+    in (filter {
             xBuffer = new_x_buffer,
             yBuffer = new_y_buffer
         }, output)
@@ -806,16 +900,16 @@ newWaveletTransform :: String -> Int -> WaveletTransform
 newWaveletTransform w_type levels = WaveletTransform w_type levels
 
 dwt :: WaveletTransform -> [Double] -> ([Double], [Double])
-dwt wavelet signal = 
+dwt wavelet signal =
     let n = length signal
         approximation = [((signal !! (2*i)) + (signal !! (2*i+1))) / 2.0 | i <- [0..(n`div`2)-1]]
         detail = [((signal !! (2*i)) - (signal !! (2*i+1))) / 2.0 | i <- [0..(n`div`2)-1]]
     in (approximation, detail)
 
 idwt :: WaveletTransform -> [Double] -> [Double] -> [Double]
-idwt wavelet approx detail = 
+idwt wavelet approx detail =
     let n = length approx * 2
-        reconstructed = concat [[(approx !! i) + (detail !! i), (approx !! i) - (detail !! i)] 
+        reconstructed = concat [[(approx !! i) + (detail !! i), (approx !! i) - (detail !! i)]
                                | i <- [0..length approx - 1]]
     in take n reconstructed
 
@@ -823,7 +917,7 @@ decompose :: WaveletTransform -> [Double] -> [[Double]]
 decompose wavelet signal = go signal (decompositionLevels wavelet)
   where
     go current_signal 0 = [current_signal]
-    go current_signal level = 
+    go current_signal level =
         let (approx, detail) = dwt wavelet current_signal
         in detail : go approx (level - 1)
 
@@ -844,13 +938,13 @@ newAdaptiveFilter length rate = AdaptiveFilter {
 }
 
 lmsUpdate :: AdaptiveFilter -> Double -> Double -> (AdaptiveFilter, Double)
-lmsUpdate filter input desired = 
+lmsUpdate filter input desired =
     let new_buffer = input : init (buffer filter)
         output = sum $ zipWith (*) (weights filter) new_buffer
         error = desired - output
-        new_weights = zipWith (\w x -> w + learningRate filter * error * x) 
+        new_weights = zipWith (\w x -> w + learningRate filter * error * x)
                               (weights filter) new_buffer
-    in (filter { 
+    in (filter {
             weights = new_weights,
             buffer = new_buffer
         }, output)
@@ -880,26 +974,26 @@ newKalmanFilter state_dim meas_dim = KalmanFilter {
 }
 
 predict :: KalmanFilter -> KalmanFilter
-predict filter = 
+predict filter =
     let -- 状态预测
         x_pred = [sum [f filter !! i !! j * x filter !! j | j <- [0..stateDim filter - 1]]
                   | i <- [0..stateDim filter - 1]]
-        
+
         -- 协方差预测（简化实现）
         p_pred = replicate (stateDim filter) (replicate (stateDim filter) 0.0)
     in filter { x = x_pred, p = p_pred }
 
 update :: KalmanFilter -> [Double] -> (KalmanFilter, [Double])
-update filter measurement = 
+update filter measurement =
     let -- 简化的卡尔曼增益计算
         k = replicate (stateDim filter) (replicate (measurementDim filter) 0.1)
-        
+
         -- 状态更新
-        innovation = [measurement !! i - sum [h filter !! i !! j * x filter !! j 
+        innovation = [measurement !! i - sum [h filter !! i !! j * x filter !! j
                                             | j <- [0..stateDim filter - 1]]
                      | i <- [0..measurementDim filter - 1]]
-        
-        x_updated = [x filter !! i + sum [k !! i !! j * innovation !! j 
+
+        x_updated = [x filter !! i + sum [k !! i !! j * innovation !! j
                                          | j <- [0..measurementDim filter - 1]]
                     | i <- [0..stateDim filter - 1]]
     in (filter { x = x_updated }, x_updated)
@@ -913,54 +1007,54 @@ example = do
         n_samples = floor (sampling_rate * duration)
         signal_data = [sin (2 * pi * 10 * t / sampling_rate) | t <- [0..n_samples-1]]
         signal = newSignal signal_data sampling_rate
-    
+
     putStrLn $ "Signal length: " ++ show (signalLength signal)
     putStrLn $ "Signal duration: " ++ show (signalDuration signal) ++ " seconds"
-    
+
     -- FFT分析
     let fft_obj = newFFT (signalLength signal)
         power_spectrum = powerSpectrum fft_obj (signalData signal)
         max_power = maximum power_spectrum
-    
+
     putStrLn $ "Power spectrum max: " ++ show max_power
-    
+
     -- FIR滤波器
     let filter_coeffs = [0.1, 0.2, 0.4, 0.2, 0.1]
         fir_filter = newFIRFilter filter_coeffs
         filtered_signal = filterSignal fir_filter signal
-    
+
     putStrLn $ "Filtered signal length: " ++ show (signalLength filtered_signal)
-    
+
     -- 小波变换
     let wavelet = newWaveletTransform "haar" 3
         coefficients = decompose wavelet (signalData signal)
-    
+
     putStrLn $ "Wavelet decomposition levels: " ++ show (length coefficients)
-    
+
     -- 自适应滤波器
     let adaptive_filter = newAdaptiveFilter 10 0.01
         desired_signal = [1.0, 0.0, 1.0, 0.0, 1.0]
         noisy_signal = [1.1, 0.1, 0.9, -0.1, 1.05]
-        
+
         (final_filter, _) = foldl (\(f, _) (input, desired) ->
-            lmsUpdate f input desired) (adaptive_filter, 0.0) 
+            lmsUpdate f input desired) (adaptive_filter, 0.0)
             (zip noisy_signal desired_signal)
-    
+
     putStrLn $ "Final weights: " ++ show (weights final_filter)
-    
+
     -- 卡尔曼滤波器
     let kalman = newKalmanFilter 2 1
         measurements = [1.0, 1.1, 1.2, 1.3, 1.4]
-        
+
         process_measurements filter [] = return ()
         process_measurements filter (m:ms) = do
             let predicted = predict filter
                 (updated, state) = update predicted [m]
-            putStrLn $ "Measurement: " ++ show m ++ 
-                      ", Position: " ++ show (state !! 0) ++ 
+            putStrLn $ "Measurement: " ++ show m ++
+                      ", Position: " ++ show (state !! 0) ++
                       ", Velocity: " ++ show (state !! 1)
             process_measurements updated ms
-    
+
     process_measurements kalman measurements
 ```
 
@@ -985,6 +1079,40 @@ example = do
 - **多路复用**: FDM、TDM、CDM
 
 ---
+
+## 相关模型 / Related Models
+
+### 工程科学模型 / Engineering Science Models
+
+- [优化模型](../01-优化模型/README.md) - 信号优化和滤波器优化
+- [控制论模型](../02-控制论模型/README.md) - 信号控制和滤波器控制
+- [材料科学模型](../04-材料科学模型/README.md) - 材料信号处理
+- [机械工程模型](../05-机械工程模型/README.md) - 机械信号处理和振动分析
+- [电子工程模型](../06-电子工程模型/README.md) - 电子信号处理和通信信号处理
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 线性代数和矩阵理论在信号处理中的应用
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 信号几何和频域几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 信号拓扑
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 信号处理算法和FFT算法
+- [数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md) - 信号数据结构和数字信号结构
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 信号处理和机器学习
+
+### 物理科学模型 / Physical Science Models
+
+- [声学模型](../../02-物理科学模型/07-声学模型/README.md) - 声学信号处理和音频信号处理
+- [光学模型](../../02-物理科学模型/06-光学模型/README.md) - 光学信号处理和图像信号处理
+- [电磁学模型](../../02-物理科学模型/05-电磁学模型/README.md) - 电磁信号处理
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 信号处理模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 信号处理模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 信号处理模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

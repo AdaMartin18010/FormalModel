@@ -4,6 +4,8 @@
 
 - [3.1 代数模型 / Algebraic Models](#31-代数模型--algebraic-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [代数模型框架图 / Framework Diagram of Algebraic Models](#代数模型框架图--framework-diagram-of-algebraic-models)
+  - [群、环、域关系图 / Relationship Diagram of Groups, Rings, and Fields](#群环域关系图--relationship-diagram-of-groups-rings-and-fields)
   - [3.1.1 群论模型 / Group Theory Models](#311-群论模型--group-theory-models)
     - [群的定义 / Group Definition](#群的定义--group-definition)
     - [子群 / Subgroups](#子群--subgroups)
@@ -38,13 +40,87 @@
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
     - [Python实现示例 / Python Implementation Example](#python实现示例--python-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [密码学 / Cryptography](#密码学--cryptography)
       - [编码理论 / Coding Theory](#编码理论--coding-theory)
       - [量子计算 / Quantum Computing](#量子计算--quantum-computing)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 代数模型框架图 / Framework Diagram of Algebraic Models
+
+```mermaid
+graph TB
+    A[代数模型] --> B[群论]
+    A --> C[环论]
+    A --> D[域论]
+    A --> E[线性代数]
+    A --> F[同调代数]
+    A --> G[表示论]
+    A --> H[代数几何]
+
+    B --> I[群的定义]
+    B --> J[子群]
+    B --> K[同态与同构]
+
+    C --> L[环的定义]
+    C --> M[理想]
+    C --> N[商环]
+
+    D --> O[域的定义]
+    D --> P[域扩张]
+    D --> Q[伽罗瓦理论]
+
+    E --> R[向量空间]
+    E --> S[线性变换]
+    E --> T[特征值]
+
+    I --> U[代数结构]
+    L --> U
+    O --> U
+    R --> U
+
+    U --> V[数学应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style U fill:#e8f5e9
+    style V fill:#e8f5e9
+```
+
+## 群、环、域关系图 / Relationship Diagram of Groups, Rings, and Fields
+
+```mermaid
+graph LR
+    A[群] --> B[环]
+    B --> C[域]
+
+    A --> D[群公理<br/>结合律、单位元、逆元]
+    B --> E[环公理<br/>群+乘法+分配律]
+    C --> F[域公理<br/>环+乘法逆元]
+
+    D --> G[群结构]
+    E --> H[环结构]
+    F --> I[域结构]
+
+    G --> J[代数基础]
+    H --> J
+    I --> J
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style J fill:#e8f5e9
+```
 
 ## 3.1.1 群论模型 / Group Theory Models
 
@@ -484,23 +560,23 @@ impl Group {
             inverses: HashMap::new(),
         }
     }
-    
+
     pub fn set_operation(&mut self, a: String, b: String, result: String) {
         self.operation.insert((a, b), result);
     }
-    
+
     pub fn set_inverse(&mut self, element: String, inverse: String) {
         self.inverses.insert(element, inverse);
     }
-    
+
     pub fn multiply(&self, a: &str, b: &str) -> Option<&str> {
         self.operation.get(&(a.to_string(), b.to_string())).map(|s| s.as_str())
     }
-    
+
     pub fn inverse(&self, element: &str) -> Option<&str> {
         self.inverses.get(element).map(|s| s.as_str())
     }
-    
+
     pub fn is_group(&self) -> bool {
         // 检查结合律
         for a in &self.elements {
@@ -508,11 +584,11 @@ impl Group {
                 for c in &self.elements {
                     let ab = self.multiply(a, b);
                     let bc = self.multiply(b, c);
-                    
+
                     if let (Some(ab), Some(bc)) = (ab, bc) {
                         let (ab)c = self.multiply(ab, c);
                         let a(bc) = self.multiply(a, bc);
-                        
+
                         if ab_c != a_bc {
                             return false;
                         }
@@ -520,7 +596,7 @@ impl Group {
                 }
             }
         }
-        
+
         // 检查单位元
         for a in &self.elements {
             if self.multiply(&self.identity, a) != Some(a.as_str()) ||
@@ -528,7 +604,7 @@ impl Group {
                 return false;
             }
         }
-        
+
         // 检查逆元
         for a in &self.elements {
             if let Some(inv) = self.inverse(a) {
@@ -540,7 +616,7 @@ impl Group {
                 return false;
             }
         }
-        
+
         true
     }
 }
@@ -555,7 +631,7 @@ pub struct Ring {
 impl Ring {
     pub fn new(elements: Vec<String>, additive_identity: String, multiplicative_identity: String) -> Self {
         let mut additive_group = Group::new(elements.clone(), additive_identity.clone());
-        
+
         // 设置加法运算
         for i in 0..elements.len() {
             for j in 0..elements.len() {
@@ -563,39 +639,39 @@ impl Ring {
                 additive_group.set_operation(elements[i].clone(), elements[j].clone(), result);
             }
         }
-        
+
         Self {
             additive_group,
             multiplication: HashMap::new(),
             multiplicative_identity,
         }
     }
-    
+
     pub fn set_multiplication(&mut self, a: String, b: String, result: String) {
         self.multiplication.insert((a, b), result);
     }
-    
+
     pub fn multiply(&self, a: &str, b: &str) -> Option<&str> {
         self.multiplication.get(&(a.to_string(), b.to_string())).map(|s| s.as_str())
     }
-    
+
     pub fn is_ring(&self) -> bool {
         // 检查加法群
         if !self.additive_group.is_group() {
             return false;
         }
-        
+
         // 检查乘法结合律
         for a in &self.additive_group.elements {
             for b in &self.additive_group.elements {
                 for c in &self.additive_group.elements {
                     let ab = self.multiply(a, b);
                     let bc = self.multiply(b, c);
-                    
+
                     if let (Some(ab), Some(bc)) = (ab, bc) {
                         let (ab)c = self.multiply(ab, c);
                         let a(bc) = self.multiply(a, bc);
-                        
+
                         if ab_c != a_bc {
                             return false;
                         }
@@ -603,28 +679,28 @@ impl Ring {
                 }
             }
         }
-        
+
         // 检查分配律
         for a in &self.additive_group.elements {
             for b in &self.additive_group.elements {
                 for c in &self.additive_group.elements {
                     let b_plus_c = self.additive_group.multiply(b, c);
                     let a_times_b_plus_c = self.multiply(a, b_plus_c.unwrap_or(""));
-                    
+
                     let a_times_b = self.multiply(a, b);
                     let a_times_c = self.multiply(a, c);
                     let a_times_b_plus_a_times_c = self.additive_group.multiply(
-                        a_times_b.unwrap_or(""), 
+                        a_times_b.unwrap_or(""),
                         a_times_c.unwrap_or("")
                     );
-                    
+
                     if a_times_b_plus_c != a_times_b_plus_a_times_c {
                         return false;
                     }
                 }
             }
         }
-        
+
         true
     }
 }
@@ -635,7 +711,7 @@ fn main() {
         vec!["e".to_string(), "a".to_string(), "a²".to_string()],
         "e".to_string()
     );
-    
+
     // 设置运算表 (Z₃)
     cyclic_group.set_operation("e".to_string(), "e".to_string(), "e".to_string());
     cyclic_group.set_operation("e".to_string(), "a".to_string(), "a".to_string());
@@ -646,14 +722,14 @@ fn main() {
     cyclic_group.set_operation("a²".to_string(), "e".to_string(), "a²".to_string());
     cyclic_group.set_operation("a²".to_string(), "a".to_string(), "e".to_string());
     cyclic_group.set_operation("a²".to_string(), "a²".to_string(), "a".to_string());
-    
+
     // 设置逆元
     cyclic_group.set_inverse("e".to_string(), "e".to_string());
     cyclic_group.set_inverse("a".to_string(), "a²".to_string());
     cyclic_group.set_inverse("a²".to_string(), "a".to_string());
-    
+
     println!("Is cyclic group: {}", cyclic_group.is_group());
-    
+
     // 测试运算
     if let Some(result) = cyclic_group.multiply("a", "a²") {
         println!("a * a² = {}", result);
@@ -707,21 +783,21 @@ inverse g element = Map.lookup element (inverses g)
 isGroup :: Group -> Bool
 isGroup g = associativity && identity_law && inverse_law
   where
-    associativity = all (\a -> all (\b -> all (\c -> 
+    associativity = all (\a -> all (\b -> all (\c ->
         case (multiply g a b, multiply g b c) of
-            (Just ab, Just bc) -> 
+            (Just ab, Just bc) ->
                 case (multiply g ab c, multiply g a bc) of
                     (Just ab_c, Just a_bc) -> ab_c == a_bc
                     _ -> False
             _ -> True) (elements g)) (elements g)) (elements g)
-    
-    identity_law = all (\a -> 
-        multiply g (identity g) a == Just a && 
+
+    identity_law = all (\a ->
+        multiply g (identity g) a == Just a &&
         multiply g a (identity g) == Just a) (elements g)
-    
-    inverse_law = all (\a -> 
+
+    inverse_law = all (\a ->
         case inverse g a of
-            Just inv -> multiply g a inv == Just (identity g) && 
+            Just inv -> multiply g a inv == Just (identity g) &&
                        multiply g inv a == Just (identity g)
             Nothing -> False) (elements g)
 
@@ -752,17 +828,17 @@ ringMultiply r a b = Map.lookup (a, b) (multiplication r)
 isRing :: Ring -> Bool
 isRing r = isGroup (additiveGroup r) && associativity && distributivity
   where
-    associativity = all (\a -> all (\b -> all (\c -> 
+    associativity = all (\a -> all (\b -> all (\c ->
         case (ringMultiply r a b, ringMultiply r b c) of
-            (Just ab, Just bc) -> 
+            (Just ab, Just bc) ->
                 case (ringMultiply r ab c, ringMultiply r a bc) of
                     (Just ab_c, Just a_bc) -> ab_c == a_bc
                     _ -> False
             _ -> True) (elements (additiveGroup r))) (elements (additiveGroup r))) (elements (additiveGroup r))
-    
-    distributivity = all (\a -> all (\b -> all (\c -> 
+
+    distributivity = all (\a -> all (\b -> all (\c ->
         case multiply (additiveGroup r) b c of
-            Just b_plus_c -> 
+            Just b_plus_c ->
                 case (ringMultiply r a b_plus_c, ringMultiply r a b, ringMultiply r a c) of
                     (Just a_times_b_plus_c, Just a_times_b, Just a_times_c) ->
                         case multiply (additiveGroup r) a_times_b a_times_c of
@@ -775,7 +851,7 @@ isRing r = isGroup (additiveGroup r) && associativity && distributivity
 example :: IO ()
 example = do
     let g = newGroup ["e", "a", "a²"] "e"
-        
+
         -- 设置运算表
         g1 = setOperation g "e" "e" "e"
         g2 = setOperation g1 "e" "a" "a"
@@ -786,16 +862,16 @@ example = do
         g7 = setOperation g6 "a²" "e" "a²"
         g8 = setOperation g7 "a²" "a" "e"
         g9 = setOperation g8 "a²" "a²" "a"
-        
+
         -- 设置逆元
         g10 = setInverse g9 "e" "e"
         g11 = setInverse g10 "a" "a²"
         g12 = setInverse g11 "a²" "a"
-        
+
         finalGroup = g12
-    
+
     putStrLn $ "Is group: " ++ show (isGroup finalGroup)
-    
+
     case multiply finalGroup "a" "a²" of
         Just result -> putStrLn $ "a * a² = " ++ result
         Nothing -> putStrLn "Operation not defined"
@@ -923,6 +999,184 @@ def demo_algebra():
     return {"is_Z3_group": ok_group, "GF7_demo": seven_demo}
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using DataStructures
+
+# 有限群结构
+struct FiniteGroup
+    elements::Vector{String}
+    identity::String
+    op::Dict{Tuple{String, String}, String}
+    inv::Dict{String, String}
+end
+
+# 群运算
+function multiply(g::FiniteGroup, a::String, b::String)::Union{String, Nothing}
+    return get(g.op, (a, b), nothing)
+end
+
+# 逆元
+function inverse(g::FiniteGroup, a::String)::Union{String, Nothing}
+    return get(g.inv, a, nothing)
+end
+
+# 检查群公理
+function is_group(g::FiniteGroup)::Bool
+    # 闭包与运算定义完整性
+    for a in g.elements
+        for b in g.elements
+            if !haskey(g.op, (a, b))
+                return false
+            end
+            if !(g.op[(a, b)] in g.elements)
+                return false
+            end
+        end
+    end
+
+    # 结合律
+    for a in g.elements
+        for b in g.elements
+            for c in g.elements
+                ab = multiply(g, a, b)
+                bc = multiply(g, b, c)
+                if ab === nothing || bc === nothing
+                    return false
+                end
+                ab_c = multiply(g, ab, c)
+                a_bc = multiply(g, a, bc)
+                if ab_c != a_bc
+                    return false
+                end
+            end
+        end
+    end
+
+    # 单位元
+    e = g.identity
+    if !(e in g.elements)
+        return false
+    end
+    for a in g.elements
+        if multiply(g, e, a) != a || multiply(g, a, e) != a
+            return false
+        end
+    end
+
+    # 逆元
+    for a in g.elements
+        inv_a = inverse(g, a)
+        if inv_a === nothing
+            return false
+        end
+        if multiply(g, a, inv_a) != e || multiply(g, inv_a, a) != e
+            return false
+        end
+    end
+
+    return true
+end
+
+# 扩展欧几里得算法
+function egcd(a::Int, b::Int)::Tuple{Int, Int, Int}
+    """扩展欧几里得算法: 返回(g, x, y) 使得 ax + by = g = gcd(a, b)"""
+    if b == 0
+        return (a, 1, 0)
+    end
+    g, x1, y1 = egcd(b, a % b)
+    return (g, y1, x1 - (a ÷ b) * y1)
+end
+
+# 模逆
+function modinv(a::Int, p::Int)::Union{Int, Nothing}
+    """模逆 a^{-1} mod p（p为素数或当gcd(a,p)=1时存在）"""
+    g, x, _ = egcd(a % p, p)
+    if g != 1
+        return nothing
+    end
+    return x % p
+end
+
+# 有限域结构
+struct FiniteField
+    p::Int
+
+    function FiniteField(p::Int)
+        if p <= 1
+            error("p must be prime (not checked here)")
+        end
+        new(p)
+    end
+end
+
+# 有限域运算
+function add(f::FiniteField, a::Int, b::Int)::Int
+    return (a + b) % f.p
+end
+
+function neg(f::FiniteField, a::Int)::Int
+    return (-a) % f.p
+end
+
+function sub(f::FiniteField, a::Int, b::Int)::Int
+    return (a - b) % f.p
+end
+
+function mul(f::FiniteField, a::Int, b::Int)::Int
+    return (a * b) % f.p
+end
+
+function inv(f::FiniteField, a::Int)::Union{Int, Nothing}
+    return modinv(a, f.p)
+end
+
+function div(f::FiniteField, a::Int, b::Int)::Union{Int, Nothing}
+    inv_b = inv(f, b)
+    if inv_b === nothing
+        return nothing
+    end
+    return mul(f, a, inv_b)
+end
+
+# 示例：Z_3循环群与有限域GF(7)
+function demo_algebra()
+    # Z_3群
+    elems = ["0", "1", "2"]
+    op = Dict{Tuple{String, String}, String}()
+    inv = Dict("0" => "0", "1" => "2", "2" => "1")
+
+    for a in elems
+        for b in elems
+            op[(a, b)] = string((parse(Int, a) + parse(Int, b)) % 3)
+        end
+    end
+
+    G = FiniteGroup(elems, "0", op, inv)
+
+    # 检查群公理
+    ok_group = is_group(G)
+
+    # GF(7)
+    F7 = FiniteField(7)
+    inv3 = inv(F7, 3)
+    seven_demo = Dict(
+        "sum_3_5" => add(F7, 3, 5),
+        "prod_3_5" => mul(F7, 3, 5),
+        "inv_3" => inv3,
+        "div_4_by_3" => div(F7, 4, 3)
+    )
+
+    return Dict("is_Z3_group" => ok_group, "GF7_demo" => seven_demo)
+end
+
+# 使用示例
+result = demo_algebra()
+println("Z_3群验证: ", result["is_Z3_group"])
+println("GF(7)示例: ", result["GF7_demo"])
+```
+
 ### 应用领域 / Application Domains
 
 #### 密码学 / Cryptography
@@ -944,6 +1198,24 @@ def demo_algebra():
 - **拓扑量子场论**: 代数拓扑应用
 
 ---
+
+## 相关模型 / Related Models
+
+### 数学科学模型 / Mathematical Science Models
+
+- [几何模型](../02-几何模型/README.md) - 代数几何，代数曲线和曲面
+- [拓扑模型](../03-拓扑模型/README.md) - 同调代数，代数拓扑
+
+### 物理科学模型 / Physical Science Models
+
+- [量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md) - 群论在量子力学中的应用，对称性
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 李群和李代数在经典力学中的应用
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 代数模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 代数的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 代数作为科学模型的理论基础
 
 ## 参考文献 / References
 

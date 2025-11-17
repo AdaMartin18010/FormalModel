@@ -4,6 +4,8 @@
 
 - [6.1 社会网络模型 / Social Network Models](#61-社会网络模型--social-network-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [社会网络模型框架图 / Framework Diagram of Social Network Models](#社会网络模型框架图--framework-diagram-of-social-network-models)
+  - [SIR传染病传播流程图 / Flowchart of SIR Epidemic Spreading](#sir传染病传播流程图--flowchart-of-sir-epidemic-spreading)
   - [6.1.1 网络结构模型 / Network Structure Models](#611-网络结构模型--network-structure-models)
     - [随机图模型 / Random Graph Models](#随机图模型--random-graph-models)
     - [小世界网络 / Small-World Network](#小世界网络--small-world-network)
@@ -39,9 +41,95 @@
       - [社交网络分析 / Social Network Analysis](#社交网络分析--social-network-analysis)
       - [公共卫生 / Public Health](#公共卫生--public-health)
       - [政治科学 / Political Science](#政治科学--political-science)
+  - [6.1.9 算法实现 / Algorithm Implementation](#619-算法实现--algorithm-implementation)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 社会网络模型框架图 / Framework Diagram of Social Network Models
+
+```mermaid
+graph TB
+    A[社会网络模型] --> B[网络结构]
+    A --> C[传播动力学]
+    A --> D[社区发现]
+    A --> E[影响力传播]
+    A --> F[意见动力学]
+    A --> G[合作演化]
+    A --> H[社会资本]
+
+    B --> I[随机图]
+    B --> J[小世界网络]
+    B --> K[无标度网络]
+
+    C --> L[传染病传播]
+    C --> M[信息传播]
+    C --> N[创新扩散]
+
+    D --> O[模块度优化]
+    D --> P[谱聚类]
+    D --> Q[标签传播]
+
+    E --> R[影响力最大化]
+    E --> S[影响力评估]
+    E --> T[传播路径]
+
+    F --> U[Deffuant]
+    F --> V[Hegselmann-Krause]
+    F --> W[Voter]
+
+    G --> X[囚徒困境]
+    G --> Y[演化博弈]
+    G --> Z[网络博弈]
+
+    H --> AA[结构洞]
+    H --> AB[社会信任]
+    H --> AC[社会支持]
+
+    I --> AD[社会网络理论]
+    L --> AD
+    O --> AD
+    R --> AD
+
+    AD --> AE[社会应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style AD fill:#e8f5e9
+    style AE fill:#e8f5e9
+```
+
+## SIR传染病传播流程图 / Flowchart of SIR Epidemic Spreading
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Init[初始化<br/>S=S₀, I=I₀, R=0]
+    Init --> Calc[计算传播率<br/>βSI]
+    Calc --> UpdateS[更新易感者<br/>S = S - βSI·dt]
+    UpdateS --> UpdateI[更新感染者<br/>I = I + βSI·dt - γI·dt]
+    UpdateI --> UpdateR[更新康复者<br/>R = R + γI·dt]
+    UpdateR --> Check{时间<br/>t < T?}
+    Check -->|是| Calc
+    Check -->|否| End([结束])
+
+    UpdateI --> Threshold{I > 阈值?}
+    Threshold -->|是| Peak[传播高峰]
+    Threshold -->|否| Calc
+    Peak --> Calc
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Peak fill:#ffebee
+```
 
 ## 6.1.1 网络结构模型 / Network Structure Models
 
@@ -288,45 +376,45 @@ impl SocialNetwork {
             node_attributes: HashMap::new(),
         }
     }
-    
+
     pub fn add_node(&mut self, node: String) {
         if !self.nodes.contains(&node) {
             self.nodes.push(node.clone());
             self.node_attributes.insert(node, HashMap::new());
         }
     }
-    
+
     pub fn add_edge(&mut self, from: String, to: String, weight: f64) {
         self.edges.insert((from, to), weight);
     }
-    
+
     pub fn get_neighbors(&self, node: &str) -> Vec<String> {
         self.edges.iter()
             .filter(|((from, _), _)| from == node)
             .map(|((_, to), _)| to.clone())
             .collect()
     }
-    
+
     pub fn calculate_degree_centrality(&self, node: &str) -> f64 {
         let degree = self.get_neighbors(node).len();
         degree as f64 / (self.nodes.len() - 1) as f64
     }
-    
+
     pub fn calculate_betweenness_centrality(&self, node: &str) -> f64 {
         let mut total = 0.0;
         let mut count = 0;
-        
+
         for i in 0..self.nodes.len() {
             for j in (i+1)..self.nodes.len() {
                 let source = &self.nodes[i];
                 let target = &self.nodes[j];
-                
+
                 if let Some(paths) = self.find_shortest_paths(source, target) {
                     let shortest_paths = paths.len();
                     let paths_through_node = paths.iter()
                         .filter(|path| path.contains(&node.to_string()))
                         .count();
-                    
+
                     if shortest_paths > 0 {
                         total += paths_through_node as f64 / shortest_paths as f64;
                     }
@@ -334,16 +422,16 @@ impl SocialNetwork {
                 }
             }
         }
-        
+
         if count > 0 { total / count as f64 } else { 0.0 }
     }
-    
+
     fn find_shortest_paths(&self, source: &str, target: &str) -> Option<Vec<Vec<String>>> {
         // 简化的最短路径查找
         let mut paths = Vec::new();
         let mut visited = HashSet::new();
         self.dfs_paths(source, target, &mut Vec::new(), &mut visited, &mut paths);
-        
+
         if paths.is_empty() {
             None
         } else {
@@ -351,12 +439,12 @@ impl SocialNetwork {
             Some(paths.into_iter().filter(|p| p.len() == min_length).collect())
         }
     }
-    
-    fn dfs_paths(&self, current: &str, target: &str, path: &mut Vec<String>, 
+
+    fn dfs_paths(&self, current: &str, target: &str, path: &mut Vec<String>,
                   visited: &mut HashSet<String>, paths: &mut Vec<Vec<String>>) {
         path.push(current.to_string());
         visited.insert(current.to_string());
-        
+
         if current == target {
             paths.push(path.clone());
         } else {
@@ -366,7 +454,7 @@ impl SocialNetwork {
                 }
             }
         }
-        
+
         path.pop();
         visited.remove(current);
     }
@@ -386,7 +474,7 @@ impl EpidemicModel {
         for node in &network.nodes {
             states.insert(node.clone(), "S".to_string());
         }
-        
+
         Self {
             network,
             infection_rate,
@@ -394,22 +482,22 @@ impl EpidemicModel {
             states,
         }
     }
-    
+
     pub fn infect_random_nodes(&mut self, num_infected: usize) {
         let mut rng = rand::thread_rng();
         let infected_nodes: Vec<String> = self.network.nodes.iter()
             .choose_multiple(&mut rng, num_infected)
             .cloned()
             .collect();
-        
+
         for node in infected_nodes {
             self.states.insert(node, "I".to_string());
         }
     }
-    
+
     pub fn simulate_step(&mut self) -> (usize, usize, usize) {
         let mut new_states = self.states.clone();
-        
+
         for node in &self.network.nodes {
             match self.states.get(node).unwrap().as_str() {
                 "S" => {
@@ -417,7 +505,7 @@ impl EpidemicModel {
                         .iter()
                         .filter(|&n| self.states.get(n).unwrap() == "I")
                         .count();
-                    
+
                     let infection_prob = 1.0 - (1.0 - self.infection_rate).powi(infected_neighbors as i32);
                     if rand::random::<f64>() < infection_prob {
                         new_states.insert(node.clone(), "I".to_string());
@@ -431,13 +519,13 @@ impl EpidemicModel {
                 _ => {}
             }
         }
-        
+
         self.states = new_states;
-        
+
         let s_count = self.states.values().filter(|&v| v == "S").count();
         let i_count = self.states.values().filter(|&v| v == "I").count();
         let r_count = self.states.values().filter(|&v| v == "R").count();
-        
+
         (s_count, i_count, r_count)
     }
 }
@@ -455,51 +543,51 @@ impl OpinionDynamics {
         for node in &network.nodes {
             opinions.insert(node.clone(), rand::random::<f64>());
         }
-        
+
         Self {
             network,
             opinions,
             confidence_threshold,
         }
     }
-    
+
     pub fn update_opinions(&mut self) -> f64 {
         let mut total_change = 0.0;
         let mut new_opinions = self.opinions.clone();
-        
+
         for node in &self.network.nodes {
             let neighbors = self.network.get_neighbors(node);
             let mut valid_neighbors = Vec::new();
-            
+
             for neighbor in &neighbors {
-                let opinion_diff = (self.opinions.get(node).unwrap() - 
+                let opinion_diff = (self.opinions.get(node).unwrap() -
                                   self.opinions.get(neighbor).unwrap()).abs();
                 if opinion_diff < self.confidence_threshold {
                     valid_neighbors.push(neighbor.clone());
                 }
             }
-            
+
             if !valid_neighbors.is_empty() {
                 let avg_opinion = valid_neighbors.iter()
                     .map(|n| self.opinions.get(n).unwrap())
                     .sum::<f64>() / valid_neighbors.len() as f64;
-                
+
                 let current_opinion = self.opinions.get(node).unwrap();
                 let new_opinion = current_opinion + 0.1 * (avg_opinion - current_opinion);
                 new_opinions.insert(node.clone(), new_opinion);
-                
+
                 total_change += (new_opinion - current_opinion).abs();
             }
         }
-        
+
         self.opinions = new_opinions;
         total_change
     }
-    
+
     pub fn get_opinion_clusters(&self) -> Vec<Vec<String>> {
         let mut clusters = Vec::new();
         let mut visited = HashSet::new();
-        
+
         for node in &self.network.nodes {
             if !visited.contains(node) {
                 let mut cluster = Vec::new();
@@ -507,17 +595,17 @@ impl OpinionDynamics {
                 clusters.push(cluster);
             }
         }
-        
+
         clusters
     }
-    
+
     fn dfs_cluster(&self, node: &str, visited: &mut HashSet<String>, cluster: &mut Vec<String>) {
         visited.insert(node.to_string());
         cluster.push(node.to_string());
-        
+
         for neighbor in self.network.get_neighbors(node) {
             if !visited.contains(&neighbor) {
-                let opinion_diff = (self.opinions.get(node).unwrap() - 
+                let opinion_diff = (self.opinions.get(node).unwrap() -
                                   self.opinions.get(&neighbor).unwrap()).abs();
                 if opinion_diff < self.confidence_threshold {
                     self.dfs_cluster(&neighbor, visited, cluster);
@@ -536,48 +624,48 @@ impl CommunityDetection {
     pub fn new(network: SocialNetwork) -> Self {
         Self { network }
     }
-    
+
     pub fn louvain_algorithm(&self) -> HashMap<String, usize> {
         let mut communities: HashMap<String, usize> = HashMap::new();
         let mut next_community_id = 0;
-        
+
         // 初始化：每个节点一个社区
         for node in &self.network.nodes {
             communities.insert(node.clone(), next_community_id);
             next_community_id += 1;
         }
-        
+
         let mut improved = true;
         while improved {
             improved = false;
-            
+
             for node in &self.network.nodes {
                 let current_community = communities.get(node).unwrap();
                 let mut best_community = *current_community;
                 let mut best_gain = 0.0;
-                
+
                 // 尝试移动到邻居的社区
                 for neighbor in self.network.get_neighbors(node) {
                     let neighbor_community = communities.get(&neighbor).unwrap();
                     let gain = self.calculate_modularity_gain(node, neighbor_community, &communities);
-                    
+
                     if gain > best_gain {
                         best_gain = gain;
                         best_community = *neighbor_community;
                     }
                 }
-                
+
                 if best_community != *current_community {
                     communities.insert(node.clone(), best_community);
                     improved = true;
                 }
             }
         }
-        
+
         communities
     }
-    
-    fn calculate_modularity_gain(&self, node: &str, community: &usize, 
+
+    fn calculate_modularity_gain(&self, node: &str, community: &usize,
                                 communities: &HashMap<String, usize>) -> f64 {
         // 简化的模块度增益计算
         let k_i = self.network.get_neighbors(node).len() as f64;
@@ -585,13 +673,13 @@ impl CommunityDetection {
             .iter()
             .filter(|&n| communities.get(n).unwrap() == community)
             .count() as f64;
-        
+
         let m = self.network.edges.len() as f64;
         let sum_tot = self.network.nodes.iter()
             .filter(|&n| communities.get(n).unwrap() == community)
             .map(|n| self.network.get_neighbors(n).len() as f64)
             .sum::<f64>();
-        
+
         (k_i_in - k_i * sum_tot / (2.0 * m)) / (2.0 * m)
     }
 }
@@ -604,31 +692,31 @@ fn main() {
     network.add_node("B".to_string());
     network.add_node("C".to_string());
     network.add_node("D".to_string());
-    
+
     network.add_edge("A".to_string(), "B".to_string(), 1.0);
     network.add_edge("B".to_string(), "C".to_string(), 1.0);
     network.add_edge("C".to_string(), "D".to_string(), 1.0);
     network.add_edge("A".to_string(), "C".to_string(), 0.5);
-    
+
     // 计算中心性
     let degree_centrality = network.calculate_degree_centrality("A");
     let betweenness_centrality = network.calculate_betweenness_centrality("A");
-    
+
     println!("Degree centrality of A: {:.3}", degree_centrality);
     println!("Betweenness centrality of A: {:.3}", betweenness_centrality);
-    
+
     // 流行病传播模拟
     let mut epidemic = EpidemicModel::new(network.clone(), 0.3, 0.1);
     epidemic.infect_random_nodes(1);
-    
+
     for step in 0..10 {
         let (s, i, r) = epidemic.simulate_step();
         println!("Step {}: S={}, I={}, R={}", step, s, i, r);
     }
-    
+
     // 意见动力学模拟
     let mut opinion = OpinionDynamics::new(network.clone(), 0.3);
-    
+
     for step in 0..50 {
         let change = opinion.update_opinions();
         if change < 0.001 {
@@ -636,10 +724,10 @@ fn main() {
             break;
         }
     }
-    
+
     let clusters = opinion.get_opinion_clusters();
     println!("Opinion clusters: {:?}", clusters);
-    
+
     // 社区发现
     let community_detection = CommunityDetection::new(network);
     let communities = community_detection.louvain_algorithm();
@@ -668,7 +756,7 @@ newSocialNetwork :: SocialNetwork
 newSocialNetwork = SocialNetwork [] Map.empty Map.empty
 
 addNode :: String -> SocialNetwork -> SocialNetwork
-addNode node network = network { 
+addNode node network = network {
     nodes = node : nodes network,
     nodeAttributes = Map.insert node Map.empty (nodeAttributes network)
 }
@@ -679,11 +767,11 @@ addEdge from to weight network = network {
 }
 
 getNeighbors :: SocialNetwork -> String -> [String]
-getNeighbors network node = 
+getNeighbors network node =
     [to | ((from, to), _) <- Map.toList (edges network), from == node]
 
 calculateDegreeCentrality :: SocialNetwork -> String -> Double
-calculateDegreeCentrality network node = 
+calculateDegreeCentrality network node =
     fromIntegral (length (getNeighbors network node)) / fromIntegral (length (nodes network) - 1)
 
 -- 流行病模型
@@ -708,9 +796,9 @@ infectRandomNodes numInfected model = do
     let infectedNodes = take numInfected (randomRs (0, length (nodes (epidemicNetwork model)) - 1) gen)
     let nodeNames = nodes (epidemicNetwork model)
     let infectedNodeNames = map (nodeNames !!) infectedNodes
-    
+
     let newStates = foldl (\acc node -> Map.insert node "I" acc) (states model) infectedNodeNames
-    
+
     return model { states = newStates }
 
 simulateStep :: EpidemicModel -> IO (EpidemicModel, (Int, Int, Int))
@@ -718,13 +806,13 @@ simulateStep model = do
     gen <- newStdGen
     let newStates = updateStates model gen
     let (s, i, r) = countStates newStates
-    
+
     return (model { states = newStates }, (s, i, r))
   where
     updateStates model gen = foldl (\acc node -> updateNodeState node acc gen) (states model) (nodes (epidemicNetwork model))
-    
+
     updateNodeState node states gen = case Map.lookup node states of
-        Just "S" -> 
+        Just "S" ->
             let infectedNeighbors = length (filter (\n -> Map.lookup n states == Just "I") (getNeighbors (epidemicNetwork model) node))
                 infectionProb = 1.0 - (1.0 - infectionRate model) ^ infectedNeighbors
                 (random, newGen) = random gen
@@ -733,7 +821,7 @@ simulateStep model = do
             let (random, _) = random gen
             in if random < recoveryRate model then Map.insert node "R" states else states
         _ -> states
-    
+
     countStates states = (s, i, r)
       where
         s = length (filter (== "S") (Map.elems states))
@@ -751,7 +839,7 @@ newOpinionDynamics :: SocialNetwork -> Double -> IO OpinionDynamics
 newOpinionDynamics network threshold = do
     gen <- newStdGen
     let opinions = Map.fromList [(node, random) | (node, random) <- zip (nodes network) (randomRs (0.0, 1.0) gen)]
-    
+
     return OpinionDynamics {
         opinionNetwork = network,
         opinions = opinions,
@@ -762,13 +850,13 @@ updateOpinions :: OpinionDynamics -> IO (OpinionDynamics, Double)
 updateOpinions model = do
     let newOpinions = Map.mapWithKey (updateNodeOpinion model) (opinions model)
     let totalChange = sum [abs (newOpinions Map.! node - opinions model Map.! node) | node <- nodes (opinionNetwork model)]
-    
+
     return (model { opinions = newOpinions }, totalChange)
   where
-    updateNodeOpinion model node currentOpinion = 
+    updateNodeOpinion model node currentOpinion =
         let neighbors = getNeighbors (opinionNetwork model) node
             validNeighbors = filter (\n -> abs (currentOpinion - (opinions model Map.! n)) < confidenceThreshold model) neighbors
-        in if null validNeighbors 
+        in if null validNeighbors
            then currentOpinion
            else let avgOpinion = sum [opinions model Map.! n | n <- validNeighbors] / fromIntegral (length validNeighbors)
                 in currentOpinion + 0.1 * (avgOpinion - currentOpinion)
@@ -777,12 +865,12 @@ getOpinionClusters :: OpinionDynamics -> [[String]]
 getOpinionClusters model = go (nodes (opinionNetwork model)) []
   where
     go [] clusters = clusters
-    go (node:rest) clusters = 
+    go (node:rest) clusters =
         let cluster = findCluster node
             newClusters = cluster : clusters
             remaining = filter (\n -> not (n `elem` cluster)) rest
         in go remaining newClusters
-    
+
     findCluster node = node : concat [findCluster neighbor | neighbor <- getNeighbors (opinionNetwork model) node,
                                                            abs (opinions model Map.! node - opinions model Map.! neighbor) < confidenceThreshold model,
                                                            neighbor /= node]
@@ -796,29 +884,29 @@ newCommunityDetection :: SocialNetwork -> CommunityDetection
 newCommunityDetection network = CommunityDetection network
 
 louvainAlgorithm :: CommunityDetection -> Map String Int
-louvainAlgorithm detection = 
+louvainAlgorithm detection =
     let initialCommunities = Map.fromList [(node, i) | (node, i) <- zip (nodes (detectionNetwork detection)) [0..]]
     in optimizeCommunities initialCommunities
   where
-    optimizeCommunities communities = 
+    optimizeCommunities communities =
         let newCommunities = optimizeStep communities
-        in if newCommunities == communities 
-           then communities 
+        in if newCommunities == communities
+           then communities
            else optimizeCommunities newCommunities
-    
-    optimizeStep communities = 
-        foldl (\acc node -> 
+
+    optimizeStep communities =
+        foldl (\acc node ->
             let bestCommunity = findBestCommunity node communities
             in Map.insert node bestCommunity acc) communities (nodes (detectionNetwork detection))
-    
-    findBestCommunity node communities = 
+
+    findBestCommunity node communities =
         let neighbors = getNeighbors (detectionNetwork detection) node
             neighborCommunities = [communities Map.! n | n <- neighbors]
             gains = map (\c -> calculateModularityGain node c communities) neighborCommunities
             (bestGain, bestCommunity) = maximum (zip gains neighborCommunities)
         in if bestGain > 0 then bestCommunity else communities Map.! node
-    
-    calculateModularityGain node community communities = 
+
+    calculateModularityGain node community communities =
         let k_i = fromIntegral (length (getNeighbors (detectionNetwork detection) node))
             k_i_in = fromIntegral (length (filter (\n -> communities Map.! n == community) (getNeighbors (detectionNetwork detection) node)))
             m = fromIntegral (length (Map.keys (edges (detectionNetwork detection))))
@@ -837,39 +925,39 @@ example = do
                   addNode "C" $
                   addNode "B" $
                   addNode "A" newSocialNetwork
-    
+
     -- 计算中心性
     let degreeCentrality = calculateDegreeCentrality network "A"
     putStrLn $ "Degree centrality of A: " ++ show degreeCentrality
-    
+
     -- 流行病传播模拟
     epidemic <- newEpidemicModel network 0.3 0.1
     infectedEpidemic <- infectRandomNodes 1 epidemic
-    
+
     let simulateEpidemic 0 model = return ()
         simulateEpidemic steps model = do
             (newModel, (s, i, r)) <- simulateStep model
             putStrLn $ "Step " ++ show (11 - steps) ++ ": S=" ++ show s ++ ", I=" ++ show i ++ ", R=" ++ show r
             simulateEpidemic (steps - 1) newModel
-    
+
     simulateEpidemic 10 infectedEpidemic
-    
+
     -- 意见动力学模拟
     opinion <- newOpinionDynamics network 0.3
-    
+
     let simulateOpinions 0 model = return model
         simulateOpinions steps model = do
             (newModel, change) <- updateOpinions model
-            if change < 0.001 
+            if change < 0.001
             then do
                 putStrLn $ "Opinions converged at step " ++ show (51 - steps)
                 return newModel
             else simulateOpinions (steps - 1) newModel
-    
+
     finalOpinion <- simulateOpinions 50 opinion
     let clusters = getOpinionClusters finalOpinion
     putStrLn $ "Opinion clusters: " ++ show clusters
-    
+
     -- 社区发现
     let communityDetection = newCommunityDetection network
         communities = louvainAlgorithm communityDetection
@@ -999,15 +1087,15 @@ def social_network_verification():
     deg = degree_centrality(adj)
     bc = betweenness_centrality(adj)
     assert 0 <= deg[0] <= 1 and 0 <= bc[2] <= 1
-    
+
     # 标签传播聚类
     labels = label_propagation(adj)
     assert set(labels.keys()) == set(adj.keys())
-    
+
     # 独立级联影响力估计
     spread = independent_cascade(adj, seeds={0}, p=0.5, R=50)
     assert spread >= 1
-    
+
     # Deffuant意见演化
     opinions = np.random.rand(10)
     edges = [(i, (i+1)%10) for i in range(10)]
@@ -1018,6 +1106,38 @@ def social_network_verification():
 if __name__ == "__main__":
     social_network_verification()
 ```
+
+## 相关模型 / Related Models
+
+### 社会科学模型 / Social Science Models
+
+- [经济学模型](../02-经济学模型/README.md) - 网络经济学和社会经济网络
+- [心理学模型](../03-心理学模型/README.md) - 社会心理学和网络心理学
+- [认知科学模型](../04-认知科学模型/README.md) - 认知网络和社会认知
+- [语言学模型](../05-语言学模型/README.md) - 语言网络和语义网络
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 网络代数和图论代数结构
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 网络几何和空间网络
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 网络拓扑结构
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 图算法和网络算法
+- [数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md) - 图数据结构和网络数据结构
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 图神经网络和网络机器学习
+
+### 生命科学模型 / Life Science Models
+
+- [生态学模型](../../05-生命科学模型/02-生态学模型/README.md) - 生态网络和食物网
+- [神经科学模型](../../05-生命科学模型/04-神经科学模型/README.md) - 神经网络和脑网络
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 社会网络模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 社会网络模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 社会网络模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

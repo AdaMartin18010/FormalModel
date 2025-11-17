@@ -11,6 +11,8 @@
 
 - [8.8 制造业模型 / Manufacturing Models](#88-制造业模型--manufacturing-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [制造业模型框架图 / Framework Diagram of Manufacturing Models](#制造业模型框架图--framework-diagram-of-manufacturing-models)
+  - [智能制造生产流程 / Flowchart of Smart Manufacturing Production](#智能制造生产流程--flowchart-of-smart-manufacturing-production)
   - [8.8.1 生产计划模型 / Production Planning Models](#881-生产计划模型--production-planning-models)
     - [主生产计划 (MPS) / Master Production Schedule](#主生产计划-mps--master-production-schedule)
     - [物料需求计划 (MRP) / Material Requirements Planning](#物料需求计划-mrp--material-requirements-planning)
@@ -47,8 +49,148 @@
       - [质量管理 / Quality Management](#质量管理--quality-management)
       - [供应链管理 / Supply Chain Management](#供应链管理--supply-chain-management)
   - [参考文献 / References](#参考文献--references)
+  - [评测协议与指标 / Evaluation Protocols \& Metrics](#评测协议与指标--evaluation-protocols--metrics)
+    - [范围与目标 / Scope \& Goals](#范围与目标--scope--goals)
+    - [数据与划分 / Data \& Splits](#数据与划分--data--splits)
+    - [通用指标 / Common Metrics](#通用指标--common-metrics)
+    - [任务级协议 / Task-level Protocols](#任务级协议--task-level-protocols)
+    - [复现实操 / Reproducibility](#复现实操--reproducibility)
+  - [8.8.9 算法实现 / Algorithm Implementation](#889-算法实现--algorithm-implementation)
+    - [生产计划算法 / Production Planning Algorithms](#生产计划算法--production-planning-algorithms)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
 
 ---
+
+## 制造业模型框架图 / Framework Diagram of Manufacturing Models
+
+```mermaid
+graph TB
+    A[制造业模型] --> B[生产计划模型]
+    A --> C[质量控制模型]
+    A --> D[供应链管理模型]
+    A --> E[精益生产模型]
+    A --> F[智能制造模型]
+    A --> G[设备维护模型]
+    A --> H[成本控制模型]
+
+    B --> I[MPS主生产计划]
+    B --> J[MRP物料需求]
+    B --> K[产能规划]
+
+    C --> L[SPC统计控制]
+    C --> M[抽样检验]
+    C --> N[六西格玛]
+
+    D --> O[库存管理]
+    D --> P[供应商选择]
+    D --> Q[网络设计]
+
+    E --> R[价值流图]
+    E --> S[看板系统]
+    E --> T[5S管理]
+
+    F --> U[数字孪生]
+    F --> V[工业物联网]
+    F --> W[机器学习]
+
+    G --> X[预防性维护]
+    G --> Y[预测性维护]
+    G --> Z[可靠性分析]
+
+    H --> AA[标准成本法]
+    H --> AB[作业成本法]
+    H --> AC[目标成本法]
+
+    I --> AD[制造应用]
+    L --> AD
+    O --> AD
+    R --> AD
+    U --> AD
+    X --> AD
+    AA --> AD
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style F fill:#fff4e1
+    style G fill:#fff4e1
+    style H fill:#fff4e1
+    style AD fill:#e8f5e9
+```
+
+## 智能制造生产流程 / Flowchart of Smart Manufacturing Production
+
+```mermaid
+flowchart TD
+    Start([订单接收]) --> OrderAnalysis[订单分析<br/>需求预测<br/>订单优先级<br/>交期评估]
+
+    OrderAnalysis --> ProductionPlanning{生产计划}
+    ProductionPlanning --> MPS[主生产计划MPS<br/>产品分解<br/>时间安排<br/>资源分配]
+    ProductionPlanning --> MRP[物料需求计划MRP<br/>BOM展开<br/>物料计算<br/>采购计划]
+
+    MPS --> CapacityCheck{产能检查}
+    MRP --> CapacityCheck
+
+    CapacityCheck -->|充足| ProductionExecution[生产执行<br/>工艺路线<br/>工序安排<br/>设备调度]
+    CapacityCheck -->|不足| CapacityExpansion[产能扩展<br/>设备增加<br/>外协加工<br/>时间调整]
+
+    CapacityExpansion --> ProductionExecution
+
+    ProductionExecution --> QualityControl{质量控制}
+    QualityControl --> SPC[统计过程控制<br/>实时监控<br/>异常检测<br/>过程能力]
+    QualityControl --> Inspection[质量检验<br/>抽样检验<br/>全检<br/>不合格品处理]
+
+    SPC --> LeanProduction{精益生产}
+    Inspection --> LeanProduction
+
+    LeanProduction --> ValueStream[价值流分析<br/>浪费识别<br/>流程优化<br/>效率提升]
+    LeanProduction --> Kanban[看板管理<br/>拉动生产<br/>库存控制<br/>JIT生产]
+
+    ValueStream --> SmartManufacturing{智能制造}
+    Kanban --> SmartManufacturing
+
+    SmartManufacturing --> DigitalTwin[数字孪生<br/>虚拟仿真<br/>预测分析<br/>优化决策]
+    SmartManufacturing --> IIoT[工业物联网<br/>数据采集<br/>设备互联<br/>实时监控]
+    SmartManufacturing --> ML[机器学习<br/>预测性维护<br/>质量预测<br/>优化调度]
+
+    DigitalTwin --> Maintenance{设备维护}
+    IIoT --> Maintenance
+    ML --> Maintenance
+
+    Maintenance --> Preventive[预防性维护<br/>定期保养<br/>计划维护<br/>备件管理]
+    Maintenance --> Predictive[预测性维护<br/>故障预测<br/>健康评估<br/>维护优化]
+
+    Preventive --> CostControl{成本控制}
+    Predictive --> CostControl
+
+    CostControl --> CostAnalysis[成本分析<br/>标准成本<br/>实际成本<br/>差异分析]
+    CostControl --> CostOptimization[成本优化<br/>作业成本<br/>目标成本<br/>持续改进]
+
+    CostAnalysis --> Delivery[产品交付<br/>包装<br/>物流<br/>客户服务]
+
+    CostOptimization --> Delivery
+
+    Delivery --> Feedback[反馈收集<br/>客户反馈<br/>质量反馈<br/>改进建议]
+    Feedback --> OrderAnalysis
+
+    style Start fill:#e1f5ff
+    style Delivery fill:#e1f5ff
+    style ProductionPlanning fill:#e8f5e9
+    style QualityControl fill:#e8f5e9
+    style LeanProduction fill:#e8f5e9
+    style SmartManufacturing fill:#e8f5e9
+    style Maintenance fill:#e8f5e9
+    style CostControl fill:#e8f5e9
+```
 
 ## 8.8.1 生产计划模型 / Production Planning Models
 
@@ -345,12 +487,12 @@ impl ProductionPlan {
             demand: Vec::new(),
         }
     }
-    
+
     pub fn add_product(&mut self, product: Product) {
         self.products.push(product);
         self.demand.push(vec![0.0; self.periods]);
     }
-    
+
     pub fn set_demand(&mut self, product_id: &str, period: usize, demand: f64) {
         if let Some(product) = self.products.iter().position(|p| p.id == product_id) {
             if period < self.periods {
@@ -358,11 +500,11 @@ impl ProductionPlan {
             }
         }
     }
-    
+
     pub fn optimize_production(&self) -> Vec<Vec<f64>> {
         let mut production = vec![vec![0.0; self.periods]; self.products.len()];
         let mut inventory = vec![vec![0.0; self.periods + 1]; self.products.len()];
-        
+
         for p in 0..self.products.len() {
             for t in 0..self.periods {
                 // 简化的生产计划算法
@@ -374,13 +516,13 @@ impl ProductionPlan {
                 }
             }
         }
-        
+
         production
     }
-    
+
     pub fn calculate_total_cost(&self, production: &Vec<Vec<f64>>) -> f64 {
         let mut total_cost = 0.0;
-        
+
         for p in 0..self.products.len() {
             for t in 0..self.periods {
                 if production[p][t] > 0.0 {
@@ -389,7 +531,7 @@ impl ProductionPlan {
                 }
             }
         }
-        
+
         total_cost
     }
 }
@@ -411,26 +553,26 @@ impl QualityControl {
             lsl,
         }
     }
-    
+
     pub fn calculate_cp(&self) -> f64 {
         (self.usl - self.lsl) / (6.0 * self.process_std)
     }
-    
+
     pub fn calculate_cpk(&self) -> f64 {
         let cpu = (self.usl - self.process_mean) / (3.0 * self.process_std);
         let cpl = (self.process_mean - self.lsl) / (3.0 * self.process_std);
         cpu.min(cpl)
     }
-    
+
     pub fn calculate_defect_rate(&self) -> f64 {
         // 简化的缺陷率计算
         let z1 = (self.usl - self.process_mean) / self.process_std;
         let z2 = (self.lsl - self.process_mean) / self.process_std;
-        
+
         // 使用标准正态分布计算缺陷率
         let p1 = 1.0 - normal_cdf(z1);
         let p2 = normal_cdf(z2);
-        
+
         p1 + p2
     }
 }
@@ -454,23 +596,23 @@ impl InventorySystem {
             safety_factor: 1.96, // 95% 服务水平
         }
     }
-    
+
     pub fn calculate_eoq(&self) -> f64 {
         (2.0 * self.demand_rate * self.setup_cost / self.holding_cost).sqrt()
     }
-    
+
     pub fn calculate_safety_stock(&self, demand_std: f64) -> f64 {
         self.safety_factor * demand_std * self.lead_time.sqrt()
     }
-    
+
     pub fn calculate_reorder_point(&self, demand_std: f64) -> f64 {
         self.demand_rate * self.lead_time + self.calculate_safety_stock(demand_std)
     }
-    
+
     pub fn calculate_total_cost(&self, order_quantity: f64) -> f64 {
         let annual_orders = self.demand_rate / order_quantity;
         let average_inventory = order_quantity / 2.0;
-        
+
         annual_orders * self.setup_cost + average_inventory * self.holding_cost
     }
 }
@@ -488,13 +630,13 @@ fn erf(x: f64) -> f64 {
     let a4 = -1.453152027;
     let a5 = 1.061405429;
     let p = 0.3275911;
-    
+
     let sign = if x < 0.0 { -1.0 } else { 1.0 };
     let x = x.abs();
-    
+
     let t = 1.0 / (1.0 + p * x);
     let y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * (-x * x).exp();
-    
+
     sign * y
 }
 
@@ -502,7 +644,7 @@ fn erf(x: f64) -> f64 {
 fn main() {
     // 生产计划示例
     let mut plan = ProductionPlan::new(4);
-    
+
     plan.add_product(Product {
         id: "A".to_string(),
         production_cost: 10.0,
@@ -510,29 +652,29 @@ fn main() {
         setup_cost: 100.0,
         capacity_requirement: 1.0,
     });
-    
+
     plan.set_demand("A", 0, 100.0);
     plan.set_demand("A", 1, 150.0);
     plan.set_demand("A", 2, 200.0);
     plan.set_demand("A", 3, 120.0);
-    
+
     let production = plan.optimize_production();
     let total_cost = plan.calculate_total_cost(&production);
-    
+
     println!("Production plan: {:?}", production);
     println!("Total cost: {:.2}", total_cost);
-    
+
     // 质量控制示例
     let qc = QualityControl::new(100.0, 2.0, 106.0, 94.0);
     println!("Cp: {:.3}", qc.calculate_cp());
     println!("Cpk: {:.3}", qc.calculate_cpk());
     println!("Defect rate: {:.3}%", qc.calculate_defect_rate() * 100.0);
-    
+
     // 库存管理示例
     let inventory = InventorySystem::new(1000.0, 50.0, 5.0, 2.0);
     let eoq = inventory.calculate_eoq();
     let total_cost = inventory.calculate_total_cost(eoq);
-    
+
     println!("EOQ: {:.0}", eoq);
     println!("Total inventory cost: {:.2}", total_cost);
 }
@@ -574,7 +716,7 @@ newProductionPlan periods = ProductionPlan {
 
 -- 添加产品
 addProduct :: Product -> ProductionPlan -> ProductionPlan
-addProduct product plan = plan { 
+addProduct product plan = plan {
     products = product : products plan,
     demand = replicate (periods plan) 0.0 : demand plan
 }
@@ -607,13 +749,13 @@ optimizeProduction plan = go initialProduction initialInventory
   where
     initialProduction = replicate (length (products plan)) (replicate (periods plan) 0.0)
     initialInventory = replicate (length (products plan)) (replicate ((periods plan) + 1) 0.0)
-    
+
     go prod inv = foldl (\acc p -> foldl (\acc2 t -> updateProduction acc2 p t inv) acc [0..(periods plan)-1]) prod [0..(length (products plan))-1]
-    
-    updateProduction prod p t inv = 
+
+    updateProduction prod p t inv =
         let needed = (demand plan) !! p !! t - (inv !! p !! t)
             maxProduction = (capacity plan) !! t / capacityRequirement ((products plan) !! p)
-        in if needed > 0 
+        in if needed > 0
            then updateMatrix prod p t (min needed maxProduction)
            else prod
 
@@ -627,7 +769,7 @@ updateMatrix matrix row col value = take row matrix ++ [updateRow (matrix !! row
 calculateTotalCost :: ProductionPlan -> [[Double]] -> Double
 calculateTotalCost plan production = sum [cost p t | p <- [0..length (products plan)-1], t <- [0..periods plan-1]]
   where
-    cost p t = if (production !! p !! t) > 0 
+    cost p t = if (production !! p !! t) > 0
                then (production !! p !! t) * productionCost ((products plan) !! p) + setupCost ((products plan) !! p)
                else 0
 
@@ -713,25 +855,25 @@ example = do
                setDemand "A" 2 200.0 $
                setDemand "A" 3 120.0 $
                addProduct (Product "A" 10.0 2.0 100.0 1.0) (newProductionPlan 4)
-        
+
         production = optimizeProduction plan
         totalCost = calculateTotalCost plan production
-    
+
     putStrLn $ "Production plan: " ++ show production
     putStrLn $ "Total cost: " ++ show totalCost
-    
+
     -- 质量控制示例
     let qc = newQualityControl 100.0 2.0 106.0 94.0
-    
+
     putStrLn $ "Cp: " ++ show (calculateCp qc)
     putStrLn $ "Cpk: " ++ show (calculateCpk qc)
     putStrLn $ "Defect rate: " ++ show (calculateDefectRate qc * 100.0) ++ "%"
-    
+
     -- 库存管理示例
     let inventory = newInventorySystem 1000.0 50.0 5.0 2.0
         eoq = calculateEOQ inventory
         totalCost = calculateTotalCost inventory eoq
-    
+
     putStrLn $ "EOQ: " ++ show eoq
     putStrLn $ "Total inventory cost: " ++ show totalCost
 ```
@@ -828,110 +970,110 @@ class ProductionPlan:
     periods: int
     demands: Dict[Tuple[str, int], float]
     capacities: Dict[int, float]
-    
+
     def __init__(self, periods: int):
         self.products = []
         self.periods = periods
         self.demands = {}
         self.capacities = {}
-    
+
     def add_product(self, product: Product):
         """添加产品"""
         self.products.append(product)
-    
+
     def set_demand(self, product_id: str, period: int, demand: float):
         """设置需求"""
         self.demands[(product_id, period)] = demand
-    
+
     def set_capacity(self, period: int, capacity: float):
         """设置产能"""
         self.capacities[period] = capacity
 
 class MasterProductionScheduler:
     """主生产计划调度器"""
-    
+
     def __init__(self):
         pass
-    
+
     def optimize_production(self, plan: ProductionPlan) -> Dict[Tuple[str, int], float]:
         """优化生产计划"""
         # 简化的线性规划求解
         production = {}
-        
+
         for product in plan.products:
             for period in range(plan.periods):
                 demand = plan.demands.get((product.id, period), 0)
                 capacity = plan.capacities.get(period, float('inf'))
-                
+
                 # 简化的启发式算法
                 if demand > 0:
                     production_quantity = min(demand, capacity / product.capacity_requirement)
                     production[(product.id, period)] = production_quantity
                 else:
                     production[(product.id, period)] = 0
-        
+
         return production
-    
-    def calculate_total_cost(self, plan: ProductionPlan, 
+
+    def calculate_total_cost(self, plan: ProductionPlan,
                            production: Dict[Tuple[str, int], float]) -> float:
         """计算总成本"""
         total_cost = 0.0
-        
+
         for product in plan.products:
             for period in range(plan.periods):
                 prod_quantity = production.get((product.id, period), 0)
-                
+
                 # 生产成本
                 total_cost += prod_quantity * product.unit_cost
-                
+
                 # 库存成本（简化计算）
                 if period > 0:
-                    inventory = sum(production.get((product.id, t), 0) 
+                    inventory = sum(production.get((product.id, t), 0)
                                   for t in range(period)) - \
-                              sum(plan.demands.get((product.id, t), 0) 
+                              sum(plan.demands.get((product.id, t), 0)
                                   for t in range(period))
                     total_cost += max(0, inventory) * product.holding_cost
-                
+
                 # 启动成本
                 if prod_quantity > 0:
                     total_cost += product.setup_cost
-        
+
         return total_cost
 
 class MRPSystem:
     """物料需求计划系统"""
-    
+
     def __init__(self):
         self.bom = {}  # 物料清单
         self.lead_times = {}  # 提前期
         self.lot_sizes = {}  # 批量大小
-    
+
     def add_bom_item(self, parent: str, component: str, quantity: float):
         """添加物料清单项"""
         if parent not in self.bom:
             self.bom[parent] = {}
         self.bom[parent][component] = quantity
-    
+
     def set_lead_time(self, item: str, lead_time: int):
         """设置提前期"""
         self.lead_times[item] = lead_time
-    
+
     def set_lot_size(self, item: str, lot_size: float):
         """设置批量大小"""
         self.lot_sizes[item] = lot_size
-    
-    def calculate_mrp(self, master_schedule: Dict[Tuple[str, int], float], 
+
+    def calculate_mrp(self, master_schedule: Dict[Tuple[str, int], float],
                      initial_inventory: Dict[str, float]) -> Dict[Tuple[str, int], float]:
         """计算物料需求计划"""
         mrp_plan = {}
-        
+
         # 计算总需求
         gross_requirements = {}
         for (item, period), quantity in master_schedule.items():
             if item not in gross_requirements:
                 gross_requirements[item] = {}
             gross_requirements[item][period] = quantity
-            
+
             # 计算相关组件的需求
             if item in self.bom:
                 for component, comp_quantity in self.bom[item].items():
@@ -940,42 +1082,42 @@ class MRPSystem:
                     if period not in gross_requirements[component]:
                         gross_requirements[component][period] = 0
                     gross_requirements[component][period] += quantity * comp_quantity
-        
+
         # 计算净需求和计划订单
         for item in gross_requirements:
             inventory = initial_inventory.get(item, 0)
-            
+
             for period in sorted(gross_requirements[item].keys()):
                 gross_req = gross_requirements[item][period]
                 net_req = max(0, gross_req - inventory)
-                
+
                 if net_req > 0:
                     lot_size = self.lot_sizes.get(item, net_req)
                     planned_order = ((net_req - 1) // lot_size + 1) * lot_size
-                    
+
                     # 考虑提前期
                     order_period = period - self.lead_times.get(item, 0)
                     if order_period >= 0:
                         mrp_plan[(item, order_period)] = planned_order
-                    
+
                     inventory += planned_order
-                
+
                 inventory -= gross_req
-        
+
         return mrp_plan
 
 ### 质量控制算法 / Quality Control Algorithms
 
 class StatisticalProcessControl:
     """统计过程控制"""
-    
-    def __init__(self, target_mean: float, target_std: float, 
+
+    def __init__(self, target_mean: float, target_std: float,
                  usl: float, lsl: float):
         self.target_mean = target_mean
         self.target_std = target_std
         self.usl = usl
         self.lsl = lsl
-    
+
     def calculate_control_limits(self, sample_size: int = 1) -> Tuple[float, float, float]:
         """计算控制限"""
         if sample_size == 1:
@@ -985,64 +1127,64 @@ class StatisticalProcessControl:
             # X-bar图的控制限
             ucl = self.target_mean + 3 * self.target_std / np.sqrt(sample_size)
             lcl = self.target_mean - 3 * self.target_std / np.sqrt(sample_size)
-        
+
         return ucl, self.target_mean, lcl
-    
+
     def check_out_of_control(self, measurements: List[float]) -> List[bool]:
         """检查是否超出控制限"""
         ucl, cl, lcl = self.calculate_control_limits()
         out_of_control = []
-        
+
         for measurement in measurements:
             out_of_control.append(measurement > ucl or measurement < lcl)
-        
+
         return out_of_control
-    
+
     def calculate_cp(self) -> float:
         """计算过程能力指数Cp"""
         return (self.usl - self.lsl) / (6 * self.target_std)
-    
+
     def calculate_cpk(self) -> float:
         """计算过程能力指数Cpk"""
         cpu = (self.usl - self.target_mean) / (3 * self.target_std)
         cpl = (self.target_mean - self.lsl) / (3 * self.target_std)
         return min(cpu, cpl)
-    
+
     def calculate_defect_rate(self) -> float:
         """计算缺陷率"""
         # 假设正态分布
         from scipy.stats import norm
-        
+
         defect_rate_above = 1 - norm.cdf(self.usl, self.target_mean, self.target_std)
         defect_rate_below = norm.cdf(self.lsl, self.target_mean, self.target_std)
-        
+
         return defect_rate_above + defect_rate_below
 
 class SixSigma:
     """六西格玛"""
-    
+
     def __init__(self):
         pass
-    
+
     def calculate_sigma_level(self, defect_rate: float) -> float:
         """计算西格玛水平"""
         if defect_rate <= 0:
             return float('inf')
-        
+
         # 使用正态分布的反函数
         from scipy.stats import norm
-        
+
         # 每百万机会的缺陷数
         dpmo = defect_rate * 1_000_000
-        
+
         # 转换为西格玛水平
         sigma_level = norm.ppf(1 - dpmo / 1_000_000)
         return sigma_level
-    
+
     def calculate_defects_per_million(self, sigma_level: float) -> float:
         """计算每百万机会的缺陷数"""
         from scipy.stats import norm
-        
+
         defect_rate = 1 - norm.cdf(sigma_level)
         dpmo = defect_rate * 1_000_000
         return dpmo
@@ -1051,40 +1193,40 @@ class SixSigma:
 
 class InventoryManager:
     """库存管理器"""
-    
-    def __init__(self, demand_rate: float, setup_cost: float, 
+
+    def __init__(self, demand_rate: float, setup_cost: float,
                  holding_cost: float, lead_time: float):
         self.demand_rate = demand_rate
         self.setup_cost = setup_cost
         self.holding_cost = holding_cost
         self.lead_time = lead_time
-    
+
     def calculate_eoq(self) -> float:
         """计算经济订货量"""
         eoq = np.sqrt(2 * self.demand_rate * self.setup_cost / self.holding_cost)
         return eoq
-    
-    def calculate_safety_stock(self, demand_std: float, 
+
+    def calculate_safety_stock(self, demand_std: float,
                              service_level: float = 0.95) -> float:
         """计算安全库存"""
         from scipy.stats import norm
-        
+
         z_score = norm.ppf(service_level)
         safety_stock = z_score * demand_std * np.sqrt(self.lead_time)
         return safety_stock
-    
-    def calculate_reorder_point(self, demand_std: float, 
+
+    def calculate_reorder_point(self, demand_std: float,
                               service_level: float = 0.95) -> float:
         """计算再订货点"""
         safety_stock = self.calculate_safety_stock(demand_std, service_level)
         reorder_point = self.demand_rate * self.lead_time + safety_stock
         return reorder_point
-    
+
     def calculate_total_cost(self, order_quantity: float) -> float:
         """计算总成本"""
         annual_orders = self.demand_rate / order_quantity
         average_inventory = order_quantity / 2
-        
+
         total_cost = annual_orders * self.setup_cost + average_inventory * self.holding_cost
         return total_cost
 
@@ -1092,61 +1234,61 @@ class InventoryManager:
 
 class PreventiveMaintenance:
     """预防性维护"""
-    
+
     def __init__(self, failure_rate: float, maintenance_interval: float):
         self.failure_rate = failure_rate
         self.maintenance_interval = maintenance_interval
-    
+
     def calculate_reliability(self, time: float) -> float:
         """计算可靠性"""
         # 指数分布
         reliability = np.exp(-self.failure_rate * time)
         return reliability
-    
-    def calculate_optimal_maintenance_interval(self, maintenance_cost: float, 
+
+    def calculate_optimal_maintenance_interval(self, maintenance_cost: float,
                                              failure_cost: float) -> float:
         """计算最优维护间隔"""
         # 简化的优化模型
-        total_cost_per_unit_time = lambda t: (maintenance_cost / t + 
-                                             failure_cost * self.failure_rate * 
+        total_cost_per_unit_time = lambda t: (maintenance_cost / t +
+                                             failure_cost * self.failure_rate *
                                              (1 - self.calculate_reliability(t)))
-        
+
         # 使用数值优化
         from scipy.optimize import minimize_scalar
-        
+
         result = minimize_scalar(total_cost_per_unit_time, bounds=(0.1, 100))
         return result.x
 
 class PredictiveMaintenance:
     """预测性维护"""
-    
+
     def __init__(self):
         self.health_scores = []
         self.threshold = 0.7
-    
+
     def update_health_score(self, sensor_data: Dict[str, float]) -> float:
         """更新健康评分"""
         # 简化的健康评分计算
         # 实际应用中会使用更复杂的机器学习模型
-        
+
         # 假设有温度、振动、压力等传感器数据
         temperature_score = 1.0 - min(1.0, sensor_data.get('temperature', 0) / 100)
         vibration_score = 1.0 - min(1.0, sensor_data.get('vibration', 0) / 10)
         pressure_score = 1.0 - min(1.0, abs(sensor_data.get('pressure', 50) - 50) / 50)
-        
+
         health_score = (temperature_score + vibration_score + pressure_score) / 3
         self.health_scores.append(health_score)
-        
+
         return health_score
-    
+
     def predict_failure(self, window_size: int = 10) -> bool:
         """预测故障"""
         if len(self.health_scores) < window_size:
             return False
-        
+
         recent_scores = self.health_scores[-window_size:]
         trend = np.polyfit(range(len(recent_scores)), recent_scores, 1)[0]
-        
+
         # 如果健康评分下降趋势明显且低于阈值，预测故障
         current_score = recent_scores[-1]
         return current_score < self.threshold and trend < -0.01
@@ -1154,38 +1296,38 @@ class PredictiveMaintenance:
 def manufacturing_verification():
     """制造业模型验证"""
     print("=== 制造业模型验证 ===")
-    
+
     # 生产计划验证
     print("\n1. 生产计划验证:")
-    
+
     # 创建生产计划
     plan = ProductionPlan(periods=4)
-    
+
     # 添加产品
-    product_a = Product("A", unit_cost=10.0, holding_cost=2.0, 
+    product_a = Product("A", unit_cost=10.0, holding_cost=2.0,
                        setup_cost=100.0, capacity_requirement=1.0)
     plan.add_product(product_a)
-    
+
     # 设置需求和产能
     plan.set_demand("A", 0, 100.0)
     plan.set_demand("A", 1, 150.0)
     plan.set_demand("A", 2, 200.0)
     plan.set_demand("A", 3, 120.0)
-    
+
     for period in range(4):
         plan.set_capacity(period, 200.0)
-    
+
     # 优化生产计划
     scheduler = MasterProductionScheduler()
     production = scheduler.optimize_production(plan)
     total_cost = scheduler.calculate_total_cost(plan, production)
-    
+
     print(f"生产计划: {production}")
     print(f"总成本: ${total_cost:.2f}")
-    
+
     # MRP验证
     print("\n2. MRP验证:")
-    
+
     mrp = MRPSystem()
     mrp.add_bom_item("A", "B", 2.0)  # 产品A需要2个组件B
     mrp.add_bom_item("A", "C", 1.0)  # 产品A需要1个组件C
@@ -1193,86 +1335,140 @@ def manufacturing_verification():
     mrp.set_lead_time("C", 2)
     mrp.set_lot_size("B", 50)
     mrp.set_lot_size("C", 100)
-    
+
     initial_inventory = {"B": 50, "C": 100}
     mrp_plan = mrp.calculate_mrp(production, initial_inventory)
-    
+
     print(f"MRP计划: {mrp_plan}")
-    
+
     # 质量控制验证
     print("\n3. 质量控制验证:")
-    
-    spc = StatisticalProcessControl(target_mean=100.0, target_std=2.0, 
+
+    spc = StatisticalProcessControl(target_mean=100.0, target_std=2.0,
                                   usl=106.0, lsl=94.0)
-    
+
     measurements = [98, 102, 99, 101, 103, 97, 100, 104]
     out_of_control = spc.check_out_of_control(measurements)
-    
+
     cp = spc.calculate_cp()
     cpk = spc.calculate_cpk()
     defect_rate = spc.calculate_defect_rate()
-    
+
     print(f"控制图检查: {out_of_control}")
     print(f"过程能力指数Cp: {cp:.4f}")
     print(f"过程能力指数Cpk: {cpk:.4f}")
     print(f"缺陷率: {defect_rate:.4f}")
-    
+
     # 六西格玛验证
     six_sigma = SixSigma()
     sigma_level = six_sigma.calculate_sigma_level(defect_rate)
     dpmo = six_sigma.calculate_defects_per_million(sigma_level)
-    
+
     print(f"西格玛水平: {sigma_level:.2f}")
     print(f"每百万机会缺陷数: {dpmo:.2f}")
-    
+
     # 库存管理验证
     print("\n4. 库存管理验证:")
-    
-    inventory = InventoryManager(demand_rate=1000.0, setup_cost=50.0, 
+
+    inventory = InventoryManager(demand_rate=1000.0, setup_cost=50.0,
                                holding_cost=5.0, lead_time=2.0)
-    
+
     eoq = inventory.calculate_eoq()
     safety_stock = inventory.calculate_safety_stock(demand_std=50.0)
     reorder_point = inventory.calculate_reorder_point(demand_std=50.0)
     total_cost = inventory.calculate_total_cost(eoq)
-    
+
     print(f"经济订货量: {eoq:.2f}")
     print(f"安全库存: {safety_stock:.2f}")
     print(f"再订货点: {reorder_point:.2f}")
     print(f"总库存成本: ${total_cost:.2f}")
-    
+
     # 设备维护验证
     print("\n5. 设备维护验证:")
-    
+
     pm = PreventiveMaintenance(failure_rate=0.01, maintenance_interval=100.0)
     reliability = pm.calculate_reliability(time=50.0)
     optimal_interval = pm.calculate_optimal_maintenance_interval(
         maintenance_cost=1000.0, failure_cost=5000.0
     )
-    
+
     print(f"可靠性: {reliability:.4f}")
     print(f"最优维护间隔: {optimal_interval:.2f}")
-    
+
     # 预测性维护验证
     pdm = PredictiveMaintenance()
-    
+
     sensor_data = {
         'temperature': 75.0,
         'vibration': 3.0,
         'pressure': 52.0
     }
-    
+
     health_score = pdm.update_health_score(sensor_data)
     failure_prediction = pdm.predict_failure()
-    
+
     print(f"健康评分: {health_score:.4f}")
     print(f"故障预测: {failure_prediction}")
-    
+
     print("\n验证完成!")
 
 if __name__ == "__main__":
     manufacturing_verification()
 ```
+
+---
+
+## 相关模型 / Related Models
+
+### 行业应用模型 / Industry Application Models
+
+- **[物流供应链模型](../01-物流供应链模型/README.md)** - 制造业的供应链管理、库存管理和物流优化都是物流供应链理论的应用
+- **[交通运输模型](../02-交通运输模型/README.md)** - 制造业的物流运输、配送网络和运输优化
+- **[电力能源模型](../03-电力能源模型/README.md)** - 制造业的能源管理、电力系统优化和能源成本控制
+- **[信息技术模型](../04-信息技术模型/README.md)** - 制造业信息化、MES系统、ERP系统和工业软件都需要信息技术的支持
+- **[人工智能行业模型](../05-人工智能行业模型/README.md)** - 智能制造、质量检测、预测性维护和工业机器人控制都应用人工智能技术
+- **[银行金融模型](../06-银行金融模型/README.md)** - 制造业融资、供应链金融和工业投资
+- **[经济供需模型](../07-经济供需模型/README.md)** - 制造业供需平衡、生产计划和市场预测
+- **[医疗健康模型](../09-医疗健康模型/README.md)** - 医疗器械制造、医疗设备生产和健康产品制造
+- **[教育学习模型](../10-教育学习模型/README.md)** - 教育设备制造、教学工具生产和学习产品制造
+
+### 工程科学模型 / Engineering Science Models
+
+- **[优化模型](../../07-工程科学模型/01-优化模型/README.md)** - 生产计划优化、资源调度优化、库存优化和成本优化都是优化问题
+- **[控制论模型](../../07-工程科学模型/02-控制论模型/README.md)** - 生产控制系统、质量控制系统和设备控制系统都应用控制论
+- **[信号处理模型](../../07-工程科学模型/03-信号处理模型/README.md)** - 传感器信号处理、质量检测信号分析和设备监控信号处理
+- **[材料科学模型](../../07-工程科学模型/04-材料科学模型/README.md)** - 材料选择、材料性能分析和材料加工工艺
+- **[机械工程模型](../../07-工程科学模型/05-机械工程模型/README.md)** - 机械设计、动力学分析、振动分析和疲劳分析
+- **[电子工程模型](../../07-工程科学模型/06-电子工程模型/README.md)** - 工业电子、自动化控制和电气系统
+
+### 计算机科学模型 / Computer Science Models
+
+- **[算法模型](../../04-计算机科学模型/02-算法模型/README.md)** - 生产调度算法、优化算法和数据分析算法在制造业中广泛应用
+- **[数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md)** - 生产数据管理、BOM数据结构和工艺数据结构
+- **[人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md)** - 机器学习、深度学习和强化学习在智能制造、质量预测和故障诊断中应用
+
+### 数学科学模型 / Mathematical Science Models
+
+- **[代数模型](../../03-数学科学模型/01-代数模型/README.md)** - 线性代数、矩阵运算在生产计划、资源分配和优化问题中应用广泛
+- **[几何模型](../../03-数学科学模型/02-几何模型/README.md)** - 几何建模、CAD设计和空间布局
+- **[拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md)** - 网络拓扑、供应链网络和生产网络分析
+
+### 物理科学模型 / Physical Science Models
+
+- **[经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md)** - 机械设计、动力学分析和振动分析需要经典力学理论
+- **[热力学模型](../../02-物理科学模型/04-热力学模型/README.md)** - 热处理工艺、热效率分析和能源管理
+- **[材料科学模型](../../02-物理科学模型/04-热力学模型/README.md)** - 材料性能、相变和材料加工
+
+### 社会科学模型 / Social Science Models
+
+- **[经济学模型](../../06-社会科学模型/02-经济学模型/README.md)** - 制造业经济学、成本分析和市场分析
+- **[社会网络模型](../../06-社会科学模型/01-社会网络模型/README.md)** - 供应链网络、生产网络和协作网络分析
+
+### 基础理论 / Basic Theory
+
+- **[模型分类学](../../01-基础理论/01-模型分类学/README.md)** - 制造业模型的分类和体系化需要模型分类学理论指导
+- **[形式化方法论](../../01-基础理论/02-形式化方法论/README.md)** - 制造业模型的形式化描述、验证和优化需要形式化方法论
+- **[科学模型论](../../01-基础理论/03-科学模型论/README.md)** - 制造业模型的构建、验证和评价需要科学模型论指导
 
 ---
 

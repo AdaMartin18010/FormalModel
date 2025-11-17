@@ -12,6 +12,8 @@
 
 - [8.7 经济供需模型 / Economic Supply-Demand Models](#87-经济供需模型--economic-supply-demand-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [经济供需模型框架图 / Framework Diagram of Economic Supply-Demand Models](#经济供需模型框架图--framework-diagram-of-economic-supply-demand-models)
+  - [市场均衡分析流程图 / Flowchart of Market Equilibrium Analysis](#市场均衡分析流程图--flowchart-of-market-equilibrium-analysis)
   - [8.7.1 供需基础模型 / Basic Supply-Demand Models](#871-供需基础模型--basic-supply-demand-models)
     - [需求函数 / Demand Function](#需求函数--demand-function)
     - [供给函数 / Supply Function](#供给函数--supply-function)
@@ -51,8 +53,134 @@
       - [宏观经济学 / Macroeconomics](#宏观经济学--macroeconomics)
       - [国际贸易 / International Trade](#国际贸易--international-trade)
   - [参考文献 / References](#参考文献--references)
+  - [评测协议与指标 / Evaluation Protocols \& Metrics](#评测协议与指标--evaluation-protocols--metrics)
+    - [范围与目标 / Scope \& Goals](#范围与目标--scope--goals)
+    - [数据与划分 / Data \& Splits](#数据与划分--data--splits)
+    - [通用指标 / Common Metrics](#通用指标--common-metrics)
+    - [任务级协议 / Task-level Protocols](#任务级协议--task-level-protocols)
+    - [复现实操 / Reproducibility](#复现实操--reproducibility)
+  - [8.7.9 算法实现 / Algorithm Implementation](#879-算法实现--algorithm-implementation)
+    - [供需基础算法 / Basic Supply-Demand Algorithms](#供需基础算法--basic-supply-demand-algorithms)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
 
 ---
+
+## 经济供需模型框架图 / Framework Diagram of Economic Supply-Demand Models
+
+```mermaid
+graph TB
+    A[经济供需模型] --> B[供需基础模型]
+    A --> C[市场均衡模型]
+    A --> D[价格机制模型]
+    A --> E[弹性理论模型]
+    A --> F[一般均衡模型]
+    A --> G[博弈论模型]
+    A --> H[宏观经济模型]
+
+    B --> I[需求函数]
+    B --> J[供给函数]
+    B --> K[需求定律]
+    B --> L[供给定律]
+
+    C --> M[均衡条件]
+    C --> N[线性均衡]
+    C --> O[稳定性分析]
+
+    D --> P[价格弹性]
+    D --> Q[收入弹性]
+    D --> R[交叉弹性]
+    D --> S[价格管制]
+
+    E --> T[点弹性]
+    E --> U[弧弹性]
+    E --> V[弹性分类]
+
+    F --> W[瓦尔拉斯均衡]
+    F --> X[帕累托最优]
+    F --> Y[阿罗-德布鲁]
+
+    G --> Z[纳什均衡]
+    G --> AA[古诺模型]
+    G --> AB[伯特兰模型]
+
+    H --> AC[IS-LM模型]
+    H --> AD[AD-AS模型]
+    H --> AE[菲利普斯曲线]
+
+    I --> AF[经济应用]
+    M --> AF
+    P --> AF
+    W --> AF
+    Z --> AF
+    AC --> AF
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style F fill:#fff4e1
+    style G fill:#fff4e1
+    style H fill:#fff4e1
+    style AF fill:#e8f5e9
+```
+
+## 市场均衡分析流程图 / Flowchart of Market Equilibrium Analysis
+
+```mermaid
+flowchart TD
+    Start([市场数据输入]) --> DataCollection[数据收集<br/>价格数据<br/>数量数据<br/>收入数据<br/>成本数据]
+
+    DataCollection --> DemandAnalysis{需求分析}
+    DemandAnalysis --> DemandFunction[需求函数估计<br/>线性需求<br/>非线性需求<br/>需求参数估计]
+    DemandAnalysis --> DemandShift[需求变动分析<br/>收入变动<br/>偏好变动<br/>替代品价格]
+
+    DataCollection --> SupplyAnalysis{供给分析}
+    SupplyAnalysis --> SupplyFunction[供给函数估计<br/>线性供给<br/>成本函数<br/>供给参数估计]
+    SupplyAnalysis --> SupplyShift[供给变动分析<br/>成本变动<br/>技术变动<br/>预期价格]
+
+    DemandFunction --> Equilibrium{市场均衡}
+    SupplyFunction --> Equilibrium
+
+    Equilibrium --> EquilibriumPrice[均衡价格计算<br/>供需相等<br/>市场出清<br/>价格确定]
+    EquilibriumPrice --> EquilibriumQuantity[均衡数量计算<br/>交易量<br/>市场容量<br/>资源配置]
+
+    EquilibriumQuantity --> ElasticityAnalysis{弹性分析}
+    ElasticityAnalysis --> PriceElasticity[价格弹性<br/>需求价格弹性<br/>供给价格弹性<br/>弹性分类]
+    ElasticityAnalysis --> IncomeElasticity[收入弹性<br/>正常品<br/>劣等品<br/>奢侈品]
+    ElasticityAnalysis --> CrossElasticity[交叉弹性<br/>替代品<br/>互补品<br/>独立品]
+
+    PriceElasticity --> WelfareAnalysis{福利分析}
+    IncomeElasticity --> WelfareAnalysis
+    CrossElasticity --> WelfareAnalysis
+
+    WelfareAnalysis --> ConsumerSurplus[消费者剩余<br/>消费者福利<br/>支付意愿<br/>实际支付]
+    WelfareAnalysis --> ProducerSurplus[生产者剩余<br/>生产者福利<br/>实际收入<br/>机会成本]
+
+    ConsumerSurplus --> MarketEfficiency[市场效率<br/>总剩余<br/>帕累托最优<br/>市场失灵]
+    ProducerSurplus --> MarketEfficiency
+
+    MarketEfficiency --> PolicyAnalysis{政策分析}
+    PolicyAnalysis --> PriceControl[价格管制<br/>最高限价<br/>最低限价<br/>价格扭曲]
+    PolicyAnalysis --> TaxAnalysis[税收分析<br/>税收负担<br/>税收效率<br/>税收归宿]
+
+    PriceControl --> Output([输出结果<br/>均衡价格<br/>均衡数量<br/>市场效率<br/>政策建议])
+
+    style Start fill:#e1f5ff
+    style Output fill:#e1f5ff
+    style DemandAnalysis fill:#e8f5e9
+    style SupplyAnalysis fill:#e8f5e9
+    style Equilibrium fill:#e8f5e9
+    style ElasticityAnalysis fill:#e8f5e9
+    style WelfareAnalysis fill:#e8f5e9
+    style PolicyAnalysis fill:#e8f5e9
+```
 
 ## 8.7.1 供需基础模型 / Basic Supply-Demand Models
 
@@ -306,7 +434,7 @@ pub struct Market {
 }
 
 impl Market {
-    pub fn new<D, S>(demand: D, supply: S) -> Self 
+    pub fn new<D, S>(demand: D, supply: S) -> Self
     where
         D: Fn(f64) -> f64 + 'static,
         S: Fn(f64) -> f64 + 'static,
@@ -318,20 +446,20 @@ impl Market {
             equilibrium_quantity: None,
         }
     }
-    
+
     pub fn find_equilibrium(&mut self, tolerance: f64, max_iterations: usize) -> Option<(f64, f64)> {
         let mut price = 1.0;
-        
+
         for _ in 0..max_iterations {
             let demand = (self.demand_function)(price);
             let supply = (self.supply_function)(price);
-            
+
             if (demand - supply).abs() < tolerance {
                 self.equilibrium_price = Some(price);
                 self.equilibrium_quantity = Some(demand);
                 return Some((price, demand));
             }
-            
+
             // 简单的价格调整机制
             if demand > supply {
                 price *= 1.01; // 价格上涨
@@ -339,47 +467,47 @@ impl Market {
                 price *= 0.99; // 价格下跌
             }
         }
-        
+
         None
     }
-    
+
     pub fn calculate_elasticity(&self, price: f64, delta: f64) -> (f64, f64) {
         let demand_at_price = (self.demand_function)(price);
         let demand_at_price_plus_delta = (self.demand_function)(price + delta);
         let supply_at_price = (self.supply_function)(price);
         let supply_at_price_plus_delta = (self.supply_function)(price + delta);
-        
+
         let demand_elasticity = (demand_at_price_plus_delta - demand_at_price) / delta * price / demand_at_price;
         let supply_elasticity = (supply_at_price_plus_delta - supply_at_price) / delta * price / supply_at_price;
-        
+
         (demand_elasticity, supply_elasticity)
     }
-    
+
     pub fn calculate_consumer_surplus(&self, price: f64) -> f64 {
         let mut surplus = 0.0;
         let mut current_price = 0.0;
         let step = 0.01;
-        
+
         while current_price < price {
             let demand = (self.demand_function)(current_price);
             surplus += demand * step;
             current_price += step;
         }
-        
+
         surplus - price * (self.demand_function)(price)
     }
-    
+
     pub fn calculate_producer_surplus(&self, price: f64) -> f64 {
         let mut surplus = 0.0;
         let mut current_price = 0.0;
         let step = 0.01;
-        
+
         while current_price < price {
             let supply = (self.supply_function)(current_price);
             surplus += supply * step;
             current_price += step;
         }
-        
+
         price * (self.supply_function)(price) - surplus
     }
 }
@@ -399,41 +527,41 @@ impl CournotModel {
             equilibrium_quantities: Vec::new(),
         }
     }
-    
+
     pub fn find_equilibrium(&mut self, tolerance: f64, max_iterations: usize) -> Vec<f64> {
         let n = self.firms.len();
         let mut quantities = vec![1.0; n];
-        
+
         for _ in 0..max_iterations {
             let mut new_quantities = quantities.clone();
             let mut converged = true;
-            
+
             for i in 0..n {
                 let total_quantity: f64 = quantities.iter().sum();
                 let market_price = (self.market_demand)(total_quantity);
-                
+
                 // 计算企业i的最优产量
                 let marginal_revenue = market_price - quantities[i] * self.derivative_at(total_quantity);
                 let optimal_quantity = (marginal_revenue - self.firms[i]) / self.derivative_at(total_quantity);
-                
+
                 new_quantities[i] = optimal_quantity.max(0.0);
-                
+
                 if (new_quantities[i] - quantities[i]).abs() > tolerance {
                     converged = false;
                 }
             }
-            
+
             quantities = new_quantities;
-            
+
             if converged {
                 break;
             }
         }
-        
+
         self.equilibrium_quantities = quantities.clone();
         quantities
     }
-    
+
     fn derivative_at(&self, quantity: f64) -> f64 {
         let delta = 0.01;
         let price1 = (self.market_demand)(quantity);
@@ -447,27 +575,27 @@ fn main() {
     // 线性供需模型
     let demand = |p: f64| (100.0 - p).max(0.0);
     let supply = |p: f64| (p - 20.0).max(0.0);
-    
+
     let mut market = Market::new(demand, supply);
-    
+
     if let Some((price, quantity)) = market.find_equilibrium(0.01, 1000) {
         println!("Equilibrium price: {:.2}", price);
         println!("Equilibrium quantity: {:.2}", quantity);
-        
+
         let (demand_elasticity, supply_elasticity) = market.calculate_elasticity(price, 0.01);
         println!("Demand elasticity: {:.2}", demand_elasticity);
         println!("Supply elasticity: {:.2}", supply_elasticity);
-        
+
         let consumer_surplus = market.calculate_consumer_surplus(price);
         let producer_surplus = market.calculate_producer_surplus(price);
         println!("Consumer surplus: {:.2}", consumer_surplus);
         println!("Producer surplus: {:.2}", producer_surplus);
     }
-    
+
     // 古诺模型示例
     let market_demand = |q: f64| (100.0 - q).max(0.0);
     let mut cournot = CournotModel::new(vec![10.0, 15.0], Box::new(market_demand));
-    
+
     let equilibrium_quantities = cournot.find_equilibrium(0.01, 1000);
     println!("Cournot equilibrium quantities: {:?}", equilibrium_quantities);
 }
@@ -520,7 +648,7 @@ calculateElasticity market price delta = (demandElasticity, supplyElasticity)
     demandAtPricePlusDelta = demandFunction market (price + delta)
     supplyAtPrice = supplyFunction market price
     supplyAtPricePlusDelta = supplyFunction market (price + delta)
-    
+
     demandElasticity = (demandAtPricePlusDelta - demandAtPrice) / delta * price / demandAtPrice
     supplyElasticity = (supplyAtPricePlusDelta - supplyAtPrice) / delta * price / supplyAtPrice
 
@@ -557,15 +685,15 @@ findCournotEquilibrium model tolerance maxIterations = go (V.replicate (V.length
       where
         totalQuantity = V.sum quantities
         marketPrice = marketDemand model totalQuantity
-        
-        newQuantities = V.imap (\i q -> 
+
+        newQuantities = V.imap (\i q ->
             let marginalRevenue = marketPrice - q * derivativeAt totalQuantity
                 optimalQuantity = (marginalRevenue - firms model V.! i) / derivativeAt totalQuantity
             in max 0.0 optimalQuantity) quantities
-        
-        converged = V.all (\i -> abs (newQuantities V.! i - quantities V.! i) < tolerance) 
+
+        converged = V.all (\i -> abs (newQuantities V.! i - quantities V.! i) < tolerance)
                           (V.enumFromN 0 (V.length quantities))
-    
+
     derivativeAt quantity = (marketDemand model (quantity + 0.01) - marketDemand model quantity) / 0.01
 
 -- 示例使用
@@ -575,26 +703,26 @@ example = do
     let demand p = max 0.0 (100.0 - p)
         supply p = max 0.0 (p - 20.0)
         market = newMarket demand supply
-    
+
     case findEquilibrium market 0.01 1000 of
         Just (price, quantity) -> do
             putStrLn $ "Equilibrium price: " ++ show price
             putStrLn $ "Equilibrium quantity: " ++ show quantity
-            
+
             let (demandElasticity, supplyElasticity) = calculateElasticity market price 0.01
             putStrLn $ "Demand elasticity: " ++ show demandElasticity
             putStrLn $ "Supply elasticity: " ++ show supplyElasticity
-            
+
             let consumerSurplus = calculateConsumerSurplus market price
             putStrLn $ "Consumer surplus: " ++ show consumerSurplus
-        
+
         Nothing -> putStrLn "No equilibrium found"
-    
+
     -- 古诺模型示例
     let marketDemand q = max 0.0 (100.0 - q)
         cournot = newCournotModel [10.0, 15.0] marketDemand
         equilibrium = findCournotEquilibrium cournot 0.01 1000
-    
+
     putStrLn $ "Cournot equilibrium quantities: " ++ show (V.toList equilibrium)
 ```
 
@@ -674,83 +802,83 @@ from scipy.optimize import fsolve
 
 class DemandFunction:
     """需求函数"""
-    
+
     def __init__(self, a: float, b: float):
         self.a = a  # 截距
         self.b = b  # 斜率
-    
+
     def __call__(self, price: float) -> float:
         """计算需求量"""
         return max(0, self.a - self.b * price)
-    
+
     def inverse(self, quantity: float) -> float:
         """反需求函数"""
         return max(0, (self.a - quantity) / self.b)
 
 class SupplyFunction:
     """供给函数"""
-    
+
     def __init__(self, c: float, d: float):
         self.c = c  # 截距
         self.d = d  # 斜率
-    
+
     def __call__(self, price: float) -> float:
         """计算供给量"""
         return max(0, self.c + self.d * price)
-    
+
     def inverse(self, quantity: float) -> float:
         """反供给函数"""
         return max(0, (quantity - self.c) / self.d)
 
 class MarketEquilibrium:
     """市场均衡"""
-    
+
     def __init__(self, demand: DemandFunction, supply: SupplyFunction):
         self.demand = demand
         self.supply = supply
-    
+
     def find_equilibrium(self) -> Optional[Tuple[float, float]]:
         """寻找均衡价格和数量"""
         def excess_demand(price):
             return self.demand(price) - self.supply(price)
-        
+
         try:
             # 使用数值方法求解
             equilibrium_price = fsolve(excess_demand, 50.0)[0]
             equilibrium_quantity = self.demand(equilibrium_price)
-            
+
             if equilibrium_price > 0 and equilibrium_quantity > 0:
                 return equilibrium_price, equilibrium_quantity
             else:
                 return None
         except:
             return None
-    
+
     def calculate_consumer_surplus(self, price: float) -> float:
         """计算消费者剩余"""
         if price <= 0:
             return 0.0
-        
+
         # 计算需求曲线下的面积
         max_price = self.demand.inverse(0)
         if max_price <= price:
             return 0.0
-        
+
         # 简化的梯形面积计算
         quantity = self.demand(price)
         surplus = 0.5 * (max_price - price) * quantity
         return surplus
-    
+
     def calculate_producer_surplus(self, price: float) -> float:
         """计算生产者剩余"""
         if price <= 0:
             return 0.0
-        
+
         # 计算供给曲线下的面积
         min_price = self.supply.inverse(0)
         if price <= min_price:
             return 0.0
-        
+
         quantity = self.supply(price)
         surplus = 0.5 * (price - min_price) * quantity
         return surplus
@@ -759,66 +887,66 @@ class MarketEquilibrium:
 
 class ElasticityCalculator:
     """弹性计算器"""
-    
+
     def __init__(self):
         pass
-    
-    def price_elasticity_of_demand(self, demand_func: Callable, 
+
+    def price_elasticity_of_demand(self, demand_func: Callable,
                                  price: float, delta: float = 0.01) -> float:
         """需求价格弹性"""
         quantity = demand_func(price)
         if quantity <= 0:
             return 0.0
-        
+
         new_price = price + delta
         new_quantity = demand_func(new_price)
-        
+
         price_change = (new_price - price) / price
         quantity_change = (new_quantity - quantity) / quantity
-        
+
         if price_change == 0:
             return 0.0
-        
+
         elasticity = quantity_change / price_change
         return elasticity
-    
-    def income_elasticity_of_demand(self, demand_func: Callable, 
-                                  income: float, price: float, 
+
+    def income_elasticity_of_demand(self, demand_func: Callable,
+                                  income: float, price: float,
                                   delta: float = 0.01) -> float:
         """需求收入弹性"""
         quantity = demand_func(price, income)
         if quantity <= 0:
             return 0.0
-        
+
         new_income = income + delta
         new_quantity = demand_func(price, new_income)
-        
+
         income_change = (new_income - income) / income
         quantity_change = (new_quantity - quantity) / quantity
-        
+
         if income_change == 0:
             return 0.0
-        
+
         elasticity = quantity_change / income_change
         return elasticity
-    
-    def cross_price_elasticity(self, demand_func: Callable, 
-                             price: float, other_price: float, 
+
+    def cross_price_elasticity(self, demand_func: Callable,
+                             price: float, other_price: float,
                              delta: float = 0.01) -> float:
         """交叉价格弹性"""
         quantity = demand_func(price, other_price)
         if quantity <= 0:
             return 0.0
-        
+
         new_other_price = other_price + delta
         new_quantity = demand_func(price, new_other_price)
-        
+
         price_change = (new_other_price - other_price) / other_price
         quantity_change = (new_quantity - quantity) / quantity
-        
+
         if price_change == 0:
             return 0.0
-        
+
         elasticity = quantity_change / price_change
         return elasticity
 
@@ -826,119 +954,119 @@ class ElasticityCalculator:
 
 class NashEquilibrium:
     """纳什均衡"""
-    
+
     def __init__(self):
         pass
-    
-    def find_nash_equilibrium(self, payoff_matrix_A: np.ndarray, 
+
+    def find_nash_equilibrium(self, payoff_matrix_A: np.ndarray,
                             payoff_matrix_B: np.ndarray) -> List[Tuple[int, int]]:
         """寻找纳什均衡"""
         n_strategies_A = payoff_matrix_A.shape[0]
         n_strategies_B = payoff_matrix_A.shape[1]
         nash_equilibria = []
-        
+
         for i in range(n_strategies_A):
             for j in range(n_strategies_B):
                 # 检查是否为纳什均衡
                 is_nash = True
-                
+
                 # 检查玩家A是否有更好的策略
                 for k in range(n_strategies_A):
                     if payoff_matrix_A[k, j] > payoff_matrix_A[i, j]:
                         is_nash = False
                         break
-                
+
                 if not is_nash:
                     continue
-                
+
                 # 检查玩家B是否有更好的策略
                 for l in range(n_strategies_B):
                     if payoff_matrix_B[i, l] > payoff_matrix_B[i, j]:
                         is_nash = False
                         break
-                
+
                 if is_nash:
                     nash_equilibria.append((i, j))
-        
+
         return nash_equilibria
 
 class CournotModel:
     """古诺模型"""
-    
-    def __init__(self, n_firms: int, market_demand: Callable, 
+
+    def __init__(self, n_firms: int, market_demand: Callable,
                  marginal_costs: List[float]):
         self.n_firms = n_firms
         self.market_demand = market_demand
         self.marginal_costs = marginal_costs
-    
-    def find_equilibrium(self, tolerance: float = 1e-6, 
+
+    def find_equilibrium(self, tolerance: float = 1e-6,
                         max_iterations: int = 1000) -> List[float]:
         """寻找古诺均衡"""
         # 初始化产量
         quantities = [1.0] * self.n_firms
-        
+
         for iteration in range(max_iterations):
             new_quantities = quantities.copy()
-            
+
             for i in range(self.n_firms):
                 # 计算其他企业的总产量
                 other_quantity = sum(quantities[j] for j in range(self.n_firms) if j != i)
-                
+
                 # 计算市场价格
                 total_quantity = other_quantity + quantities[i]
                 market_price = self.market_demand(total_quantity)
-                
+
                 # 计算边际收益
                 marginal_revenue = market_price - quantities[i] * self._demand_derivative(total_quantity)
-                
+
                 # 最优产量条件：边际收益 = 边际成本
                 if self._demand_derivative(total_quantity) != 0:
                     optimal_quantity = (marginal_revenue - self.marginal_costs[i]) / \
                                      (-self._demand_derivative(total_quantity))
                     new_quantities[i] = max(0, optimal_quantity)
-            
+
             # 检查收敛
-            if all(abs(new_quantities[i] - quantities[i]) < tolerance 
+            if all(abs(new_quantities[i] - quantities[i]) < tolerance
                    for i in range(self.n_firms)):
                 break
-            
+
             quantities = new_quantities
-        
+
         return quantities
-    
+
     def _demand_derivative(self, quantity: float, delta: float = 0.01) -> float:
         """需求函数的导数"""
         return (self.market_demand(quantity + delta) - self.market_demand(quantity)) / delta
 
 class BertrandModel:
     """伯特兰模型"""
-    
+
     def __init__(self, n_firms: int, marginal_costs: List[float]):
         self.n_firms = n_firms
         self.marginal_costs = marginal_costs
-    
+
     def find_equilibrium(self) -> List[float]:
         """寻找伯特兰均衡"""
         # 伯特兰均衡：价格等于最低边际成本
         min_cost = min(self.marginal_costs)
-        
+
         # 所有企业都定价在最低边际成本
         equilibrium_prices = [min_cost] * self.n_firms
-        
+
         return equilibrium_prices
 
 ### 宏观经济模型算法 / Macroeconomic Model Algorithms
 
 class ISLMModel:
     """IS-LM模型"""
-    
+
     def __init__(self, consumption_func: Callable, investment_func: Callable,
                  money_demand_func: Callable, money_supply: float):
         self.consumption_func = consumption_func
         self.investment_func = investment_func
         self.money_demand_func = money_demand_func
         self.money_supply = money_supply
-    
+
     def find_equilibrium(self, government_spending: float, taxes: float) -> Tuple[float, float]:
         """寻找IS-LM均衡"""
         def is_curve(y, r):
@@ -946,18 +1074,18 @@ class ISLMModel:
             c = self.consumption_func(y - taxes)
             i = self.investment_func(r)
             return y - c - i - government_spending
-        
+
         def lm_curve(y, r):
             """LM曲线"""
             return self.money_demand_func(y, r) - self.money_supply
-        
+
         def system(vars):
             y, r = vars
             return [is_curve(y, r), lm_curve(y, r)]
-        
+
         # 初始猜测
         initial_guess = [1000.0, 0.05]
-        
+
         try:
             equilibrium = fsolve(system, initial_guess)
             return equilibrium[0], equilibrium[1]  # Y, r
@@ -966,13 +1094,13 @@ class ISLMModel:
 
 class PhillipsCurve:
     """菲利普斯曲线"""
-    
-    def __init__(self, natural_unemployment: float = 0.05, 
+
+    def __init__(self, natural_unemployment: float = 0.05,
                  inflation_expectations: float = 0.02):
         self.natural_unemployment = natural_unemployment
         self.inflation_expectations = inflation_expectations
-    
-    def calculate_inflation(self, unemployment: float, 
+
+    def calculate_inflation(self, unemployment: float,
                           supply_shock: float = 0.0) -> float:
         """计算通货膨胀率"""
         # 简化的菲利普斯曲线
@@ -980,7 +1108,7 @@ class PhillipsCurve:
                    0.5 * (unemployment - self.natural_unemployment) + \
                    supply_shock
         return inflation
-    
+
     def calculate_sacrifice_ratio(self, initial_unemployment: float,
                                 target_unemployment: float,
                                 disinflation_periods: int) -> float:
@@ -992,99 +1120,143 @@ class PhillipsCurve:
 def economic_supply_demand_verification():
     """经济供需模型验证"""
     print("=== 经济供需模型验证 ===")
-    
+
     # 供需基础验证
     print("\n1. 供需基础验证:")
-    
+
     # 创建供需函数
     demand = DemandFunction(a=100, b=2)  # Qd = 100 - 2P
     supply = SupplyFunction(c=-20, d=3)  # Qs = -20 + 3P
-    
+
     market = MarketEquilibrium(demand, supply)
     equilibrium = market.find_equilibrium()
-    
+
     if equilibrium:
         price, quantity = equilibrium
         print(f"均衡价格: ${price:.2f}")
         print(f"均衡数量: {quantity:.2f}")
-        
+
         consumer_surplus = market.calculate_consumer_surplus(price)
         producer_surplus = market.calculate_producer_surplus(price)
         print(f"消费者剩余: ${consumer_surplus:.2f}")
         print(f"生产者剩余: ${producer_surplus:.2f}")
-    
+
     # 弹性计算验证
     print("\n2. 弹性计算验证:")
-    
+
     elasticity_calc = ElasticityCalculator()
-    
+
     # 需求价格弹性
     def demand_func(price):
         return max(0, 100 - 2 * price)
-    
+
     price_elasticity = elasticity_calc.price_elasticity_of_demand(demand_func, 30)
     print(f"需求价格弹性: {price_elasticity:.4f}")
-    
+
     # 博弈论验证
     print("\n3. 博弈论验证:")
-    
+
     # 纳什均衡
     payoff_A = np.array([[3, 1], [0, 2]])  # 囚徒困境
     payoff_B = np.array([[3, 0], [1, 2]])
-    
+
     nash = NashEquilibrium()
     equilibria = nash.find_nash_equilibrium(payoff_A, payoff_B)
     print(f"纳什均衡: {equilibria}")
-    
+
     # 古诺模型
     def market_demand(total_quantity):
         return max(0, 100 - total_quantity)
-    
-    cournot = CournotModel(n_firms=2, market_demand=market_demand, 
+
+    cournot = CournotModel(n_firms=2, market_demand=market_demand,
                           marginal_costs=[10, 15])
     equilibrium_quantities = cournot.find_equilibrium()
     print(f"古诺均衡产量: {equilibrium_quantities}")
-    
+
     # 伯特兰模型
     bertrand = BertrandModel(n_firms=2, marginal_costs=[10, 15])
     equilibrium_prices = bertrand.find_equilibrium()
     print(f"伯特兰均衡价格: {equilibrium_prices}")
-    
+
     # 宏观经济模型验证
     print("\n4. 宏观经济模型验证:")
-    
+
     # IS-LM模型
     def consumption(disposable_income):
         return 100 + 0.8 * disposable_income
-    
+
     def investment(interest_rate):
         return 200 - 1000 * interest_rate
-    
+
     def money_demand(income, interest_rate):
         return 0.5 * income - 1000 * interest_rate
-    
+
     islm = ISLMModel(consumption, investment, money_demand, money_supply=500)
     equilibrium_y, equilibrium_r = islm.find_equilibrium(government_spending=100, taxes=50)
-    
+
     if equilibrium_y is not None:
         print(f"均衡收入: ${equilibrium_y:.2f}")
         print(f"均衡利率: {equilibrium_r:.4f}")
-    
+
     # 菲利普斯曲线
     phillips = PhillipsCurve()
     inflation = phillips.calculate_inflation(unemployment=0.06)
     print(f"通货膨胀率: {inflation:.4f}")
-    
+
     sacrifice_ratio = phillips.calculate_sacrifice_ratio(
         initial_unemployment=0.08, target_unemployment=0.05, disinflation_periods=5
     )
     print(f"牺牲率: {sacrifice_ratio:.4f}")
-    
+
     print("\n验证完成!")
 
 if __name__ == "__main__":
     economic_supply_demand_verification()
 ```
+
+---
+
+## 相关模型 / Related Models
+
+### 行业应用模型 / Industry Application Models
+
+- **[物流供应链模型](../01-物流供应链模型/README.md)** - 供应链中的供需平衡、库存管理和需求预测都是经济供需理论的应用
+- **[交通运输模型](../02-交通运输模型/README.md)** - 交通需求预测、交通供给规划和交通市场均衡分析
+- **[电力能源模型](../03-电力能源模型/README.md)** - 电力供需平衡、电价形成机制和能源市场均衡分析
+- **[信息技术模型](../04-信息技术模型/README.md)** - 信息技术产品供需、数字市场均衡和平台经济分析
+- **[人工智能行业模型](../05-人工智能行业模型/README.md)** - AI服务供需、数据市场均衡和算法定价
+- **[银行金融模型](../06-银行金融模型/README.md)** - 金融市场供需关系、价格形成机制和市场均衡分析
+- **[制造业模型](../08-制造业模型/README.md)** - 制造业供需平衡、生产计划和市场预测
+- **[医疗健康模型](../09-医疗健康模型/README.md)** - 医疗资源供需、医疗服务定价和健康市场均衡
+- **[教育学习模型](../10-教育学习模型/README.md)** - 教育资源供需、教育市场均衡和教育定价机制
+
+### 工程科学模型 / Engineering Science Models
+
+- **[优化模型](../../07-工程科学模型/01-优化模型/README.md)** - 市场均衡求解、资源配置优化和福利最大化都是优化问题
+- **[控制论模型](../../07-工程科学模型/02-控制论模型/README.md)** - 经济系统控制、价格调节机制和宏观经济调控
+
+### 计算机科学模型 / Computer Science Models
+
+- **[算法模型](../../04-计算机科学模型/02-算法模型/README.md)** - 市场均衡计算、优化算法和数值方法在经济分析中应用
+- **[人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md)** - 机器学习方法在需求预测、价格预测和市场分析中的应用
+
+### 数学科学模型 / Mathematical Science Models
+
+- **[代数模型](../../03-数学科学模型/01-代数模型/README.md)** - 线性代数、矩阵运算在一般均衡模型、投入产出分析和经济计量中应用广泛
+- **[几何模型](../../03-数学科学模型/02-几何模型/README.md)** - 经济几何、无差异曲线、生产可能性边界和预算约束线
+- **[拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md)** - 经济拓扑、一般均衡存在性证明和不动点定理
+
+### 社会科学模型 / Social Science Models
+
+- **[经济学模型](../../06-社会科学模型/02-经济学模型/README.md)** - 经济供需模型是经济学理论的核心，包括微观经济学和宏观经济学
+- **[社会网络模型](../../06-社会科学模型/01-社会网络模型/README.md)** - 经济网络、贸易网络和金融网络分析
+- **[博弈论模型](../../06-社会科学模型/02-经济学模型/README.md)** - 市场博弈、价格竞争和策略互动分析
+
+### 基础理论 / Basic Theory
+
+- **[模型分类学](../../01-基础理论/01-模型分类学/README.md)** - 经济供需模型的分类和体系化需要模型分类学理论指导
+- **[形式化方法论](../../01-基础理论/02-形式化方法论/README.md)** - 经济模型的形式化描述、数学证明和理论验证需要形式化方法论
+- **[科学模型论](../../01-基础理论/03-科学模型论/README.md)** - 经济供需模型的构建、验证和评价需要科学模型论指导
 
 ---
 

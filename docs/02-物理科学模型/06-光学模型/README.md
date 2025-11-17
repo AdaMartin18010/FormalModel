@@ -1,7 +1,7 @@
 # 光学模型 / Optical Models
 
-**版本**: 1.2.0  
-**最后更新**: 2025-08-26  
+**版本**: 1.2.0
+**最后更新**: 2025-08-26
 **状态**: 开发中
 
 ## 目录 / Table of Contents
@@ -9,6 +9,8 @@
 - [光学模型 / Optical Models](#光学模型--optical-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
   - [1. 几何光学 / Geometric Optics](#1-几何光学--geometric-optics)
+    - [光学模型框架图 / Framework Diagram of Optical Models](#光学模型框架图--framework-diagram-of-optical-models)
+    - [几何光学与波动光学关系图 / Relationship Diagram between Geometric and Wave Optics](#几何光学与波动光学关系图--relationship-diagram-between-geometric-and-wave-optics)
     - [1.1 光线传播 / Ray Propagation](#11-光线传播--ray-propagation)
       - [形式化定义 / Formal Definition](#形式化定义--formal-definition)
       - [公理化定义 / Axiomatic Definitions](#公理化定义--axiomatic-definitions)
@@ -16,11 +18,15 @@
       - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems)
       - [算法实现 / Algorithm Implementation](#算法实现--algorithm-implementation)
     - [1.2 反射定律 / Reflection Law](#12-反射定律--reflection-law)
+      - [反射定律关系图 / Relationship Diagram of Reflection Law](#反射定律关系图--relationship-diagram-of-reflection-law)
+      - [反射定律计算流程图 / Flowchart of Reflection Law Calculation](#反射定律计算流程图--flowchart-of-reflection-law-calculation)
       - [1形式化定义 / Formal Definition](#1形式化定义--formal-definition)
       - [1公理化定义 / Axiomatic Definitions](#1公理化定义--axiomatic-definitions)
       - [1形式化定理 / Formal Theorems](#1形式化定理--formal-theorems)
       - [1算法实现 / Algorithm Implementation](#1算法实现--algorithm-implementation)
     - [1.3 折射定律 / Refraction Law](#13-折射定律--refraction-law)
+      - [折射定律关系图 / Relationship Diagram of Refraction Law](#折射定律关系图--relationship-diagram-of-refraction-law)
+      - [折射定律计算流程图 / Flowchart of Refraction Law Calculation](#折射定律计算流程图--flowchart-of-refraction-law-calculation)
       - [1.3.1 形式化定义 / Formal Definition](#131-形式化定义--formal-definition)
       - [1.3.2 公理化定义 / Axiomatic Definitions](#132-公理化定义--axiomatic-definitions)
       - [1.3.3 形式化定理 / Formal Theorems](#133-形式化定理--formal-theorems)
@@ -34,12 +40,16 @@
       - [1.5.2 形式化定理 / Formal Theorems](#152-形式化定理--formal-theorems)
       - [1.5.3 算法实现 / Algorithm Implementation](#153-算法实现--algorithm-implementation)
   - [2. 波动光学 / Wave Optics](#2-波动光学--wave-optics)
+    - [波动光学框架图 / Framework Diagram of Wave Optics](#波动光学框架图--framework-diagram-of-wave-optics)
     - [2.1 光波传播 / Wave Propagation](#21-光波传播--wave-propagation)
+      - [光波传播流程图 / Flowchart of Wave Propagation](#光波传播流程图--flowchart-of-wave-propagation)
       - [2形式化定义 / Formal Definition](#2形式化定义--formal-definition)
       - [2公理化定义 / Axiomatic Definitions](#2公理化定义--axiomatic-definitions)
       - [2形式化定理 / Formal Theorems](#2形式化定理--formal-theorems)
       - [2算法实现 / Algorithm Implementation](#2算法实现--algorithm-implementation)
     - [2.2 干涉现象 / Interference](#22-干涉现象--interference)
+      - [干涉现象关系图 / Relationship Diagram of Interference](#干涉现象关系图--relationship-diagram-of-interference)
+      - [干涉计算流程图 / Flowchart of Interference Calculation](#干涉计算流程图--flowchart-of-interference-calculation)
       - [3形式化定义 / Formal Definition](#3形式化定义--formal-definition)
       - [3公理化定义 / Axiomatic Definitions](#3公理化定义--axiomatic-definitions)
       - [3形式化定理 / Formal Theorems](#3形式化定理--formal-theorems)
@@ -59,9 +69,80 @@
       - [3.1.3 形式化定理 / Formal Theorems](#313-形式化定理--formal-theorems)
       - [3.1.4 算法实现 / Algorithm Implementation](#314-算法实现--algorithm-implementation)
   - [版本历史 / Version History](#版本历史--version-history)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [下一步计划 / Next Steps](#下一步计划--next-steps)
 
 ## 1. 几何光学 / Geometric Optics
+
+### 光学模型框架图 / Framework Diagram of Optical Models
+
+```mermaid
+graph TB
+    A[光学模型] --> B[几何光学]
+    A --> C[波动光学]
+    A --> D[量子光学]
+
+    B --> E[光线传播]
+    B --> F[反射定律]
+    B --> G[折射定律]
+    B --> H[成像理论]
+    B --> I[ABCD矩阵]
+
+    C --> J[光波传播]
+    C --> K[干涉现象]
+    C --> L[衍射]
+    C --> M[非线性光学]
+
+    D --> N[光子]
+    D --> O[量子纠缠]
+    D --> P[量子干涉]
+
+    E --> Q[光学理论]
+    J --> Q
+    N --> Q
+
+    Q --> R[物理预测]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style Q fill:#e8f5e9
+    style R fill:#e8f5e9
+```
+
+### 几何光学与波动光学关系图 / Relationship Diagram between Geometric and Wave Optics
+
+```mermaid
+graph LR
+    A[几何光学] --> B[光线模型]
+    A --> C[费马原理]
+    A --> D[反射折射]
+
+    E[波动光学] --> F[波动方程]
+    E --> G[惠更斯原理]
+    E --> H[干涉衍射]
+
+    B --> I[短波长极限]
+    F --> I
+    C --> I
+    G --> I
+
+    I --> J[统一光学理论]
+
+    K[量子光学] --> L[光子模型]
+    L --> J
+
+    J --> M[完整光学描述]
+
+    style A fill:#e1f5ff
+    style E fill:#e1f5ff
+    style K fill:#e1f5ff
+    style J fill:#e8f5e9
+    style M fill:#e8f5e9
+```
 
 ### 1.1 光线传播 / Ray Propagation
 
@@ -126,7 +207,7 @@ class Ray:
     origin: np.ndarray
     direction: np.ndarray
     wavelength: float
-    
+
     def __post_init__(self):
         self.direction = self.direction / np.linalg.norm(self.direction)
 
@@ -135,30 +216,30 @@ class Medium:
     """介质类"""
     refractive_index: float
     name: str
-    
+
     def __init__(self, n: float, name: str = "medium"):
         self.refractive_index = n
         self.name = name
 
 class RayPropagation:
     """光线传播类"""
-    
+
     def __init__(self):
         self.rays = []
         self.media = []
-    
+
     def add_ray(self, ray: Ray):
         """添加光线"""
         self.rays.append(ray)
-    
+
     def add_medium(self, medium: Medium):
         """添加介质"""
         self.media.append(medium)
-    
+
     def propagate_ray(self, ray: Ray, distance: float) -> np.ndarray:
         """光线传播"""
         return ray.origin + ray.direction * distance
-    
+
     def calculate_optical_path(self, ray: Ray, path: List[Tuple[Medium, float]]) -> float:
         """计算光程"""
         optical_path = 0.0
@@ -187,7 +268,7 @@ def ray_independence_test(rays: List[Ray]) -> bool:
                     return False
     return True
 
-def fermat_principle_verification(start: np.ndarray, end: np.ndarray, 
+def fermat_principle_verification(start: np.ndarray, end: np.ndarray,
                                 media: List[Medium]) -> bool:
     """费马原理验证"""
     direct_distance = np.linalg.norm(end - start)
@@ -208,14 +289,14 @@ def ray_propagation_example():
         direction=np.array([1, 0, 0]),
         wavelength=550e-9
     )
-    
+
     air = Medium(1.0, "air")
     distance = 10.0
-    
+
     new_position = straight_line_propagation(ray, distance)
     media_path = [(air, distance)]
     optical_path = optical_path_length(ray, media_path)
-    
+
     return {
         "initial_position": ray.origin,
         "final_position": new_position,
@@ -224,6 +305,61 @@ def ray_propagation_example():
 ```
 
 ### 1.2 反射定律 / Reflection Law
+
+#### 反射定律关系图 / Relationship Diagram of Reflection Law
+
+```mermaid
+graph TB
+    A[反射定律] --> B[入射光线]
+    A --> C[法向量]
+    A --> D[反射光线]
+
+    B --> E[入射角 θi]
+    D --> F[反射角 θr]
+
+    E --> G[θi = θr]
+    F --> G
+
+    G --> H[反射向量公式]
+    H --> I[r = i - 2i·n n]
+
+    B --> J[共面性]
+    C --> J
+    D --> J
+
+    J --> K[入射面 = 反射面]
+
+    style A fill:#e1f5ff
+    style G fill:#e8f5e9
+    style H fill:#fff4e1
+    style J fill:#fff4e1
+```
+
+#### 反射定律计算流程图 / Flowchart of Reflection Law Calculation
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 入射向量 i, 法向量 n]
+    Input --> NormalizeN[归一化法向量]
+    NormalizeN --> CalcDot[计算 i·n]
+    CalcDot --> CalcReflect[计算反射向量<br/>r = i - 2i·n n]
+    CalcReflect --> CalcAngle[计算入射角和反射角]
+    CalcAngle --> Verify{验证<br/>θi = θr?}
+    Verify -->|否| Error[错误: 计算有误]
+    Verify -->|是| CheckCoplanar{检查共面性?}
+    CheckCoplanar -->|是| CalcMixed[计算混合积]
+    CalcMixed --> CheckZero{混合积 = 0?}
+    CheckZero -->|否| Error
+    CheckZero -->|是| Output[输出: 反射向量 r]
+    CheckCoplanar -->|否| Output
+    Output --> End([结束])
+    Error --> End
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Output fill:#e8f5e9
+    style Error fill:#ffebee
+```
 
 #### 1形式化定义 / Formal Definition
 
@@ -279,12 +415,12 @@ def reflection_angle(incident_angle: float) -> float:
     """反射角计算"""
     return incident_angle
 
-def reflection_energy_conservation(incident_energy: float, 
+def reflection_energy_conservation(incident_energy: float,
                                  reflection_coefficient: float = 1.0) -> float:
     """反射能量守恒"""
     return incident_energy * reflection_coefficient
 
-def reflection_verification(incident_vector: np.ndarray, 
+def reflection_verification(incident_vector: np.ndarray,
                           normal_vector: np.ndarray,
                           reflected_vector: np.ndarray) -> bool:
     """反射定律验证"""
@@ -292,7 +428,7 @@ def reflection_verification(incident_vector: np.ndarray,
     reflected_angle = np.arccos(np.abs(np.dot(reflected_vector, normal_vector)))
     return np.abs(incident_angle - reflected_angle) < 1e-10
 
-def coplanar_test(incident_vector: np.ndarray, 
+def coplanar_test(incident_vector: np.ndarray,
                   normal_vector: np.ndarray,
                   reflected_vector: np.ndarray) -> bool:
     """共面性测试"""
@@ -307,7 +443,7 @@ def reflection_example():
     reflected = reflection_law(incident, normal)
     is_valid = reflection_verification(incident, normal, reflected)
     is_coplanar = coplanar_test(incident, normal, reflected)
-    
+
     return {
         "incident_vector": incident,
         "normal_vector": normal,
@@ -318,6 +454,67 @@ def reflection_example():
 ```
 
 ### 1.3 折射定律 / Refraction Law
+
+#### 折射定律关系图 / Relationship Diagram of Refraction Law
+
+```mermaid
+graph TB
+    A[折射定律] --> B[斯涅尔定律]
+    A --> C[全反射]
+    A --> D[临界角]
+
+    B --> E[n₁sinθ₁ = n₂sinθ₂]
+    E --> F[折射角计算]
+
+    C --> G[条件: n₁ > n₂]
+    G --> H[θ₁ > θc]
+    H --> I[无折射光线]
+
+    D --> J[θc = arcsin n₂/n₁]
+    J --> K[全反射临界条件]
+
+    B --> L[折射向量]
+    L --> M[t = n₁/n₂ i + ...]
+
+    style A fill:#e1f5ff
+    style E fill:#e8f5e9
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+```
+
+#### 折射定律计算流程图 / Flowchart of Refraction Law Calculation
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 入射向量 i, 法向量 n<br/>折射率 n₁, n₂]
+    Input --> Normalize[归一化向量]
+    Normalize --> CalcIncidentAngle[计算入射角 θ₁]
+    CalcIncidentAngle --> CheckCritical{检查临界角<br/>n₁ > n₂?}
+    CheckCritical -->|是| CalcCritical[计算临界角 θc]
+    CalcCritical --> CompareAngle{θ₁ > θc?}
+    CompareAngle -->|是| TotalReflection[全反射: 无折射光线]
+    CompareAngle -->|否| CalcRefraction[计算折射角 θ₂]
+    CheckCritical -->|否| CalcRefraction
+    CalcRefraction --> CalcRefractVector[计算折射向量 t]
+    CalcRefractVector --> VerifySnell{验证斯涅尔定律<br/>n₁sinθ₁ = n₂sinθ₂?}
+    VerifySnell -->|否| Error[错误: 计算有误]
+    VerifySnell -->|是| CheckCoplanar{检查共面性?}
+    CheckCoplanar -->|是| VerifyCoplanar[验证共面性]
+    VerifyCoplanar --> CheckZero{混合积 = 0?}
+    CheckZero -->|否| Error
+    CheckZero -->|是| Output[输出: 折射向量 t, 折射角 θ₂]
+    CheckCoplanar -->|否| Output
+    TotalReflection --> OutputReflection[输出: 全反射]
+    Output --> End([结束])
+    OutputReflection --> End
+    Error --> End
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Output fill:#e8f5e9
+    style TotalReflection fill:#fff4e1
+    style Error fill:#ffebee
+```
 
 #### 1.3.1 形式化定义 / Formal Definition
 
@@ -370,24 +567,24 @@ def snell_law(n1: float, n2: float, incident_angle: float) -> Optional[float]:
         return None  # 全反射
     return np.arcsin(n1 * np.sin(incident_angle) / n2)
 
-def refraction_vector(incident_vector: np.ndarray, 
+def refraction_vector(incident_vector: np.ndarray,
                      normal_vector: np.ndarray,
                      n1: float, n2: float) -> Optional[np.ndarray]:
     """折射向量计算"""
     incident = incident_vector / np.linalg.norm(incident_vector)
     normal = normal_vector / np.linalg.norm(normal_vector)
-    
+
     cos_incident = np.dot(incident, normal)
     incident_angle = np.arccos(np.abs(cos_incident))
-    
+
     refraction_angle = snell_law(n1, n2, incident_angle)
     if refraction_angle is None:
         return None  # 全反射
-    
+
     cos_refraction = np.cos(refraction_angle)
     if cos_incident < 0:
         cos_refraction = -cos_refraction
-    
+
     refraction = (n1 / n2) * incident + ((n1 / n2) * cos_incident - cos_refraction) * normal
     return refraction / np.linalg.norm(refraction)
 
@@ -411,10 +608,10 @@ def refraction_verification(incident_vector: np.ndarray,
     """折射定律验证"""
     incident_angle = np.arccos(np.abs(np.dot(incident_vector, normal_vector)))
     refraction_angle = np.arccos(np.abs(np.dot(refraction_vector, normal_vector)))
-    
+
     left_side = n1 * np.sin(incident_angle)
     right_side = n2 * np.sin(refraction_angle)
-    
+
     return np.abs(left_side - right_side) < 1e-10
 
 def refraction_example():
@@ -424,11 +621,11 @@ def refraction_example():
     normal = np.array([0, 1, 0])
     n1 = 1.0  # 空气
     n2 = 1.5  # 玻璃
-    
+
     refraction = refraction_vector(incident, normal, n1, n2)
     critical = critical_angle(n1, n2)
     is_valid = refraction_verification(incident, normal, refraction, n1, n2)
-    
+
     return {
         "incident_vector": incident,
         "normal_vector": normal,
@@ -509,7 +706,72 @@ def imaging_condition(M: np.ndarray, tol: float = 1e-10) -> bool:
 
 ## 2. 波动光学 / Wave Optics
 
+### 波动光学框架图 / Framework Diagram of Wave Optics
+
+```mermaid
+graph TB
+    A[波动光学] --> B[光波传播]
+    A --> C[干涉现象]
+    A --> D[衍射]
+    A --> E[非线性光学]
+
+    B --> F[波动方程]
+    B --> G[平面波解]
+    B --> H[色散关系]
+
+    C --> I[双缝干涉]
+    C --> J[薄膜干涉]
+    C --> K[干涉图样]
+
+    D --> L[单缝衍射]
+    D --> M[圆孔衍射]
+    D --> N[傅里叶光学]
+
+    E --> O[二次谐波]
+    E --> P[参量过程]
+    E --> Q[非线性折射]
+
+    F --> R[电磁波理论]
+    I --> R
+    L --> R
+    O --> R
+
+    R --> S[完整波动描述]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style R fill:#e8f5e9
+    style S fill:#e8f5e9
+```
+
 ### 2.1 光波传播 / Wave Propagation
+
+#### 光波传播流程图 / Flowchart of Wave Propagation
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 初始条件<br/>E₀, k, ω, φ]
+    Input --> CheckDispersion{检查色散关系<br/>ω = c|k|?}
+    CheckDispersion -->|否| Error[错误: 色散关系不满足]
+    CheckDispersion -->|是| SetupWave[设置波函数<br/>E = E₀e^(ik·r - iωt + iφ)]
+    SetupWave --> CalcField[计算电场 E]
+    CalcField --> CalcMagnetic[计算磁场 B = k×E/ω]
+    CalcMagnetic --> VerifyWaveEq{验证波动方程<br/>∇²E - 1/c² ∂²E/∂t² = 0?}
+    VerifyWaveEq -->|否| Error
+    VerifyWaveEq -->|是| CalcEnergy[计算能量密度 u]
+    CalcEnergy --> CalcPoynting[计算坡印廷矢量 S]
+    CalcPoynting --> Output[输出: E, B, u, S]
+    Output --> End([结束])
+    Error --> End
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Output fill:#e8f5e9
+    style Error fill:#ffebee
+```
 
 #### 2形式化定义 / Formal Definition
 
@@ -560,26 +822,26 @@ from scipy.constants import c, epsilon_0, mu_0
 
 class WaveFunction:
     """波函数类"""
-    
-    def __init__(self, amplitude: np.ndarray, wave_vector: np.ndarray, 
+
+    def __init__(self, amplitude: np.ndarray, wave_vector: np.ndarray,
                  angular_frequency: float, phase: float = 0.0):
         self.amplitude = amplitude
         self.wave_vector = wave_vector
         self.angular_frequency = angular_frequency
         self.phase = phase
-    
+
     def evaluate(self, position: np.ndarray, time: float) -> np.ndarray:
         """计算波函数值"""
         phase_factor = np.dot(self.wave_vector, position) - self.angular_frequency * time + self.phase
         return self.amplitude * np.exp(1j * phase_factor)
 
-def wave_equation_operator(electric_field: Callable, position: np.ndarray, 
+def wave_equation_operator(electric_field: Callable, position: np.ndarray,
                           time: float) -> np.ndarray:
     """波动方程算子"""
     return np.zeros_like(position)
 
 def plane_wave_solution(amplitude: np.ndarray, wave_vector: np.ndarray,
-                       angular_frequency: float, position: np.ndarray, 
+                       angular_frequency: float, position: np.ndarray,
                        time: float) -> np.ndarray:
     """平面波解"""
     phase = np.dot(wave_vector, position) - angular_frequency * time
@@ -599,7 +861,7 @@ def dispersion_relation(wave_vector: np.ndarray) -> float:
     """色散关系"""
     return c * np.linalg.norm(wave_vector)
 
-def wave_propagation_verification(wave_function: WaveFunction, 
+def wave_propagation_verification(wave_function: WaveFunction,
                                 position: np.ndarray, time: float) -> bool:
     """波传播验证"""
     result = wave_equation_operator(wave_function.evaluate, position, time)
@@ -610,17 +872,17 @@ def wave_example():
     amplitude = np.array([1, 0, 0])  # x方向偏振
     wave_vector = np.array([2*np.pi/550e-9, 0, 0])  # 550nm波长
     angular_frequency = dispersion_relation(wave_vector)
-    
+
     wave = WaveFunction(amplitude, wave_vector, angular_frequency)
-    
+
     position = np.array([1e-6, 0, 0])
     time = 0.0
     electric_field = wave.evaluate(position, time)
     magnetic_field = np.array([0, electric_field[0]/c, 0])
-    
+
     energy = energy_density(electric_field, magnetic_field)
     poynting = poynting_vector(electric_field, magnetic_field)
-    
+
     return {
         "electric_field": electric_field,
         "magnetic_field": magnetic_field,
@@ -630,6 +892,66 @@ def wave_example():
 ```
 
 ### 2.2 干涉现象 / Interference
+
+#### 干涉现象关系图 / Relationship Diagram of Interference
+
+```mermaid
+graph TB
+    A[干涉现象] --> B[双波干涉]
+    A --> C[多波干涉]
+    A --> D[薄膜干涉]
+
+    B --> E[相位差 Δφ]
+    B --> F[路径差 ΔL]
+    E --> G[Δφ = 2πΔL/λ]
+    F --> G
+
+    G --> H[干涉强度]
+    H --> I[I = I₁ + I₂ + 2√I₁I₂cosΔφ]
+
+    I --> J[干涉极大]
+    I --> K[干涉极小]
+    J --> L[Δφ = 2πn]
+    K --> M[Δφ = π(2n+1)]
+
+    A --> N[相干性]
+    N --> O[时间相干性]
+    N --> P[空间相干性]
+
+    style A fill:#e1f5ff
+    style I fill:#e8f5e9
+    style J fill:#fff4e1
+    style K fill:#fff4e1
+    style N fill:#fff4e1
+```
+
+#### 干涉计算流程图 / Flowchart of Interference Calculation
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 两列波<br/>E₁, E₂, 路径差 ΔL]
+    Input --> CalcPhaseDiff[计算相位差<br/>Δφ = 2πΔL/λ]
+    CalcPhaseDiff --> CalcIntensity1[计算单波强度<br/>I₁, I₂]
+    CalcIntensity1 --> CalcInterference[计算干涉强度<br/>I = I₁ + I₂ + 2√I₁I₂cosΔφ]
+    CalcInterference --> CheckCoherence{检查相干性?}
+    CheckCoherence -->|否| NoInterference[无干涉: I = I₁ + I₂]
+    CheckCoherence -->|是| CheckMax{干涉极大?<br/>Δφ = 2πn?}
+    CheckMax -->|是| MaxIntensity[极大强度: I = I₁ + I₂ + 2√I₁I₂]
+    CheckMax -->|否| CheckMin{干涉极小?<br/>Δφ = π(2n+1)?}
+    CheckMin -->|是| MinIntensity[极小强度: I = I₁ + I₂ - 2√I₁I₂]
+    CheckMin -->|否| Intermediate[中间强度]
+    MaxIntensity --> Output[输出: 干涉强度 I]
+    MinIntensity --> Output
+    Intermediate --> Output
+    NoInterference --> Output
+    Output --> End([结束])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Output fill:#e8f5e9
+    style MaxIntensity fill:#fff4e1
+    style MinIntensity fill:#ffebee
+```
 
 #### 3形式化定义 / Formal Definition
 
@@ -676,7 +998,7 @@ $$\Delta\phi = \pi(2n+1), \quad n \in \mathbb{Z}$$
 import numpy as np
 from typing import List, Tuple
 
-def interference_intensity(intensity1: float, intensity2: float, 
+def interference_intensity(intensity1: float, intensity2: float,
                           phase_difference: float) -> float:
     """干涉强度计算"""
     return intensity1 + intensity2 + 2 * np.sqrt(intensity1 * intensity2) * np.cos(phase_difference)
@@ -702,7 +1024,7 @@ def interference_pattern(waves: List[np.ndarray], positions: np.ndarray) -> np.n
     total_field = np.zeros_like(positions, dtype=complex)
     for wave in waves:
         total_field += wave
-    
+
     return np.abs(total_field)**2
 
 def interference_example():
@@ -711,18 +1033,18 @@ def interference_example():
     wavelength = 550e-9
     amplitude1 = 1.0
     amplitude2 = 1.0
-    
+
     # 路径差
     path_difference = wavelength / 4
     phase_difference = phase_difference_from_path_difference(path_difference, wavelength)
-    
+
     # 干涉强度
     intensity = interference_intensity(amplitude1**2, amplitude2**2, phase_difference)
-    
+
     # 检查干涉条件
     is_maxima = interference_maxima_condition(phase_difference)
     is_minima = interference_minima_condition(phase_difference)
-    
+
     return {
         "phase_difference": phase_difference,
         "interference_intensity": intensity,
@@ -875,7 +1197,7 @@ from scipy.constants import h, c, k
 
 class Photon:
     """光子类"""
-    
+
     def __init__(self, frequency: float, momentum: np.ndarray = None):
         self.frequency = frequency
         self.energy = h * frequency
@@ -886,7 +1208,7 @@ class Photon:
         else:
             self.momentum = momentum
         self.spin = 1
-    
+
     def energy_momentum_relation(self) -> bool:
         """能量-动量关系验证"""
         return np.abs(self.energy - c * np.linalg.norm(self.momentum)) < 1e-15
@@ -912,11 +1234,11 @@ def photon_example():
     """光子示例"""
     frequency = c / 550e-9
     photon = Photon(frequency)
-    
+
     energy_momentum_valid = photon.energy_momentum_relation()
     temperature = 300
     occupation = photon_statistics(frequency, temperature)
-    
+
     return {
         "energy": photon.energy,
         "momentum": photon.momentum,
@@ -931,6 +1253,22 @@ def photon_example():
 - **1.2.0** (2025-08-26): 增补衍射/傅里叶光学与非线性光学（NLSE分步傅里叶、Kerr相移），完善成像与ABCD算法
 - **1.1.0** (2025-08-25): 增强成像理论与ABCD矩阵（薄透镜方程、放大率、成像条件、链式复合）
 - **1.0.0** (2025-08-25): 初始版本，包含几何光学、波动光学、量子光学基础内容
+
+## 相关模型 / Related Models
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../01-经典力学模型/README.md) - 几何光学与经典力学的类比
+- [量子力学模型](../02-量子力学模型/README.md) - 量子光学，光子的量子性质
+- [电磁学模型](../05-电磁学模型/README.md) - 光的电磁理论，麦克斯韦方程组
+- [声学模型](../07-声学模型/README.md) - 波动光学与声学的类比
+- [热力学模型](../04-热力学模型/README.md) - 黑体辐射，光的热力学性质
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 光学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 光学的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 光学作为科学模型的理论基础
 
 ## 下一步计划 / Next Steps
 

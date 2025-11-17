@@ -4,6 +4,8 @@
 
 - [5.4 神经科学模型 / Neuroscience Models](#54-神经科学模型--neuroscience-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [神经科学模型框架图 / Framework Diagram of Neuroscience Models](#神经科学模型框架图--framework-diagram-of-neuroscience-models)
+  - [神经元动作电位生成流程图 / Flowchart of Action Potential Generation](#神经元动作电位生成流程图--flowchart-of-action-potential-generation)
   - [5.4.1 神经元模型 / Neuron Models](#541-神经元模型--neuron-models)
     - [Hodgkin-Huxley模型 / Hodgkin-Huxley Model](#hodgkin-huxley模型--hodgkin-huxley-model)
     - [Integrate-and-Fire模型 / Integrate-and-Fire Model](#integrate-and-fire模型--integrate-and-fire-model)
@@ -35,9 +37,91 @@
       - [脑机接口 / Brain-Computer Interface](#脑机接口--brain-computer-interface)
       - [神经康复 / Neural Rehabilitation](#神经康复--neural-rehabilitation)
       - [神经药物开发 / Neuropharmaceutical Development](#神经药物开发--neuropharmaceutical-development)
+  - [5.4.8 算法实现 / Algorithm Implementation](#548-算法实现--algorithm-implementation)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 神经科学模型框架图 / Framework Diagram of Neuroscience Models
+
+```mermaid
+graph TB
+    A[神经科学模型] --> B[神经元模型]
+    A --> C[突触可塑性]
+    A --> D[神经网络]
+    A --> E[学习算法]
+    A --> F[认知模型]
+    A --> G[脑区功能]
+
+    B --> H[Hodgkin-Huxley]
+    B --> I[Integrate-and-Fire]
+    B --> J[Izhikevich]
+
+    C --> K[Hebbian学习]
+    C --> L[STDP]
+    C --> M[突触强度调节]
+
+    D --> N[前馈网络]
+    D --> O[循环网络]
+    D --> P[脉冲神经网络]
+
+    E --> Q[反向传播]
+    E --> R[强化学习]
+    E --> S[无监督学习]
+
+    F --> T[工作记忆]
+    F --> U[注意力机制]
+    F --> V[决策模型]
+
+    G --> W[视觉皮层]
+    G --> X[运动皮层]
+    G --> Y[海马体]
+
+    H --> Z[神经科学理论]
+    K --> Z
+    N --> Z
+    T --> Z
+
+    Z --> AA[神经应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style Z fill:#e8f5e9
+    style AA fill:#e8f5e9
+```
+
+## 神经元动作电位生成流程图 / Flowchart of Action Potential Generation
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Rest[静息状态<br/>V = V_rest]
+    Rest --> Stimulus{刺激<br/>I_ext > 0?}
+    Stimulus -->|否| Rest
+    Stimulus -->|是| Depolarize[去极化<br/>V增加]
+    Depolarize --> Threshold{V >= V_threshold?}
+    Threshold -->|否| Rest
+    Threshold -->|是| Spike[动作电位<br/>V快速上升]
+    Spike --> Repolarize[复极化<br/>V下降]
+    Repolarize --> Refractory[不应期<br/>t < t_ref]
+    Refractory --> CheckRefractory{t >= t_ref?}
+    CheckRefractory -->|否| Refractory
+    CheckRefractory -->|是| Rest
+    Rest --> End([结束])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Spike fill:#e8f5e9
+    style Rest fill:#fff4e1
+```
 
 ## 5.4.1 神经元模型 / Neuron Models
 
@@ -281,30 +365,30 @@ impl Neuron {
             current_time: 0.0,
         }
     }
-    
+
     pub fn integrate_and_fire(&mut self, input_current: f64, dt: f64) -> bool {
         self.current_time += dt;
-        
+
         // 检查不应期
         if self.current_time - self.last_spike_time < self.refractory_period {
             self.membrane_potential = self.reset_potential;
             return false;
         }
-        
+
         // 膜电位更新
         let dv_dt = (-(self.membrane_potential - self.resting_potential) + input_current) / self.membrane_time_constant;
         self.membrane_potential += dv_dt * dt;
-        
+
         // 检查是否发放
         if self.membrane_potential >= self.threshold {
             self.membrane_potential = self.reset_potential;
             self.last_spike_time = self.current_time;
             return true;
         }
-        
+
         false
     }
-    
+
     pub fn hodgkin_huxley(&mut self, input_current: f64, dt: f64) -> bool {
         // 简化的Hodgkin-Huxley模型
         let g_na = 120.0;
@@ -313,9 +397,9 @@ impl Neuron {
         let e_na = 55.0;
         let e_k = -77.0;
         let e_l = -54.4;
-        
+
         let v = self.membrane_potential;
-        
+
         // 门控变量
         let alpha_m = 0.1 * (v + 40.0) / (1.0 - (-(v + 40.0) / 10.0).exp());
         let beta_m = 4.0 * (-(v + 65.0) / 18.0).exp();
@@ -323,27 +407,27 @@ impl Neuron {
         let beta_h = 1.0 / (1.0 + (-(v + 35.0) / 10.0).exp());
         let alpha_n = 0.01 * (v + 55.0) / (1.0 - (-(v + 55.0) / 10.0).exp());
         let beta_n = 0.125 * (-(v + 65.0) / 80.0).exp();
-        
+
         // 简化的门控变量更新
         let m = alpha_m / (alpha_m + beta_m);
         let h = alpha_h / (alpha_h + beta_h);
         let n = alpha_n / (alpha_n + beta_n);
-        
+
         // 离子电流
         let i_na = g_na * m.powi(3) * h * (v - e_na);
         let i_k = g_k * n.powi(4) * (v - e_k);
         let i_l = g_l * (v - e_l);
-        
+
         // 膜电位更新
         let dv_dt = (input_current - i_na - i_k - i_l) / 1.0; // 膜电容设为1
         self.membrane_potential += dv_dt * dt;
-        
+
         // 检查发放
         if self.membrane_potential >= self.threshold {
             self.membrane_potential = self.reset_potential;
             return true;
         }
-        
+
         false
     }
 }
@@ -367,11 +451,11 @@ impl Synapse {
             post_neuron: post,
         }
     }
-    
+
     pub fn add_spike(&mut self, time: f64) {
         self.spike_times.push(time);
     }
-    
+
     pub fn get_current(&self, current_time: f64) -> f64 {
         let mut current = 0.0;
         for &spike_time in &self.spike_times {
@@ -382,20 +466,20 @@ impl Synapse {
         }
         current
     }
-    
+
     pub fn stdp_update(&mut self, pre_spike_time: f64, post_spike_time: f64) {
         let delta_t = post_spike_time - pre_spike_time;
         let a_plus = 0.1;
         let a_minus = -0.1;
         let tau_plus = 20.0;
         let tau_minus = 20.0;
-        
+
         if delta_t > 0.0 {
             self.weight += a_plus * (-delta_t / tau_plus).exp();
         } else {
             self.weight += a_minus * (delta_t / tau_minus).exp();
         }
-        
+
         // 限制权重范围
         self.weight = self.weight.max(-5.0).min(5.0);
     }
@@ -412,7 +496,7 @@ pub struct NeuralNetwork {
 impl NeuralNetwork {
     pub fn new(num_neurons: usize) -> Self {
         let neurons = (0..num_neurons).map(|_| Neuron::new()).collect();
-        
+
         Self {
             neurons,
             synapses: Vec::new(),
@@ -420,29 +504,29 @@ impl NeuralNetwork {
             dt: 0.1,
         }
     }
-    
+
     pub fn add_synapse(&mut self, pre: usize, post: usize, weight: f64) {
         self.synapses.push(Synapse::new(pre, post, weight));
     }
-    
+
     pub fn simulate_step(&mut self) -> Vec<bool> {
         let mut spikes = vec![false; self.neurons.len()];
-        
+
         // 更新神经元
         for i in 0..self.neurons.len() {
             let mut input_current = 0.0;
-            
+
             // 计算突触输入
             for synapse in &self.synapses {
                 if synapse.post_neuron == i {
                     input_current += synapse.get_current(self.time);
                 }
             }
-            
+
             // 更新神经元
             let spiked = self.neurons[i].integrate_and_fire(input_current, self.dt);
             spikes[i] = spiked;
-            
+
             // 更新突触
             if spiked {
                 for synapse in &mut self.synapses {
@@ -452,7 +536,7 @@ impl NeuralNetwork {
                 }
             }
         }
-        
+
         // STDP学习
         for i in 0..self.neurons.len() {
             for j in 0..self.neurons.len() {
@@ -465,34 +549,34 @@ impl NeuralNetwork {
                 }
             }
         }
-        
+
         self.time += self.dt;
         spikes
     }
-    
+
     pub fn simulate(&mut self, duration: f64) -> Vec<Vec<bool>> {
         let num_steps = (duration / self.dt) as usize;
         let mut spike_history = Vec::new();
-        
+
         for _ in 0..num_steps {
             let spikes = self.simulate_step();
             spike_history.push(spikes);
         }
-        
+
         spike_history
     }
-    
+
     pub fn calculate_firing_rate(&self, spike_history: &Vec<Vec<bool>>) -> Vec<f64> {
         let num_neurons = self.neurons.len();
         let mut firing_rates = vec![0.0; num_neurons];
-        
+
         for neuron_id in 0..num_neurons {
             let spike_count = spike_history.iter()
                 .filter(|&step| step[neuron_id])
                 .count();
             firing_rates[neuron_id] = spike_count as f64 / spike_history.len() as f64 / self.dt;
         }
-        
+
         firing_rates
     }
 }
@@ -512,7 +596,7 @@ impl WorkingMemory {
         let recurrent_weights = vec![vec![0.1; num_neurons]; num_neurons];
         let input_weights = vec![1.0; num_neurons];
         let output_weights = vec![1.0; num_neurons];
-        
+
         Self {
             neurons,
             recurrent_weights,
@@ -521,34 +605,34 @@ impl WorkingMemory {
             time_constant: 100.0,
         }
     }
-    
+
     pub fn update(&mut self, input: f64, dt: f64) -> f64 {
         let mut new_activities = Vec::new();
-        
+
         for i in 0..self.neurons.len() {
             let mut total_input = input * self.input_weights[i];
-            
+
             // 循环连接
             for j in 0..self.neurons.len() {
                 total_input += self.recurrent_weights[i][j] * self.neurons[j].membrane_potential;
             }
-            
+
             // 更新神经元
             let dv_dt = (-self.neurons[i].membrane_potential + total_input) / self.time_constant;
             self.neurons[i].membrane_potential += dv_dt * dt;
-            
+
             new_activities.push(self.neurons[i].membrane_potential);
         }
-        
+
         // 计算输出
         let output = new_activities.iter()
             .zip(&self.output_weights)
             .map(|(a, w)| a * w)
             .sum::<f64>();
-        
+
         output
     }
-    
+
     pub fn store_pattern(&mut self, pattern: Vec<f64>) {
         // 简化的模式存储
         for i in 0..self.neurons.len() {
@@ -564,7 +648,7 @@ fn main() {
     // 单神经元模拟
     let mut neuron = Neuron::new();
     let mut spike_times = Vec::new();
-    
+
     for step in 0..1000 {
         let input_current = if step < 100 { 10.0 } else { 0.0 };
         let spiked = neuron.integrate_and_fire(input_current, 0.1);
@@ -572,34 +656,34 @@ fn main() {
             spike_times.push(step as f64 * 0.1);
         }
     }
-    
+
     println!("Spike times: {:?}", spike_times);
-    
+
     // 神经网络模拟
     let mut network = NeuralNetwork::new(10);
-    
+
     // 添加突触连接
     for i in 0..9 {
         network.add_synapse(i, i + 1, 1.0);
     }
     network.add_synapse(9, 0, 1.0); // 循环连接
-    
+
     let spike_history = network.simulate(100.0);
     let firing_rates = network.calculate_firing_rate(&spike_history);
-    
+
     println!("Firing rates: {:?}", firing_rates);
-    
+
     // 工作记忆模拟
     let mut wm = WorkingMemory::new(5);
     let pattern = vec![1.0, 0.5, 0.0, 0.5, 1.0];
     wm.store_pattern(pattern);
-    
+
     let mut output_history = Vec::new();
     for step in 0..1000 {
         let output = wm.update(0.0, 0.1);
         output_history.push(output);
     }
-    
+
     println!("Working memory output: {:?}", output_history[output_history.len()-1]);
 }
 ```
@@ -639,7 +723,7 @@ newNeuron = Neuron {
 }
 
 integrateAndFire :: Neuron -> Double -> Double -> (Neuron, Bool)
-integrateAndFire neuron inputCurrent dt = 
+integrateAndFire neuron inputCurrent dt =
     let newTime = currentTime neuron + dt
         newNeuron = neuron { currentTime = newTime }
     in if newTime - lastSpikeTime newNeuron < refractoryPeriod newNeuron
@@ -651,7 +735,7 @@ integrateAndFire neuron inputCurrent dt =
                else (newNeuron { membranePotential = newPotential }, False)
 
 hodgkinHuxley :: Neuron -> Double -> Double -> (Neuron, Bool)
-hodgkinHuxley neuron inputCurrent dt = 
+hodgkinHuxley neuron inputCurrent dt =
     let v = membranePotential neuron
         g_na = 120.0
         g_k = 36.0
@@ -659,7 +743,7 @@ hodgkinHuxley neuron inputCurrent dt =
         e_na = 55.0
         e_k = -77.0
         e_l = -54.4
-        
+
         -- 门控变量
         alpha_m = 0.1 * (v + 40.0) / (1.0 - exp (-(v + 40.0) / 10.0))
         beta_m = 4.0 * exp (-(v + 65.0) / 18.0)
@@ -667,16 +751,16 @@ hodgkinHuxley neuron inputCurrent dt =
         beta_h = 1.0 / (1.0 + exp (-(v + 35.0) / 10.0))
         alpha_n = 0.01 * (v + 55.0) / (1.0 - exp (-(v + 55.0) / 10.0))
         beta_n = 0.125 * exp (-(v + 65.0) / 80.0)
-        
+
         m = alpha_m / (alpha_m + beta_m)
         h = alpha_h / (alpha_h + beta_h)
         n = alpha_n / (alpha_n + beta_n)
-        
+
         -- 离子电流
         i_na = g_na * m^3 * h * (v - e_na)
         i_k = g_k * n^4 * (v - e_k)
         i_l = g_l * (v - e_l)
-        
+
         -- 膜电位更新
         dv_dt = (inputCurrent - i_na - i_k - i_l) / 1.0
         newPotential = v + dv_dt * dt
@@ -706,14 +790,14 @@ addSpike :: Synapse -> Double -> Synapse
 addSpike synapse time = synapse { spikeTimes = time : spikeTimes synapse }
 
 getCurrent :: Synapse -> Double -> Double
-getCurrent synapse currentTime = 
-    sum [weight synapse * (tDiff / 5.0) * exp (-tDiff / 5.0) | 
+getCurrent synapse currentTime =
+    sum [weight synapse * (tDiff / 5.0) * exp (-tDiff / 5.0) |
          spikeTime <- spikeTimes synapse,
          let tDiff = currentTime - spikeTime - delay synapse,
          tDiff > 0.0]
 
 stdpUpdate :: Synapse -> Double -> Double -> Synapse
-stdpUpdate synapse preSpikeTime postSpikeTime = 
+stdpUpdate synapse preSpikeTime postSpikeTime =
     let deltaT = postSpikeTime - preSpikeTime
         a_plus = 0.1
         a_minus = -0.1
@@ -747,32 +831,32 @@ addSynapse pre post weight network = network {
 }
 
 simulateStep :: NeuralNetwork -> (NeuralNetwork, [Bool])
-simulateStep network = 
-    let (newNeurons, spikes) = unzip $ zipWith (\i neuron -> 
-        let inputCurrent = sum [getCurrent synapse (time network) | 
-                               synapse <- synapses network, 
+simulateStep network =
+    let (newNeurons, spikes) = unzip $ zipWith (\i neuron ->
+        let inputCurrent = sum [getCurrent synapse (time network) |
+                               synapse <- synapses network,
                                postNeuron synapse == i]
             (newNeuron, spiked) = integrateAndFire neuron inputCurrent (dt network)
         in (newNeuron, spiked)) [0..] (neurons network)
-        
-        newSynapses = map (\synapse -> 
+
+        newSynapses = map (\synapse ->
             if any (\i -> spikes !! i) [preNeuron synapse, postNeuron synapse]
             then addSpike synapse (time network)
             else synapse) (synapses network)
-        
+
         newTime = time network + dt network
     in (network { neurons = newNeurons, synapses = newSynapses, time = newTime }, spikes)
 
 simulate :: NeuralNetwork -> Int -> [[Bool]]
-simulate network numSteps = 
+simulate network numSteps =
     let go 0 net = []
-        go steps net = 
+        go steps net =
             let (newNet, spikes) = simulateStep net
             in spikes : go (steps - 1) newNet
     in go numSteps network
 
 calculateFiringRate :: [[Bool]] -> [Double]
-calculateFiringRate spikeHistory = 
+calculateFiringRate spikeHistory =
     let numNeurons = length (head spikeHistory)
         numSteps = length spikeHistory
     in [fromIntegral (length (filter (!! i) spikeHistory)) / fromIntegral numSteps | i <- [0..numNeurons-1]]
@@ -796,26 +880,26 @@ newWorkingMemory numNeurons = WorkingMemory {
 }
 
 updateWorkingMemory :: WorkingMemory -> Double -> Double -> (WorkingMemory, Double)
-updateWorkingMemory wm input dt = 
-    let newActivities = zipWith (\i neuron -> 
-        let totalInput = input * (inputWeights wm !! i) + 
-                        sum [recurrentWeights wm !! i !! j * membranePotential (wmNeurons wm !! j) | 
+updateWorkingMemory wm input dt =
+    let newActivities = zipWith (\i neuron ->
+        let totalInput = input * (inputWeights wm !! i) +
+                        sum [recurrentWeights wm !! i !! j * membranePotential (wmNeurons wm !! j) |
                              j <- [0..length (wmNeurons wm) - 1]]
             dv_dt = (-membranePotential neuron + totalInput) / timeConstant wm
             newPotential = membranePotential neuron + dv_dt * dt
         in newPotential) [0..] (wmNeurons wm)
-        
-        newNeurons = zipWith (\neuron newActivity -> 
+
+        newNeurons = zipWith (\neuron newActivity ->
             neuron { membranePotential = newActivity }) (wmNeurons wm) newActivities
-        
-        output = sum [newActivities !! i * (outputWeights wm !! i) | 
+
+        output = sum [newActivities !! i * (outputWeights wm !! i) |
                      i <- [0..length newActivities - 1]]
     in (wm { wmNeurons = newNeurons }, output)
 
 storePattern :: WorkingMemory -> [Double] -> WorkingMemory
-storePattern wm pattern = 
-    let newNeurons = zipWith (\neuron patternValue -> 
-        if patternValue /= 0.0 
+storePattern wm pattern =
+    let newNeurons = zipWith (\neuron patternValue ->
+        if patternValue /= 0.0
         then neuron { membranePotential = patternValue }
         else neuron) (wmNeurons wm) pattern
     in wm { wmNeurons = newNeurons }
@@ -826,38 +910,38 @@ example = do
     -- 单神经元模拟
     let neuron = newNeuron
         simulateNeuron 0 neuron = []
-        simulateNeuron steps neuron = 
+        simulateNeuron steps neuron =
             let inputCurrent = if steps < 100 then 10.0 else 0.0
                 (newNeuron, spiked) = integrateAndFire neuron inputCurrent 0.1
-            in if spiked 
+            in if spiked
                then (currentTime newNeuron) : simulateNeuron (steps - 1) newNeuron
                else simulateNeuron (steps - 1) newNeuron
-    
+
     let spikeTimes = simulateNeuron 1000 neuron
     putStrLn $ "Spike times: " ++ show (take 5 spikeTimes)
-    
+
     -- 神经网络模拟
-    let network = addSynapse 9 0 1.0 $ 
-                  foldl (\net i -> addSynapse i (i + 1) 1.0 net) 
+    let network = addSynapse 9 0 1.0 $
+                  foldl (\net i -> addSynapse i (i + 1) 1.0 net)
                         (newNeuralNetwork 10) [0..8]
-        
+
         spikeHistory = simulate network 1000
         firingRates = calculateFiringRate spikeHistory
-    
+
     putStrLn $ "Firing rates: " ++ show firingRates
-    
+
     -- 工作记忆模拟
     let wm = newWorkingMemory 5
         pattern = [1.0, 0.5, 0.0, 0.5, 1.0]
         wmWithPattern = storePattern wm pattern
-        
+
         simulateWM 0 wm = []
-        simulateWM steps wm = 
+        simulateWM steps wm =
             let (newWM, output) = updateWorkingMemory wm 0.0 0.1
             in output : simulateWM (steps - 1) newWM
-        
+
         outputHistory = simulateWM 1000 wmWithPattern
-    
+
     putStrLn $ "Working memory output: " ++ show (last outputHistory)
 ```
 
@@ -889,8 +973,8 @@ example = do
 import numpy as np
 from typing import Tuple
 
-def lif_simulate(T: float = 1.0, dt: float = 1e-4, I: float = 1.5, 
-                 V_rest: float = -65.0, V_th: float = -50.0, V_reset: float = -65.0, 
+def lif_simulate(T: float = 1.0, dt: float = 1e-4, I: float = 1.5,
+                 V_rest: float = -65.0, V_th: float = -50.0, V_reset: float = -65.0,
                  tau_m: float = 0.02, t_ref: float = 0.002) -> Tuple[np.ndarray, np.ndarray]:
     n = int(T / dt)
     V = np.ones(n) * V_rest
@@ -915,7 +999,7 @@ def rate_model_step(r: float, I: float, tau: float, dt: float, phi=lambda x: np.
     dr = (-r + phi(I)) / tau
     return max(0.0, r + dt * dr)
 
-def stdp_update(w: float, delta_t: float, A_plus: float = 0.01, A_minus: float = 0.012, 
+def stdp_update(w: float, delta_t: float, A_plus: float = 0.01, A_minus: float = 0.012,
                 tau_plus: float = 0.02, tau_minus: float = 0.02, wmin: float = 0.0, wmax: float = 1.0) -> float:
     if delta_t > 0:
         w += A_plus * np.exp(-delta_t / tau_plus)
@@ -938,19 +1022,19 @@ def neuroscience_verification():
     # LIF产生脉冲
     t, V, spikes = lif_simulate(T=0.5, dt=1e-4, I=2.0)
     assert spikes.sum() > 0 and np.isfinite(V).all()
-    
+
     # 发放率模型单步稳定
     r = 0.0
     for _ in range(1000):
         r = rate_model_step(r, I=1.0, tau=0.05, dt=1e-3)
     assert 0.0 <= r <= 1e3
-    
+
     # STDP权重更新方向正确
     w = 0.5
     w_pot = stdp_update(w, delta_t=0.01)
     w_dep = stdp_update(w, delta_t=-0.01)
     assert w_pot > w and w_dep < w
-    
+
     # Wilson-Cowan网络稳定迭代
     E, I = 0.1, 0.1
     params = {'tau_E': 0.02, 'tau_I': 0.01, 'w_EE': 10.0, 'w_EI': 12.0, 'w_IE': 10.0, 'w_II': 0.0, 'I_E': 0.5, 'I_I': 0.0}
@@ -962,6 +1046,35 @@ def neuroscience_verification():
 if __name__ == "__main__":
     neuroscience_verification()
 ```
+
+## 相关模型 / Related Models
+
+### 生命科学模型 / Life Science Models
+
+- [分子生物学模型](../01-分子生物学模型/README.md) - 神经分子的信号转导
+- [生态学模型](../02-生态学模型/README.md) - 神经生态学
+- [进化论模型](../03-进化论模型/README.md) - 神经系统的进化
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 神经网络代数和群论
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 神经网络拓扑结构
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 神经元动力学
+- [电磁学模型](../../02-物理科学模型/05-电磁学模型/README.md) - 神经电信号传播
+
+### 计算机科学模型 / Computer Science Models
+
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 人工神经网络和深度学习
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 神经网络训练算法
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 神经科学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 神经科学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 神经科学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

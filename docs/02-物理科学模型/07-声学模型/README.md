@@ -1,15 +1,18 @@
 # 声学模型 / Acoustic Models
 
-**版本**: 1.0.0  
-**最后更新**: 2025-08-25  
+**版本**: 1.0.0
+**最后更新**: 2025-08-25
 **状态**: 开发中
 
 ## 目录 / Table of Contents
 
 - [声学模型 / Acoustic Models](#声学模型--acoustic-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [声学模型框架图 / Framework Diagram of Acoustic Models](#声学模型框架图--framework-diagram-of-acoustic-models)
+  - [声学波动方程关系图 / Relationship Diagram of Acoustic Wave Equation](#声学波动方程关系图--relationship-diagram-of-acoustic-wave-equation)
   - [1. 声波传播 / Acoustic Wave Propagation](#1-声波传播--acoustic-wave-propagation)
     - [1.1 声学波动方程 / Acoustic Wave Equation](#11-声学波动方程--acoustic-wave-equation)
+      - [声学波动方程求解流程图 / Flowchart of Acoustic Wave Equation Solution](#声学波动方程求解流程图--flowchart-of-acoustic-wave-equation-solution)
       - [形式化定义 / Formal Definition](#形式化定义--formal-definition)
       - [公理化定义 / Axiomatic Definitions](#公理化定义--axiomatic-definitions)
       - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems)
@@ -25,23 +28,121 @@
       - [1.3.3 形式化定理 / Formal Theorems](#133-形式化定理--formal-theorems)
       - [1.3.4 算法实现 / Algorithm Implementation](#134-算法实现--algorithm-implementation)
   - [2. 声学阻抗 / Acoustic Impedance](#2-声学阻抗--acoustic-impedance)
+    - [声学阻抗关系图 / Relationship Diagram of Acoustic Impedance](#声学阻抗关系图--relationship-diagram-of-acoustic-impedance)
     - [2.1 特性阻抗 / Characteristic Impedance](#21-特性阻抗--characteristic-impedance)
       - [2.1.1 形式化定义 / Formal Definition](#211-形式化定义--formal-definition)
       - [2.1.2 公理化定义 / Axiomatic Definitions](#212-公理化定义--axiomatic-definitions)
       - [2.1.3 形式化定理 / Formal Theorems](#213-形式化定理--formal-theorems)
       - [2.1.4 算法实现 / Algorithm Implementation](#214-算法实现--algorithm-implementation)
   - [3. 声学共振 / Acoustic Resonance](#3-声学共振--acoustic-resonance)
+    - [声学共振关系图 / Relationship Diagram of Acoustic Resonance](#声学共振关系图--relationship-diagram-of-acoustic-resonance)
+    - [共振频率计算流程图 / Flowchart of Resonance Frequency Calculation](#共振频率计算流程图--flowchart-of-resonance-frequency-calculation)
     - [3.1 共振频率 / Resonance Frequency](#31-共振频率--resonance-frequency)
       - [3.1.1 形式化定义 / Formal Definition](#311-形式化定义--formal-definition)
       - [3.1.2 公理化定义 / Axiomatic Definitions](#312-公理化定义--axiomatic-definitions)
       - [3.1.3 形式化定理 / Formal Theorems](#313-形式化定理--formal-theorems)
       - [3.1.3 算法实现 / Algorithm Implementation](#313-算法实现--algorithm-implementation)
   - [版本历史 / Version History](#版本历史--version-history)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [下一步计划 / Next Steps](#下一步计划--next-steps)
+
+## 声学模型框架图 / Framework Diagram of Acoustic Models
+
+```mermaid
+graph TB
+    A[声学模型] --> B[声波传播]
+    A --> C[声学阻抗]
+    A --> D[声学共振]
+
+    B --> E[声学波动方程]
+    B --> F[平面声波]
+    B --> G[球面声波]
+
+    C --> H[特性阻抗]
+    C --> I[阻抗匹配]
+    C --> J[反射与透射]
+
+    D --> K[共振频率]
+    D --> L[共振腔]
+    D --> M[共振模式]
+
+    E --> N[声学理论]
+    H --> N
+    K --> N
+
+    N --> O[声学应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style N fill:#e8f5e9
+    style O fill:#e8f5e9
+```
+
+## 声学波动方程关系图 / Relationship Diagram of Acoustic Wave Equation
+
+```mermaid
+graph LR
+    A[声学波动方程] --> B[连续性方程]
+    A --> C[欧拉方程]
+    A --> D[状态方程]
+
+    B --> E[质量守恒]
+    C --> F[动量守恒]
+    D --> G[物态关系]
+
+    E --> H[声压 p]
+    F --> H
+    G --> H
+
+    H --> I[波动方程<br/>∇²p - 1/c² ∂²p/∂t² = 0]
+
+    I --> J[平面波解]
+    I --> K[球面波解]
+    I --> L[一般解]
+
+    style A fill:#e1f5ff
+    style I fill:#e8f5e9
+    style J fill:#fff4e1
+    style K fill:#fff4e1
+    style L fill:#fff4e1
+```
 
 ## 1. 声波传播 / Acoustic Wave Propagation
 
 ### 1.1 声学波动方程 / Acoustic Wave Equation
+
+#### 声学波动方程求解流程图 / Flowchart of Acoustic Wave Equation Solution
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 初始条件<br/>p₀, ρ, c, 边界条件]
+    Input --> SetupWaveEq[设置波动方程<br/>∇²p - 1/c² ∂²p/∂t² = 0]
+    SetupWaveEq --> CheckLinear{检查线性化条件<br/>|v| << c?}
+    CheckLinear -->|否| Error[错误: 非线性效应]
+    CheckLinear -->|是| CalcSoundSpeed[计算声速<br/>c = √K/ρ]
+    CalcSoundSpeed --> SetupBC[设置边界条件]
+    SetupBC --> ChooseMethod{选择求解方法}
+    ChooseMethod -->|解析| Analytical[解析解<br/>p = ∫P₀e^(ik·r - iωt)d³k]
+    ChooseMethod -->|数值| Numerical[数值解<br/>有限差分/有限元]
+    Analytical --> CalcPressure[计算声压 p]
+    Numerical --> CalcPressure
+    CalcPressure --> CalcVelocity[计算质点速度 v]
+    CalcVelocity --> CalcIntensity[计算声强 I]
+    CalcIntensity --> VerifyEnergy{验证能量守恒?}
+    VerifyEnergy -->|否| Error
+    VerifyEnergy -->|是| Output[输出: p, v, I, 能量]
+    Output --> End([结束])
+    Error --> End
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Output fill:#e8f5e9
+    style Error fill:#ffebee
+```
 
 #### 形式化定义 / Formal Definition
 
@@ -92,8 +193,8 @@ from scipy.constants import pi
 
 class AcousticWave:
     """声波类"""
-    
-    def __init__(self, amplitude: float, frequency: float, 
+
+    def __init__(self, amplitude: float, frequency: float,
                  wave_vector: np.ndarray, phase: float = 0.0):
         self.amplitude = amplitude
         self.frequency = frequency
@@ -101,20 +202,20 @@ class AcousticWave:
         self.wave_vector = wave_vector
         self.phase = phase
         self.wavelength = 2 * pi / np.linalg.norm(wave_vector)
-    
+
     def pressure_field(self, position: np.ndarray, time: float) -> float:
         """计算声压场"""
         phase_factor = np.dot(self.wave_vector, position) - self.angular_frequency * time + self.phase
         return self.amplitude * np.cos(phase_factor)
 
-def acoustic_wave_equation_operator(pressure: Callable, position: np.ndarray, 
+def acoustic_wave_equation_operator(pressure: Callable, position: np.ndarray,
                                   time: float, sound_speed: float) -> float:
     """声学波动方程算子"""
     # 简化实现：检查平面波解
     return 0.0
 
 def plane_acoustic_wave(amplitude: float, wave_vector: np.ndarray,
-                       angular_frequency: float, position: np.ndarray, 
+                       angular_frequency: float, position: np.ndarray,
                        time: float) -> float:
     """平面声波解"""
     phase = np.dot(wave_vector, position) - angular_frequency * time
@@ -128,7 +229,7 @@ def linearization_condition(particle_velocity: float, sound_speed: float) -> boo
     """线性化条件验证"""
     return np.abs(particle_velocity) < 0.1 * sound_speed
 
-def acoustic_wave_verification(wave: AcousticWave, position: np.ndarray, 
+def acoustic_wave_verification(wave: AcousticWave, position: np.ndarray,
                              time: float, sound_speed: float) -> bool:
     """声波验证"""
     result = acoustic_wave_equation_operator(wave.pressure_field, position, time, sound_speed)
@@ -140,18 +241,18 @@ def acoustic_wave_example():
     amplitude = 1.0  # Pa
     frequency = 1000  # Hz
     wave_vector = np.array([2*pi*frequency/343, 0, 0])  # 空气中声速343 m/s
-    
+
     wave = AcousticWave(amplitude, frequency, wave_vector)
-    
+
     # 计算某点的声压
     position = np.array([1.0, 0, 0])
     time = 0.0
     pressure = wave.pressure_field(position, time)
-    
+
     # 验证线性化条件
     particle_velocity = amplitude / (1.2 * 343)  # 估算质点速度
     is_linear = linearization_condition(particle_velocity, 343)
-    
+
     return {
         "pressure": pressure,
         "wavelength": wave.wavelength,
@@ -207,7 +308,7 @@ import numpy as np
 from typing import Tuple
 
 def plane_wave_pressure(amplitude: float, wave_vector: np.ndarray,
-                       angular_frequency: float, position: np.ndarray, 
+                       angular_frequency: float, position: np.ndarray,
                        time: float) -> float:
     """平面波声压计算"""
     phase = np.dot(wave_vector, position) - angular_frequency * time
@@ -251,23 +352,23 @@ def plane_wave_example():
     angular_frequency = 2 * pi * frequency
     sound_speed = 343  # m/s
     density = 1.2  # kg/m³
-    
+
     wave_vector = np.array([angular_frequency/sound_speed, 0, 0])
-    
+
     # 计算声压和质点速度
     position = np.array([1.0, 0, 0])
     time = 0.0
-    
+
     pressure = plane_wave_pressure(amplitude, wave_vector, angular_frequency, position, time)
     particle_velocity = particle_velocity_from_pressure(pressure, wave_vector, density, angular_frequency)
-    
+
     # 计算能量和声强
     energy_density = acoustic_energy_density(pressure, particle_velocity, density, sound_speed)
     intensity = sound_intensity(pressure, particle_velocity)
-    
+
     # 验证
     is_valid = plane_wave_verification(amplitude, wave_vector, angular_frequency, sound_speed)
-    
+
     return {
         "pressure": pressure,
         "particle_velocity": particle_velocity,
@@ -325,7 +426,7 @@ import numpy as np
 from typing import Tuple
 
 def spherical_wave_pressure(amplitude: float, wave_number: float,
-                           angular_frequency: float, distance: float, 
+                           angular_frequency: float, distance: float,
                            time: float) -> complex:
     """球面波声压计算"""
     phase = wave_number * distance - angular_frequency * time
@@ -365,23 +466,23 @@ def spherical_wave_example():
     sound_speed = 343  # m/s
     density = 1.2  # kg/m³
     wave_number = angular_frequency / sound_speed
-    
+
     # 计算不同距离的声压和声强
     distances = np.array([1.0, 2.0, 5.0])
     time = 0.0
-    
+
     pressures = []
     intensities = []
-    
+
     for distance in distances:
         pressure = spherical_wave_pressure(amplitude, wave_number, angular_frequency, distance, time)
         intensity = spherical_wave_intensity(amplitude, distance, density, sound_speed)
         pressures.append(pressure)
         intensities.append(intensity)
-    
+
     # 验证能量守恒
     is_conserved = spherical_wave_verification(amplitude, distances[0], distances[1], density, sound_speed)
-    
+
     return {
         "distances": distances,
         "pressures": pressures,
@@ -391,6 +492,33 @@ def spherical_wave_example():
 ```
 
 ## 2. 声学阻抗 / Acoustic Impedance
+
+### 声学阻抗关系图 / Relationship Diagram of Acoustic Impedance
+
+```mermaid
+graph TB
+    A[声学阻抗] --> B[特性阻抗 Z]
+    A --> C[反射与透射]
+    A --> D[阻抗匹配]
+
+    B --> E[Z = ρc]
+    E --> F[Z = √ρK]
+
+    C --> G[反射系数 R]
+    C --> H[透射系数 T]
+    G --> I[R = Z₂-Z₁/Z₂+Z₁]
+    H --> J[T = 2Z₂/Z₁+Z₂]
+
+    D --> K[Z₁ = Z₂]
+    K --> L[无反射: R = 0]
+    K --> M[完全透射: T = 1]
+
+    style A fill:#e1f5ff
+    style E fill:#e8f5e9
+    style I fill:#fff4e1
+    style J fill:#fff4e1
+    style K fill:#fff4e1
+```
 
 ### 2.1 特性阻抗 / Characteristic Impedance
 
@@ -459,12 +587,12 @@ def power_reflection_coefficient(reflection_coefficient: float) -> float:
     """功率反射系数"""
     return reflection_coefficient**2
 
-def power_transmission_coefficient(transmission_coefficient: float, 
+def power_transmission_coefficient(transmission_coefficient: float,
                                  impedance1: float, impedance2: float) -> float:
     """功率透射系数"""
     return (transmission_coefficient**2) * (impedance1 / impedance2)
 
-def impedance_matching_condition(impedance1: float, impedance2: float, 
+def impedance_matching_condition(impedance1: float, impedance2: float,
                                tolerance: float = 1e-6) -> bool:
     """阻抗匹配条件"""
     return np.abs(impedance1 - impedance2) < tolerance
@@ -476,22 +604,22 @@ def impedance_example():
     air_sound_speed = 343  # m/s
     water_density = 1000  # kg/m³
     water_sound_speed = 1482  # m/s
-    
+
     # 计算特性阻抗
     air_impedance = characteristic_impedance(air_density, air_sound_speed)
     water_impedance = characteristic_impedance(water_density, water_sound_speed)
-    
+
     # 计算反射和透射系数
     reflection = reflection_coefficient(air_impedance, water_impedance)
     transmission = transmission_coefficient(air_impedance, water_impedance)
-    
+
     # 计算功率系数
     power_reflection = power_reflection_coefficient(reflection)
     power_transmission = power_transmission_coefficient(transmission, air_impedance, water_impedance)
-    
+
     # 验证能量守恒
     energy_conserved = np.abs(power_reflection + power_transmission - 1.0) < 1e-10
-    
+
     return {
         "air_impedance": air_impedance,
         "water_impedance": water_impedance,
@@ -504,6 +632,58 @@ def impedance_example():
 ```
 
 ## 3. 声学共振 / Acoustic Resonance
+
+### 声学共振关系图 / Relationship Diagram of Acoustic Resonance
+
+```mermaid
+graph TB
+    A[声学共振] --> B[共振频率]
+    A --> C[品质因子]
+    A --> D[共振模式]
+
+    B --> E[fn = nc/2L]
+    E --> F[基频: f₁ = c/2L]
+    E --> G[谐频: fn = nf₁]
+
+    C --> H[Q = f₀/Δf]
+    H --> I[Q = ω₀/γ]
+
+    D --> J[一维共振腔]
+    D --> K[三维共振腔]
+    J --> L[驻波模式]
+    K --> M[球谐模式]
+
+    style A fill:#e1f5ff
+    style E fill:#e8f5e9
+    style H fill:#fff4e1
+    style L fill:#fff4e1
+    style M fill:#fff4e1
+```
+
+### 共振频率计算流程图 / Flowchart of Resonance Frequency Calculation
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 共振腔长度 L<br/>声速 c, 模式数 n]
+    Input --> CalcResonanceFreq[计算共振频率<br/>fn = nc/2L]
+    CalcResonanceFreq --> CalcFundamental[计算基频<br/>f₁ = c/2L]
+    CalcFundamental --> CalcHarmonics[计算谐频<br/>fn = nf₁]
+    CalcHarmonics --> CheckDamping{考虑阻尼?}
+    CheckDamping -->|是| CalcQ[计算品质因子<br/>Q = f₀/Δf]
+    CalcQ --> CalcBandwidth[计算带宽<br/>Δf = f₀/Q]
+    CheckDamping -->|否| CalcMode[计算共振模式]
+    CalcBandwidth --> CalcMode
+    CalcMode --> VerifyResonance{验证共振条件<br/>Zin = 0?}
+    VerifyResonance -->|否| Error[错误: 非共振状态]
+    VerifyResonance -->|是| Output[输出: 共振频率 fn<br/>品质因子 Q, 带宽 Δf]
+    Output --> End([结束])
+    Error --> End
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Output fill:#e8f5e9
+    style Error fill:#ffebee
+```
 
 ### 3.1 共振频率 / Resonance Frequency
 
@@ -556,13 +736,13 @@ def resonance_frequency_1d(mode_number: int, sound_speed: float, length: float) 
     """一维共振腔共振频率"""
     return mode_number * sound_speed / (2 * length)
 
-def resonance_frequency_3d(mode_numbers: Tuple[int, int, int], 
-                          sound_speed: float, 
+def resonance_frequency_3d(mode_numbers: Tuple[int, int, int],
+                          sound_speed: float,
                           dimensions: Tuple[float, float, float]) -> float:
     """三维共振腔共振频率"""
     nx, ny, nz = mode_numbers
     Lx, Ly, Lz = dimensions
-    
+
     return sound_speed * np.sqrt((nx/Lx)**2 + (ny/Ly)**2 + (nz/Lz)**2) / 2
 
 def quality_factor(resonance_frequency: float, bandwidth: float) -> float:
@@ -585,7 +765,7 @@ def resonance_modes_1d(length: float, sound_speed: float, max_mode: int = 10) ->
         frequencies.append(freq)
     return frequencies
 
-def resonance_response(frequency: float, resonance_frequency: float, 
+def resonance_response(frequency: float, resonance_frequency: float,
                       quality_factor: float, amplitude: float = 1.0) -> complex:
     """共振响应函数"""
     detuning = (frequency - resonance_frequency) / resonance_frequency
@@ -596,23 +776,23 @@ def resonance_example():
     # 参数设置
     length = 1.0  # m
     sound_speed = 343  # m/s
-    
+
     # 计算前5个共振模式
     modes = resonance_modes_1d(length, sound_speed, 5)
-    
+
     # 计算品质因子（假设带宽为10Hz）
     fundamental_frequency = modes[0]
     bandwidth = 10.0
     quality_factor = quality_factor(fundamental_frequency, bandwidth)
-    
+
     # 计算共振响应
     test_frequencies = np.linspace(fundamental_frequency - 50, fundamental_frequency + 50, 100)
     responses = []
-    
+
     for freq in test_frequencies:
         response = resonance_response(freq, fundamental_frequency, quality_factor)
         responses.append(np.abs(response))
-    
+
     return {
         "resonance_modes": modes,
         "fundamental_frequency": fundamental_frequency,
@@ -625,6 +805,21 @@ def resonance_example():
 ## 版本历史 / Version History
 
 - **1.0.0** (2025-08-25): 初始版本，包含声波传播、声学阻抗、声学共振基础内容
+
+## 相关模型 / Related Models
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../01-经典力学模型/README.md) - 声波传播与经典力学的联系
+- [光学模型](../06-光学模型/README.md) - 波动光学与声学的类比
+- [流体力学模型](../08-流体力学模型/README.md) - 声波在流体中的传播
+- [热力学模型](../04-热力学模型/README.md) - 声学与热力学的联系
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 声学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 声学的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 声学作为科学模型的理论基础
 
 ## 下一步计划 / Next Steps
 

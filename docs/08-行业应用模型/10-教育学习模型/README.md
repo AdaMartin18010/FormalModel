@@ -11,6 +11,8 @@
 
 - [8.10 教育学习模型 / Education \& Learning Models](#810-教育学习模型--education--learning-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [教育学习模型框架图 / Framework Diagram of Education \& Learning Models](#教育学习模型框架图--framework-diagram-of-education--learning-models)
+  - [个性化学习流程 / Flowchart of Personalized Learning](#个性化学习流程--flowchart-of-personalized-learning)
   - [8.10.1 学习理论模型 / Learning Theory Models](#8101-学习理论模型--learning-theory-models)
     - [认知负荷理论 / Cognitive Load Theory](#认知负荷理论--cognitive-load-theory)
     - [建构主义学习模型 / Constructivist Learning Model](#建构主义学习模型--constructivist-learning-model)
@@ -47,8 +49,160 @@
       - [教育评估 / Educational Assessment](#教育评估--educational-assessment)
       - [教育管理 / Educational Management](#教育管理--educational-management)
   - [参考文献 / References](#参考文献--references)
+  - [评测协议与指标 / Evaluation Protocols \& Metrics](#评测协议与指标--evaluation-protocols--metrics)
+    - [范围与目标 / Scope \& Goals](#范围与目标--scope--goals)
+    - [数据与划分 / Data \& Splits](#数据与划分--data--splits)
+    - [通用指标 / Common Metrics](#通用指标--common-metrics)
+    - [任务级协议 / Task-level Protocols](#任务级协议--task-level-protocols)
+    - [复现实操 / Reproducibility](#复现实操--reproducibility)
+  - [8.10.9 算法实现 / Algorithm Implementation](#8109-算法实现--algorithm-implementation)
+    - [学习理论算法 / Learning Theory Algorithms](#学习理论算法--learning-theory-algorithms)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
 
 ---
+
+## 教育学习模型框架图 / Framework Diagram of Education & Learning Models
+
+```mermaid
+graph TB
+    A[教育学习模型] --> B[学习理论模型]
+    A --> C[教育评估模型]
+    A --> D[智能教育模型]
+    A --> E[知识表示模型]
+    A --> F[学习路径模型]
+    A --> G[教育数据挖掘模型]
+    A --> H[教育资源配置模型]
+
+    B --> I[认知负荷理论]
+    B --> J[建构主义学习]
+    B --> K[行为主义学习]
+
+    C --> L[项目反应理论IRT]
+    C --> M[经典测量理论]
+    C --> N[增值评估]
+
+    D --> O[自适应学习]
+    D --> P[智能辅导系统]
+    D --> Q[学习分析]
+
+    E --> R[知识图谱]
+    E --> S[概念图]
+    E --> T[本体模型]
+
+    F --> U[认知诊断]
+    F --> V[学习序列]
+    F --> W[个性化路径]
+
+    G --> X[聚类分析]
+    G --> Y[关联规则]
+    G --> Z[序列模式]
+
+    H --> AA[教师分配]
+    H --> AB[课程调度]
+    H --> AC[预算分配]
+
+    I --> AD[教育应用]
+    L --> AD
+    O --> AD
+    R --> AD
+    U --> AD
+    X --> AD
+    AA --> AD
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style F fill:#fff4e1
+    style G fill:#fff4e1
+    style H fill:#fff4e1
+    style AD fill:#e8f5e9
+```
+
+## 个性化学习流程 / Flowchart of Personalized Learning
+
+```mermaid
+flowchart TD
+    Start([学生开始学习]) --> StudentProfile[学生画像构建<br/>学习历史<br/>能力水平<br/>学习偏好<br/>学习目标]
+
+    StudentProfile --> LearningTheory{学习理论}
+    LearningTheory --> CognitiveLoad[认知负荷分析<br/>内在负荷<br/>外在负荷<br/>生成负荷<br/>负荷优化]
+    LearningTheory --> Constructivism[建构主义学习<br/>知识建构<br/>主动学习<br/>协作学习]
+    LearningTheory --> Behaviorism[行为主义学习<br/>强化学习<br/>习惯形成<br/>反馈机制]
+
+    CognitiveLoad --> Assessment{教育评估}
+    Constructivism --> Assessment
+    Behaviorism --> Assessment
+
+    Assessment --> IRT[项目反应理论<br/>能力估计<br/>题目参数<br/>自适应测试]
+    Assessment --> ClassicalTest[经典测量理论<br/>信度分析<br/>效度分析<br/>难度分析]
+    Assessment --> ValueAdded[增值评估<br/>学习进步<br/>效果评估<br/>价值分析]
+
+    IRT --> IntelligentEducation{智能教育}
+    ClassicalTest --> IntelligentEducation
+    ValueAdded --> IntelligentEducation
+
+    IntelligentEducation --> AdaptiveLearning[自适应学习系统<br/>内容推荐<br/>难度调整<br/>学习节奏]
+    IntelligentEducation --> TutoringSystem[智能辅导系统<br/>个性化指导<br/>问题解答<br/>学习建议]
+    IntelligentEducation --> LearningAnalytics[学习分析<br/>行为分析<br/>成绩预测<br/>风险识别]
+
+    AdaptiveLearning --> KnowledgeRepresentation{知识表示}
+    TutoringSystem --> KnowledgeRepresentation
+    LearningAnalytics --> KnowledgeRepresentation
+
+    KnowledgeRepresentation --> KnowledgeGraph[知识图谱<br/>知识关系<br/>知识结构<br/>知识导航]
+    KnowledgeRepresentation --> ConceptMap[概念图<br/>概念关系<br/>概念层次<br/>概念理解]
+    KnowledgeRepresentation --> Ontology[本体模型<br/>领域知识<br/>知识推理<br/>知识查询]
+
+    KnowledgeGraph --> LearningPath{学习路径}
+    ConceptMap --> LearningPath
+    Ontology --> LearningPath
+
+    LearningPath --> CognitiveDiagnosis[认知诊断<br/>知识状态<br/>技能掌握<br/>薄弱环节]
+    LearningPath --> LearningSequence[学习序列<br/>学习顺序<br/>前置关系<br/>学习路径]
+    LearningPath --> PersonalizedPath[个性化路径<br/>定制路径<br/>动态调整<br/>最优路径]
+
+    CognitiveDiagnosis --> DataMining{数据挖掘}
+    LearningSequence --> DataMining
+    PersonalizedPath --> DataMining
+
+    DataMining --> Clustering[聚类分析<br/>学生分组<br/>学习模式<br/>相似性分析]
+    DataMining --> AssociationRules[关联规则<br/>学习关联<br/>行为模式<br/>规则发现]
+    DataMining --> SequentialPattern[序列模式<br/>学习序列<br/>行为序列<br/>模式识别]
+
+    Clustering --> ResourceAllocation{资源配置}
+    AssociationRules --> ResourceAllocation
+    SequentialPattern --> ResourceAllocation
+
+    ResourceAllocation --> TeacherAllocation[教师分配<br/>教师匹配<br/>师生比例<br/>资源优化]
+    ResourceAllocation --> CourseScheduling[课程调度<br/>课程安排<br/>时间优化<br/>冲突解决]
+    ResourceAllocation --> BudgetAllocation[预算分配<br/>资源预算<br/>成本优化<br/>效益分析]
+
+    TeacherAllocation --> LearningOutcome([学习成果<br/>能力提升<br/>知识掌握<br/>学习效果])
+
+    CourseScheduling --> LearningOutcome
+    BudgetAllocation --> LearningOutcome
+
+    LearningOutcome --> Feedback[反馈循环<br/>效果评估<br/>路径调整<br/>持续优化]
+    Feedback --> StudentProfile
+
+    style Start fill:#e1f5ff
+    style LearningOutcome fill:#e1f5ff
+    style LearningTheory fill:#e8f5e9
+    style Assessment fill:#e8f5e9
+    style IntelligentEducation fill:#e8f5e9
+    style KnowledgeRepresentation fill:#e8f5e9
+    style LearningPath fill:#e8f5e9
+    style DataMining fill:#e8f5e9
+    style ResourceAllocation fill:#e8f5e9
+```
 
 ## 8.10.1 学习理论模型 / Learning Theory Models
 
@@ -301,53 +455,53 @@ impl ItemResponseTheory {
     pub fn new() -> Self {
         Self { items: Vec::new() }
     }
-    
+
     pub fn add_item(&mut self, item: Item) {
         self.items.push(item);
     }
-    
+
     pub fn three_parameter_model(&self, theta: f64, item: &Item) -> f64 {
         let exponent = item.discrimination * (theta - item.difficulty);
         item.guessing + (1.0 - item.guessing) * (exponent.exp() / (1.0 + exponent.exp()))
     }
-    
+
     pub fn estimate_ability(&self, responses: &Vec<bool>) -> f64 {
         let mut theta = 0.0;
         let mut prev_theta = -1.0;
         let tolerance = 0.001;
-        
+
         while (theta - prev_theta).abs() > tolerance {
             prev_theta = theta;
-            
+
             let mut numerator = 0.0;
             let mut denominator = 0.0;
-            
+
             for (i, &response) in responses.iter().enumerate() {
                 let p = self.three_parameter_model(theta, &self.items[i]);
                 let q = 1.0 - p;
-                
+
                 let derivative = self.items[i].discrimination * p * q;
                 let residual = (response as f64) - p;
-                
+
                 numerator += derivative * residual;
                 denominator += derivative * derivative;
             }
-            
+
             if denominator > 0.0 {
                 theta += numerator / denominator;
             }
         }
-        
+
         theta
     }
-    
+
     pub fn calculate_reliability(&self, responses: &Vec<Vec<bool>>) -> f64 {
         let n_students = responses.len();
         let n_items = self.items.len();
-        
+
         let mut total_scores: Vec<f64> = vec![0.0; n_students];
         let mut item_variances: Vec<f64> = vec![0.0; n_items];
-        
+
         // 计算总分和项目方差
         for (i, student_responses) in responses.iter().enumerate() {
             for (j, &response) in student_responses.iter().enumerate() {
@@ -355,7 +509,7 @@ impl ItemResponseTheory {
                 item_variances[j] += response as f64;
             }
         }
-        
+
         // 计算项目方差
         for j in 0..n_items {
             let mean = item_variances[j] / n_students as f64;
@@ -363,13 +517,13 @@ impl ItemResponseTheory {
                 .map(|r| (r[j] as f64 - mean).powi(2))
                 .sum::<f64>() / (n_students - 1) as f64;
         }
-        
+
         let total_variance = total_scores.iter()
             .map(|&score| (score - total_scores.iter().sum::<f64>() / n_students as f64).powi(2))
             .sum::<f64>() / (n_students - 1) as f64;
-        
+
         let sum_item_variance: f64 = item_variances.iter().sum();
-        
+
         (total_variance - sum_item_variance) / total_variance
     }
 }
@@ -387,22 +541,22 @@ impl AdaptiveLearningSystem {
             student_models: HashMap::new(),
         }
     }
-    
+
     pub fn add_knowledge_relationship(&mut self, from: String, to: String) {
         self.knowledge_graph.entry(from).or_insert_with(Vec::new).push(to);
     }
-    
+
     pub fn update_student_knowledge(&mut self, student_id: &str, concept: &str, mastery: f64) {
         if let Some(student) = self.student_models.get_mut(student_id) {
             student.knowledge_state.insert(concept.to_string(), mastery);
         }
     }
-    
+
     pub fn recommend_next_concept(&self, student_id: &str) -> Option<String> {
         if let Some(student) = self.student_models.get(student_id) {
             let mut best_concept = None;
             let mut best_score = -1.0;
-            
+
             for (concept, _) in &self.knowledge_graph {
                 if !student.knowledge_state.contains_key(concept) {
                     let score = self.calculate_readiness_score(student, concept);
@@ -412,17 +566,17 @@ impl AdaptiveLearningSystem {
                     }
                 }
             }
-            
+
             best_concept
         } else {
             None
         }
     }
-    
+
     fn calculate_readiness_score(&self, student: &Student, concept: &str) -> f64 {
         let mut score = 0.0;
         let mut count = 0;
-        
+
         if let Some(prerequisites) = self.knowledge_graph.get(concept) {
             for prereq in prerequisites {
                 if let Some(&mastery) = student.knowledge_state.get(prereq) {
@@ -431,7 +585,7 @@ impl AdaptiveLearningSystem {
                 }
             }
         }
-        
+
         if count > 0 {
             score / count as f64
         } else {
@@ -458,38 +612,38 @@ impl LearningAnalytics {
     pub fn new() -> Self {
         Self { learning_events: Vec::new() }
     }
-    
+
     pub fn add_event(&mut self, event: LearningEvent) {
         self.learning_events.push(event);
     }
-    
+
     pub fn predict_success(&self, student_id: &str) -> f64 {
         let student_events: Vec<&LearningEvent> = self.learning_events
             .iter()
             .filter(|e| e.student_id == student_id)
             .collect();
-        
+
         if student_events.is_empty() {
             return 0.5; // 默认中等概率
         }
-        
+
         let total_time: f64 = student_events.iter().map(|e| e.duration).sum();
         let avg_outcome: f64 = student_events.iter().map(|e| e.outcome).sum::<f64>() / student_events.len() as f64;
         let engagement_score = student_events.len() as f64 / 100.0; // 标准化参与度
-        
+
         // 简化的成功预测模型
         let success_prob = 0.3 * avg_outcome + 0.4 * engagement_score + 0.3 * (total_time / 1000.0).min(1.0);
         success_prob.max(0.0).min(1.0)
     }
-    
+
     pub fn identify_at_risk_students(&self, threshold: f64) -> Vec<String> {
         let mut student_scores: HashMap<String, f64> = HashMap::new();
-        
+
         for event in &self.learning_events {
             let score = student_scores.entry(event.student_id.clone()).or_insert(0.0);
             *score += event.outcome;
         }
-        
+
         student_scores.into_iter()
             .filter(|(_, score)| *score < threshold)
             .map(|(student_id, _)| student_id)
@@ -513,16 +667,16 @@ fn main() {
         discrimination: 1.5,
         guessing: 0.0,
     });
-    
+
     let responses = vec![true, false];
     let ability = irt.estimate_ability(&responses);
     println!("Estimated ability: {:.3}", ability);
-    
+
     // 自适应学习系统示例
     let mut als = AdaptiveLearningSystem::new();
     als.add_knowledge_relationship("addition".to_string(), "multiplication".to_string());
     als.add_knowledge_relationship("multiplication".to_string(), "division".to_string());
-    
+
     let student = Student {
         id: "S001".to_string(),
         knowledge_state: HashMap::from([
@@ -532,13 +686,13 @@ fn main() {
         learning_preferences: vec!["visual".to_string()],
         performance_history: vec![0.8, 0.9, 0.7],
     };
-    
+
     als.student_models.insert("S001".to_string(), student);
-    
+
     if let Some(next_concept) = als.recommend_next_concept("S001") {
         println!("Recommended next concept: {}", next_concept);
     }
-    
+
     // 学习分析示例
     let mut analytics = LearningAnalytics::new();
     analytics.add_event(LearningEvent {
@@ -548,10 +702,10 @@ fn main() {
         duration: 30.0,
         outcome: 0.8,
     });
-    
+
     let success_prob = analytics.predict_success("S001");
     println!("Success probability: {:.3}", success_prob);
-    
+
     let at_risk = analytics.identify_at_risk_students(0.5);
     println!("At-risk students: {:?}", at_risk);
 }
@@ -609,7 +763,7 @@ estimateAbility irt responses = go 0.0
         prevTheta = theta
         (numerator, denominator) = foldl updateGradient (0.0, 0.0) (zip (items irt) responses)
         newTheta = if denominator > 0 then theta + numerator / denominator else theta
-    
+
     updateGradient (num, den) (item, response) = (newNum, newDen)
       where
         p = threeParameterModel theta item
@@ -629,8 +783,8 @@ newAdaptiveLearningSystem :: AdaptiveLearningSystem
 newAdaptiveLearningSystem = AdaptiveLearningSystem Map.empty Map.empty
 
 addKnowledgeRelationship :: String -> String -> AdaptiveLearningSystem -> AdaptiveLearningSystem
-addKnowledgeRelationship from to als = als { 
-    knowledgeGraph = Map.insertWith (++) from [to] (knowledgeGraph als) 
+addKnowledgeRelationship from to als = als {
+    knowledgeGraph = Map.insertWith (++) from [to] (knowledgeGraph als)
 }
 
 updateStudentKnowledge :: String -> String -> Double -> AdaptiveLearningSystem -> AdaptiveLearningSystem
@@ -638,8 +792,8 @@ updateStudentKnowledge studentId concept mastery als = als {
     studentModels = Map.adjust updateStudent studentId (studentModels als)
 }
   where
-    updateStudent student = student { 
-        knowledgeState = Map.insert concept mastery (knowledgeState student) 
+    updateStudent student = student {
+        knowledgeState = Map.insert concept mastery (knowledgeState student)
     }
 
 recommendNextConcept :: AdaptiveLearningSystem -> String -> Maybe String
@@ -647,8 +801,8 @@ recommendNextConcept als studentId = case Map.lookup studentId (studentModels al
     Just student -> findBestConcept als student
     Nothing -> Nothing
   where
-    findBestConcept als student = 
-        let availableConcepts = filter (\c -> not (Map.member c (knowledgeState student))) 
+    findBestConcept als student =
+        let availableConcepts = filter (\c -> not (Map.member c (knowledgeState student)))
                                      (Map.keys (knowledgeGraph als))
             scoredConcepts = map (\c -> (c, calculateReadinessScore als student c)) availableConcepts
         in case scoredConcepts of
@@ -657,7 +811,7 @@ recommendNextConcept als studentId = case Map.lookup studentId (studentModels al
 
 calculateReadinessScore :: AdaptiveLearningSystem -> Student -> String -> Double
 calculateReadinessScore als student concept = case Map.lookup concept (knowledgeGraph als) of
-    Just prerequisites -> 
+    Just prerequisites ->
         let scores = mapMaybe (\prereq -> Map.lookup prereq (knowledgeState student)) prerequisites
         in if null scores then 0.0 else sum scores / fromIntegral (length scores)
     Nothing -> 0.0
@@ -679,18 +833,18 @@ newLearningAnalytics :: LearningAnalytics
 newLearningAnalytics = LearningAnalytics []
 
 addEvent :: LearningEvent -> LearningAnalytics -> LearningAnalytics
-addEvent event analytics = analytics { 
-    learningEvents = event : learningEvents analytics 
+addEvent event analytics = analytics {
+    learningEvents = event : learningEvents analytics
 }
 
 predictSuccess :: LearningAnalytics -> String -> Double
-predictSuccess analytics studentId = 
+predictSuccess analytics studentId =
     let studentEvents = filter (\e -> eventStudentId e == studentId) (learningEvents analytics)
-    in if null studentEvents 
+    in if null studentEvents
        then 0.5  -- 默认中等概率
        else calculateSuccessProbability studentEvents
   where
-    calculateSuccessProbability events = 
+    calculateSuccessProbability events =
         let totalTime = sum (map eventDuration events)
             avgOutcome = sum (map eventOutcome events) / fromIntegral (length events)
             engagementScore = fromIntegral (length events) / 100.0
@@ -698,11 +852,11 @@ predictSuccess analytics studentId =
         in max 0.0 (min 1.0 successProb)
 
 identifyAtRiskStudents :: LearningAnalytics -> Double -> [String]
-identifyAtRiskStudents analytics threshold = 
+identifyAtRiskStudents analytics threshold =
     let studentScores = foldl updateScores Map.empty (learningEvents analytics)
     in Map.keys (Map.filter (< threshold) studentScores)
   where
-    updateScores scores event = 
+    updateScores scores event =
         Map.insertWith (+) (eventStudentId event) (eventOutcome event) scores
 
 -- 示例使用
@@ -713,28 +867,28 @@ example = do
               addItem (Item "Q2" 1.0 1.5 0.0) newItemResponseTheory
         responses = [True, False]
         ability = estimateAbility irt responses
-    
+
     putStrLn $ "Estimated ability: " ++ show ability
-    
+
     -- 自适应学习系统示例
     let als = addKnowledgeRelationship "addition" "multiplication" $
               addKnowledgeRelationship "multiplication" "division" newAdaptiveLearningSystem
-        
-        student = Student "S001" 
+
+        student = Student "S001"
                          (Map.fromList [("addition", 0.9), ("multiplication", 0.7)])
                          ["visual"]
                          [0.8, 0.9, 0.7]
-        
-        alsWithStudent = AdaptiveLearningSystem (knowledgeGraph als) 
+
+        alsWithStudent = AdaptiveLearningSystem (knowledgeGraph als)
                                                (Map.insert "S001" student (studentModels als))
-    
+
     putStrLn $ "Recommended next concept: " ++ show (recommendNextConcept alsWithStudent "S001")
-    
+
     -- 学习分析示例
     let analytics = addEvent (LearningEvent "S001" 1000.0 "quiz" 30.0 0.8) newLearningAnalytics
         successProb = predictSuccess analytics "S001"
         atRisk = identifyAtRiskStudents analytics 0.5
-    
+
     putStrLn $ "Success probability: " ++ show successProb
     putStrLn $ "At-risk students: " ++ show atRisk
 ```
@@ -834,38 +988,38 @@ class LearningEvent:
 
 class CognitiveLoadTheory:
     """认知负荷理论"""
-    
+
     def __init__(self):
         pass
-    
+
     def calculate_intrinsic_load(self, complexity: float, element_interactivity: float) -> float:
         """计算内在认知负荷"""
         return complexity * element_interactivity
-    
+
     def calculate_extraneous_load(self, instructional_design_score: float) -> float:
         """计算外在认知负荷"""
         # 教学设计越好，外在负荷越低
         return max(0, 1.0 - instructional_design_score)
-    
+
     def calculate_germane_load(self, learning_effort: float, motivation: float) -> float:
         """计算生成认知负荷"""
         return learning_effort * motivation
-    
+
     def calculate_total_load(self, intrinsic: float, extraneous: float, germane: float) -> float:
         """计算总认知负荷"""
         return intrinsic + extraneous + germane
-    
+
     def is_overload(self, total_load: float, threshold: float = 1.0) -> bool:
         """判断是否认知超负荷"""
         return total_load > threshold
 
 class ConstructivistLearningModel:
     """建构主义学习模型"""
-    
+
     def __init__(self):
         pass
-    
-    def update_knowledge(self, existing_knowledge: float, new_information: float, 
+
+    def update_knowledge(self, existing_knowledge: float, new_information: float,
                         interaction_strength: float = 0.5) -> float:
         """更新知识"""
         # 知识建构公式
@@ -873,15 +1027,15 @@ class ConstructivistLearningModel:
         updated_knowledge = existing_knowledge + knowledge_gain + \
                            interaction_strength * existing_knowledge * new_information
         return min(1.0, updated_knowledge)  # 限制在[0,1]范围内
-    
-    def calculate_learning_effectiveness(self, prior_knowledge: float, motivation: float, 
+
+    def calculate_learning_effectiveness(self, prior_knowledge: float, motivation: float,
                                        learning_environment: float) -> float:
         """计算学习效果"""
         # 学习效果 = f(先验知识, 动机, 学习环境)
         effectiveness = (0.4 * prior_knowledge + 0.3 * motivation + 0.3 * learning_environment)
         return min(1.0, effectiveness)
-    
-    def calculate_knowledge_transfer(self, source_knowledge: float, distance: float, 
+
+    def calculate_knowledge_transfer(self, source_knowledge: float, distance: float,
                                    alpha: float = 0.8, beta: float = 0.2) -> float:
         """计算知识转移"""
         # 知识转移 = α * K_source * (1 - β * distance)
@@ -890,26 +1044,26 @@ class ConstructivistLearningModel:
 
 class BehavioristLearningModel:
     """行为主义学习模型"""
-    
+
     def __init__(self):
         pass
-    
-    def calculate_response_probability(self, reward: float, punishment: float, 
+
+    def calculate_response_probability(self, reward: float, punishment: float,
                                      alpha: float = 1.0, beta: float = 1.0) -> float:
         """计算反应概率"""
         # P(response) = 1 / (1 + e^(-(α*reward + β*punishment)))
         z = alpha * reward + beta * punishment
         probability = 1 / (1 + np.exp(-z))
         return probability
-    
-    def calculate_habit_formation(self, initial_habit: float, max_habit: float, 
+
+    def calculate_habit_formation(self, initial_habit: float, max_habit: float,
                                 time: float, rate_constant: float) -> float:
         """计算习惯形成"""
         # H(t) = H_0 + (H_max - H_0)(1 - e^(-kt))
         habit = initial_habit + (max_habit - initial_habit) * (1 - np.exp(-rate_constant * time))
         return habit
-    
-    def calculate_extinction(self, initial_response: float, time: float, 
+
+    def calculate_extinction(self, initial_response: float, time: float,
                            extinction_rate: float) -> float:
         """计算消退"""
         # E(t) = E_0 * e^(-λt)
@@ -920,11 +1074,11 @@ class BehavioristLearningModel:
 
 class ItemResponseTheory:
     """项目反应理论"""
-    
+
     def __init__(self):
         self.items = []
-    
-    def add_item(self, item_id: str, difficulty: float, discrimination: float = 1.0, 
+
+    def add_item(self, item_id: str, difficulty: float, discrimination: float = 1.0,
                 guessing: float = 0.0):
         """添加题目"""
         self.items.append({
@@ -933,36 +1087,36 @@ class ItemResponseTheory:
             'discrimination': discrimination,
             'guessing': guessing
         })
-    
+
     def three_parameter_model(self, ability: float, item: Dict[str, float]) -> float:
         """三参数模型"""
         a = item['discrimination']
         b = item['difficulty']
         c = item['guessing']
-        
+
         probability = c + (1 - c) * np.exp(a * (ability - b)) / (1 + np.exp(a * (ability - b)))
         return probability
-    
+
     def two_parameter_model(self, ability: float, item: Dict[str, float]) -> float:
         """双参数模型"""
         a = item['discrimination']
         b = item['difficulty']
-        
+
         probability = np.exp(a * (ability - b)) / (1 + np.exp(a * (ability - b)))
         return probability
-    
+
     def one_parameter_model(self, ability: float, item: Dict[str, float]) -> float:
         """单参数模型"""
         b = item['difficulty']
-        
+
         probability = np.exp(ability - b) / (1 + np.exp(ability - b))
         return probability
-    
+
     def estimate_ability(self, responses: List[bool], method: str = "three_parameter") -> float:
         """估计学生能力"""
         if len(responses) != len(self.items):
             raise ValueError("响应数量与题目数量不匹配")
-        
+
         def likelihood(ability):
             log_likelihood = 0
             for i, response in enumerate(responses):
@@ -972,59 +1126,59 @@ class ItemResponseTheory:
                     p = self.two_parameter_model(ability, self.items[i])
                 else:
                     p = self.one_parameter_model(ability, self.items[i])
-                
+
                 if response:
                     log_likelihood += np.log(p)
                 else:
                     log_likelihood += np.log(1 - p)
-            
+
             return -log_likelihood  # 最小化负对数似然
-        
+
         # 使用数值优化估计能力
         result = minimize(likelihood, x0=0.0, method='BFGS')
         return result.x[0]
 
 class ClassicalTestTheory:
     """经典测量理论"""
-    
+
     def __init__(self):
         pass
-    
+
     def calculate_reliability(self, scores: List[float]) -> float:
         """计算信度（使用分半法）"""
         n = len(scores)
         if n % 2 != 0:
             scores = scores[:-1]  # 去掉最后一个分数
-        
+
         half1 = scores[:n//2]
         half2 = scores[n//2:]
-        
+
         correlation = np.corrcoef(half1, half2)[0, 1]
         if np.isnan(correlation):
             return 0.0
-        
+
         # Spearman-Brown校正
         reliability = 2 * correlation / (1 + correlation)
         return reliability
-    
+
     def calculate_validity(self, test_scores: List[float], criterion_scores: List[float]) -> float:
         """计算效度"""
         if len(test_scores) != len(criterion_scores):
             raise ValueError("测试分数与效标分数长度不匹配")
-        
+
         correlation = np.corrcoef(test_scores, criterion_scores)[0, 1]
         return correlation if not np.isnan(correlation) else 0.0
-    
+
     def calculate_difficulty(self, correct_responses: int, total_responses: int) -> float:
         """计算题目难度"""
         return correct_responses / total_responses if total_responses > 0 else 0.0
-    
-    def calculate_discrimination(self, high_group_correct: int, low_group_correct: int, 
+
+    def calculate_discrimination(self, high_group_correct: int, low_group_correct: int,
                                group_size: int) -> float:
         """计算题目区分度"""
         if group_size == 0:
             return 0.0
-        
+
         high_proportion = high_group_correct / group_size
         low_proportion = low_group_correct / group_size
         return high_proportion - low_proportion
@@ -1033,31 +1187,31 @@ class ClassicalTestTheory:
 
 class AdaptiveLearningSystem:
     """自适应学习系统"""
-    
+
     def __init__(self):
         self.knowledge_graph = {}
         self.student_models = {}
-    
-    def add_knowledge_relationship(self, concept1: str, concept2: str, 
+
+    def add_knowledge_relationship(self, concept1: str, concept2: str,
                                  relationship_strength: float = 1.0):
         """添加知识关系"""
         if concept1 not in self.knowledge_graph:
             self.knowledge_graph[concept1] = {}
         self.knowledge_graph[concept1][concept2] = relationship_strength
-    
+
     def add_student(self, student: Student):
         """添加学生"""
         self.student_models[student.id] = student
-    
+
     def recommend_next_concept(self, student_id: str) -> Optional[str]:
         """推荐下一个学习概念"""
         if student_id not in self.student_models:
             return None
-        
+
         student = self.student_models[student_id]
         best_concept = None
         best_score = -1
-        
+
         for concept in self.knowledge_graph:
             if concept not in student.knowledge_level:
                 # 计算推荐分数
@@ -1065,27 +1219,27 @@ class AdaptiveLearningSystem:
                 if score > best_score:
                     best_score = score
                     best_concept = concept
-        
+
         return best_concept
-    
+
     def calculate_recommendation_score(self, student: Student, concept: str) -> float:
         """计算推荐分数"""
         score = 0.0
-        
+
         # 基于先验知识的分数
         for prereq_concept, strength in self.knowledge_graph.get(concept, {}).items():
             if prereq_concept in student.knowledge_level:
                 score += student.knowledge_level[prereq_concept] * strength
-        
+
         # 基于学习风格的分数
         if "visual" in student.learning_style and "visual" in concept.lower():
             score += 0.2
         if "auditory" in student.learning_style and "audio" in concept.lower():
             score += 0.2
-        
+
         return score
-    
-    def update_student_knowledge(self, student_id: str, concept: str, 
+
+    def update_student_knowledge(self, student_id: str, concept: str,
                                performance: float):
         """更新学生知识水平"""
         if student_id in self.student_models:
@@ -1095,91 +1249,91 @@ class AdaptiveLearningSystem:
 
 class LearningAnalytics:
     """学习分析模型"""
-    
+
     def __init__(self):
         self.learning_events = []
-    
+
     def add_event(self, event: LearningEvent):
         """添加学习事件"""
         self.learning_events.append(event)
-    
+
     def predict_success(self, student_id: str) -> float:
         """预测学生成功概率"""
         student_events = [e for e in self.learning_events if e.student_id == student_id]
-        
+
         if not student_events:
             return 0.5  # 默认中等概率
-        
+
         # 计算成功概率
         total_time = sum(e.duration for e in student_events)
         avg_outcome = np.mean([e.outcome for e in student_events])
         engagement_score = len(student_events) / 100.0  # 参与度
-        
-        success_prob = (0.3 * avg_outcome + 0.4 * engagement_score + 
+
+        success_prob = (0.3 * avg_outcome + 0.4 * engagement_score +
                        0.3 * min(1.0, total_time / 1000.0))
-        
+
         return max(0.0, min(1.0, success_prob))
-    
+
     def identify_at_risk_students(self, threshold: float = 0.5) -> List[str]:
         """识别风险学生"""
         student_scores = {}
-        
+
         for event in self.learning_events:
             if event.student_id not in student_scores:
                 student_scores[event.student_id] = []
             student_scores[event.student_id].append(event.outcome)
-        
+
         at_risk_students = []
         for student_id, scores in student_scores.items():
             avg_score = np.mean(scores)
             if avg_score < threshold:
                 at_risk_students.append(student_id)
-        
+
         return at_risk_students
-    
+
     def calculate_learning_patterns(self, student_id: str) -> Dict[str, Any]:
         """计算学习模式"""
         student_events = [e for e in self.learning_events if e.student_id == student_id]
-        
+
         if not student_events:
             return {}
-        
+
         patterns = {
             'total_time': sum(e.duration for e in student_events),
             'avg_outcome': np.mean([e.outcome for e in student_events]),
             'activity_distribution': {},
             'time_distribution': {}
         }
-        
+
         # 活动类型分布
         for event in student_events:
             activity_type = event.activity_type
             if activity_type not in patterns['activity_distribution']:
                 patterns['activity_distribution'][activity_type] = 0
             patterns['activity_distribution'][activity_type] += 1
-        
+
         return patterns
 
 def education_learning_verification():
     """教育学习模型验证"""
     print("=== 教育学习模型验证 ===")
-    
+
     # 学习理论验证
     print("\n1. 学习理论验证:")
-    
+
     # 认知负荷理论
     clt = CognitiveLoadTheory()
     intrinsic_load = clt.calculate_intrinsic_load(complexity=0.7, element_interactivity=0.8)
     extraneous_load = clt.calculate_extraneous_load(instructional_design_score=0.6)
     germane_load = clt.calculate_germane_load(learning_effort=0.5, motivation=0.8)
     total_load = clt.calculate_total_load(intrinsic_load, extraneous_load, germane_load)
-    
+
     print(f"内在认知负荷: {intrinsic_load:.3f}")
     print(f"外在认知负荷: {extraneous_load:.3f}")
     print(f"生成认知负荷: {germane_load:.3f}")
     print(f"总认知负荷: {total_load:.3f}")
     print(f"是否超负荷: {clt.is_overload(total_load)}")
-    
+
     # 建构主义学习模型
     clm = ConstructivistLearningModel()
     updated_knowledge = clm.update_knowledge(existing_knowledge=0.6, new_information=0.3)
@@ -1189,74 +1343,74 @@ def education_learning_verification():
     knowledge_transfer = clm.calculate_knowledge_transfer(
         source_knowledge=0.8, distance=0.3
     )
-    
+
     print(f"更新后知识: {updated_knowledge:.3f}")
     print(f"学习效果: {learning_effectiveness:.3f}")
     print(f"知识转移: {knowledge_transfer:.3f}")
-    
+
     # 行为主义学习模型
     blm = BehavioristLearningModel()
     response_prob = blm.calculate_response_probability(reward=0.8, punishment=0.1)
     habit = blm.calculate_habit_formation(initial_habit=0.2, max_habit=0.9, time=10.0, rate_constant=0.1)
     extinction = blm.calculate_extinction(initial_response=0.8, time=5.0, extinction_rate=0.2)
-    
+
     print(f"反应概率: {response_prob:.3f}")
     print(f"习惯强度: {habit:.3f}")
     print(f"消退程度: {extinction:.3f}")
-    
+
     # 教育评估验证
     print("\n2. 教育评估验证:")
-    
+
     # 项目反应理论
     irt = ItemResponseTheory()
     irt.add_item("Q1", difficulty=0.0, discrimination=1.0, guessing=0.25)
     irt.add_item("Q2", difficulty=1.0, discrimination=1.5, guessing=0.0)
     irt.add_item("Q3", difficulty=-0.5, discrimination=0.8, guessing=0.1)
-    
+
     responses = [True, False, True]
     estimated_ability = irt.estimate_ability(responses, method="three_parameter")
-    
+
     print(f"估计能力: {estimated_ability:.3f}")
-    
+
     # 经典测量理论
     ctt = ClassicalTestTheory()
     test_scores = [85, 78, 92, 88, 76, 95, 82, 89, 91, 87]
     criterion_scores = [88, 80, 90, 85, 78, 92, 85, 88, 89, 86]
-    
+
     reliability = ctt.calculate_reliability(test_scores)
     validity = ctt.calculate_validity(test_scores, criterion_scores)
     difficulty = ctt.calculate_difficulty(correct_responses=7, total_responses=10)
     discrimination = ctt.calculate_discrimination(high_group_correct=4, low_group_correct=1, group_size=5)
-    
+
     print(f"信度: {reliability:.3f}")
     print(f"效度: {validity:.3f}")
     print(f"难度: {difficulty:.3f}")
     print(f"区分度: {discrimination:.3f}")
-    
+
     # 智能教育验证
     print("\n3. 智能教育验证:")
-    
+
     # 自适应学习系统
     als = AdaptiveLearningSystem()
     als.add_knowledge_relationship("addition", "multiplication", 0.8)
     als.add_knowledge_relationship("multiplication", "division", 0.9)
     als.add_knowledge_relationship("addition", "subtraction", 0.7)
-    
+
     student = Student(
         id="S001",
         knowledge_level={"addition": 0.9, "subtraction": 0.8},
         learning_style=["visual", "kinesthetic"],
         performance_history=[0.8, 0.9, 0.7]
     )
-    
+
     als.add_student(student)
     recommended_concept = als.recommend_next_concept("S001")
-    
+
     print(f"推荐学习概念: {recommended_concept}")
-    
+
     # 学习分析
     analytics = LearningAnalytics()
-    
+
     # 添加学习事件
     events = [
         LearningEvent("S001", 1000.0, "quiz", 0.8, 1.0),
@@ -1265,23 +1419,69 @@ def education_learning_verification():
         LearningEvent("S002", 1200.0, "quiz", 0.6, 1.5),
         LearningEvent("S002", 900.0, "video", 0.5, 2.5)
     ]
-    
+
     for event in events:
         analytics.add_event(event)
-    
+
     success_prob = analytics.predict_success("S001")
     at_risk_students = analytics.identify_at_risk_students(threshold=0.7)
     learning_patterns = analytics.calculate_learning_patterns("S001")
-    
+
     print(f"学生S001成功概率: {success_prob:.3f}")
     print(f"风险学生: {at_risk_students}")
     print(f"学习模式: {learning_patterns}")
-    
+
     print("\n验证完成!")
 
 if __name__ == "__main__":
     education_learning_verification()
 ```
+
+---
+
+## 相关模型 / Related Models
+
+### 行业应用模型 / Industry Application Models
+
+- **[物流供应链模型](../01-物流供应链模型/README.md)** - 教育资源供应链、教材配送和教育物资管理
+- **[交通运输模型](../02-交通运输模型/README.md)** - 学生交通、校车调度和教育出行规划
+- **[电力能源模型](../03-电力能源模型/README.md)** - 教育设施电力供应、校园能源管理和教育设备电力系统
+- **[信息技术模型](../04-信息技术模型/README.md)** - 教育信息系统、学习管理系统、在线教育平台和教育数据管理都需要信息技术的支持
+- **[人工智能行业模型](../05-人工智能行业模型/README.md)** - 智能教学、个性化学习、学习分析和智能评测都应用人工智能技术
+- **[银行金融模型](../06-银行金融模型/README.md)** - 教育金融、助学贷款和教育投资
+- **[经济供需模型](../07-经济供需模型/README.md)** - 教育资源供需、教育市场均衡和教育定价机制
+- **[制造业模型](../08-制造业模型/README.md)** - 教育设备制造、教学工具生产和学习产品制造
+- **[医疗健康模型](../09-医疗健康模型/README.md)** - 医学教育、医疗培训和健康知识传播
+
+### 工程科学模型 / Engineering Science Models
+
+- **[优化模型](../../07-工程科学模型/01-优化模型/README.md)** - 教育资源优化、课程调度优化、教师分配优化和学习路径优化都是优化问题
+- **[控制论模型](../../07-工程科学模型/02-控制论模型/README.md)** - 学习过程控制、自适应控制系统和反馈控制系统
+
+### 计算机科学模型 / Computer Science Models
+
+- **[算法模型](../../04-计算机科学模型/02-算法模型/README.md)** - 教育算法、推荐算法、数据挖掘算法和优化算法在教育学习中广泛应用
+- **[数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md)** - 教育数据管理、知识数据结构和学习数据结构
+- **[人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md)** - 机器学习、深度学习和强化学习在智能教育、学习分析和个性化推荐中应用
+
+### 数学科学模型 / Mathematical Science Models
+
+- **[代数模型](../../03-数学科学模型/01-代数模型/README.md)** - 线性代数、矩阵运算在教育评估、数据分析和统计建模中应用广泛
+- **[几何模型](../../03-数学科学模型/02-几何模型/README.md)** - 知识几何、概念空间和知识可视化
+- **[拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md)** - 知识网络拓扑、学习网络和知识图谱拓扑分析
+
+### 社会科学模型 / Social Science Models
+
+- **[认知科学模型](../../06-社会科学模型/04-认知科学模型/README.md)** - 认知负荷理论、认知架构和学习认知过程都是认知科学在教育中的应用
+- **[心理学模型](../../06-社会科学模型/03-心理学模型/README.md)** - 教育心理学、学习心理学和认知心理学为教育学习模型提供理论基础
+- **[社会网络模型](../../06-社会科学模型/01-社会网络模型/README.md)** - 学习网络、协作网络和知识传播网络分析
+- **[经济学模型](../../06-社会科学模型/02-经济学模型/README.md)** - 教育经济学、教育资源配置和教育成本效益分析
+
+### 基础理论 / Basic Theory
+
+- **[模型分类学](../../01-基础理论/01-模型分类学/README.md)** - 教育学习模型的分类和体系化需要模型分类学理论指导
+- **[形式化方法论](../../01-基础理论/02-形式化方法论/README.md)** - 教育模型的形式化描述、验证和评价需要形式化方法论
+- **[科学模型论](../../01-基础理论/03-科学模型论/README.md)** - 教育学习模型的构建、验证和评价需要科学模型论指导
 
 ---
 

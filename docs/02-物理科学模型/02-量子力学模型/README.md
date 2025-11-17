@@ -5,6 +5,8 @@
 - [2.2 量子力学模型 / Quantum Mechanics Models](#22-量子力学模型--quantum-mechanics-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
   - [2.2.1 量子力学基础 / Quantum Mechanics Fundamentals](#221-量子力学基础--quantum-mechanics-fundamentals)
+    - [量子力学基础框架图 / Framework Diagram of Quantum Mechanics Fundamentals](#量子力学基础框架图--framework-diagram-of-quantum-mechanics-fundamentals)
+    - [量子态演化流程图 / Flowchart of Quantum State Evolution](#量子态演化流程图--flowchart-of-quantum-state-evolution)
     - [量子态 / Quantum States](#量子态--quantum-states)
       - [形式化定义 / Formal Definition](#形式化定义--formal-definition)
       - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition)
@@ -12,47 +14,49 @@
       - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems)
       - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation)
     - [算符与可观测量 / Operators and Observables](#算符与可观测量--operators-and-observables)
-      - [1形式化定义 / Formal Definition](#1形式化定义--formal-definition)
-      - [1公理化定义 / Axiomatic Definition](#1公理化定义--axiomatic-definition)
-      - [2形式化定理 / Formal Theorems](#2形式化定理--formal-theorems)
-      - [2算法实现 / Algorithmic Implementation](#2算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-1)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-1)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-1)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-1)
     - [测量与坍缩 / Measurement and Collapse](#测量与坍缩--measurement-and-collapse)
-      - [3形式化定义 / Formal Definition](#3形式化定义--formal-definition)
-      - [3公理化定义 / Axiomatic Definition](#3公理化定义--axiomatic-definition)
-      - [3形式化定理 / Formal Theorems](#3形式化定理--formal-theorems)
-      - [3算法实现 / Algorithmic Implementation](#3算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-2)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-2)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-2)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-2)
   - [2.2.2 薛定谔方程 / Schrödinger Equation](#222-薛定谔方程--schrödinger-equation)
+    - [薛定谔方程框架图 / Framework Diagram of Schrödinger Equation](#薛定谔方程框架图--framework-diagram-of-schrödinger-equation)
+    - [薛定谔方程求解流程图 / Flowchart of Schrödinger Equation Solution](#薛定谔方程求解流程图--flowchart-of-schrödinger-equation-solution)
     - [时间相关薛定谔方程 / Time-dependent Schrödinger Equation](#时间相关薛定谔方程--time-dependent-schrödinger-equation)
-      - [9形式化定义 / Formal Definition](#9形式化定义--formal-definition)
-      - [9公理化定义 / Axiomatic Definition](#9公理化定义--axiomatic-definition)
-      - [9形式化定理 / Formal Theorems](#9形式化定理--formal-theorems)
-      - [9算法实现 / Algorithmic Implementation](#9算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-3)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-3)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-3)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-3)
     - [定态薛定谔方程 / Time-independent Schrödinger Equation](#定态薛定谔方程--time-independent-schrödinger-equation)
-      - [4形式化定义 / Formal Definition](#4形式化定义--formal-definition)
-      - [4公理化定义 / Axiomatic Definition](#4公理化定义--axiomatic-definition)
-      - [5形式化定理 / Formal Theorems](#5形式化定理--formal-theorems)
-      - [5算法实现 / Algorithmic Implementation](#5算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-4)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-4)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-4)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-4)
     - [本征值问题 / Eigenvalue Problems](#本征值问题--eigenvalue-problems)
-      - [6形式化定义 / Formal Definition](#6形式化定义--formal-definition)
-      - [6公理化定义 / Axiomatic Definition](#6公理化定义--axiomatic-definition)
-      - [7形式化定理 / Formal Theorems](#7形式化定理--formal-theorems)
-      - [7算法实现 / Algorithmic Implementation](#7算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-5)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-5)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-5)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-5)
   - [2.2.3 海森堡不确定性原理 / Heisenberg Uncertainty Principle](#223-海森堡不确定性原理--heisenberg-uncertainty-principle)
     - [位置-动量不确定性 / Position-Momentum Uncertainty](#位置-动量不确定性--position-momentum-uncertainty)
-      - [8形式化定义 / Formal Definition](#8形式化定义--formal-definition)
-      - [8公理化定义 / Axiomatic Definition](#8公理化定义--axiomatic-definition)
-      - [10形式化定理 / Formal Theorems](#10形式化定理--formal-theorems)
-      - [10算法实现 / Algorithmic Implementation](#10算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-6)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-6)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-6)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-6)
     - [时间-能量不确定性 / Time-Energy Uncertainty](#时间-能量不确定性--time-energy-uncertainty)
-      - [5形式化定义 / Formal Definition](#5形式化定义--formal-definition)
-      - [5公理化定义 / Axiomatic Definition](#5公理化定义--axiomatic-definition)
-      - [1形式化定理 / Formal Theorems](#1形式化定理--formal-theorems)
-      - [1算法实现 / Algorithmic Implementation](#1算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-7)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-7)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-7)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-7)
     - [一般不确定性关系 / General Uncertainty Relations](#一般不确定性关系--general-uncertainty-relations)
-      - [2形式化定义 / Formal Definition](#2形式化定义--formal-definition)
-      - [2公理化定义 / Axiomatic Definition](#2公理化定义--axiomatic-definition)
-      - [4形式化定理 / Formal Theorems](#4形式化定理--formal-theorems)
-      - [4算法实现 / Algorithmic Implementation](#4算法实现--algorithmic-implementation)
+      - [形式化定义 / Formal Definition](#形式化定义--formal-definition-8)
+      - [公理化定义 / Axiomatic Definition](#公理化定义--axiomatic-definition-8)
+      - [形式化定理 / Formal Theorems](#形式化定理--formal-theorems-8)
+      - [算法实现 / Algorithmic Implementation](#算法实现--algorithmic-implementation-8)
   - [2.2.4 量子叠加与纠缠 / Quantum Superposition and Entanglement](#224-量子叠加与纠缠--quantum-superposition-and-entanglement)
     - [量子叠加原理 / Quantum Superposition Principle](#量子叠加原理--quantum-superposition-principle)
     - [量子纠缠 / Quantum Entanglement](#量子纠缠--quantum-entanglement)
@@ -70,11 +74,74 @@
     - [量子电动力学 / Quantum Electrodynamics](#量子电动力学--quantum-electrodynamics)
     - [量子色动力学 / Quantum Chromodynamics](#量子色动力学--quantum-chromodynamics)
     - [标准模型 / Standard Model](#标准模型--standard-model)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
 
 ## 2.2.1 量子力学基础 / Quantum Mechanics Fundamentals
+
+### 量子力学基础框架图 / Framework Diagram of Quantum Mechanics Fundamentals
+
+```mermaid
+graph TB
+    A[量子力学基础] --> B[量子态]
+    A --> C[算符与可观测量]
+    A --> D[测量与坍缩]
+
+    B --> E[希尔伯特空间]
+    B --> F[态向量 |ψ⟩]
+    B --> G[叠加原理]
+
+    C --> H[厄米算符]
+    C --> I[本征值问题]
+    C --> J[对易关系]
+
+    D --> K[测量公设]
+    D --> L[波函数坍缩]
+    D --> M[概率解释]
+
+    E --> N[薛定谔方程]
+    H --> N
+    K --> N
+
+    N --> O[量子动力学]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style N fill:#e8f5e9
+    style O fill:#e8f5e9
+```
+
+### 量子态演化流程图 / Flowchart of Quantum State Evolution
+
+```mermaid
+flowchart TD
+    Start([开始]) --> InitState[初始化量子态 |ψ0⟩]
+    InitState --> ConstructH[构造哈密顿算符 H]
+    ConstructH --> SolveSE[求解薛定谔方程]
+    SolveSE --> TimeEvolve[时间演化 |ψt⟩ = U|ψ0⟩]
+    TimeEvolve --> Measure{进行测量?}
+    Measure -->|否| ContinueEvolve[继续演化]
+    Measure -->|是| ChooseObs[选择可观测量 O]
+    ChooseObs --> CalcProb[计算概率分布]
+    CalcProb --> Collapse[波函数坍缩]
+    Collapse --> NewState[新量子态 |ψ'⟩]
+    NewState --> Measure
+    ContinueEvolve --> TimeEvolve
+    Measure --> End([结束])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style ConstructH fill:#fff4e1
+    style SolveSE fill:#fff4e1
+    style TimeEvolve fill:#e8f5e9
+    style Collapse fill:#ffe1f5
+```
 
 ### 量子态 / Quantum States
 
@@ -129,10 +196,10 @@ $$\langle\psi|\psi\rangle = \sum_n |c_n|^2 = 1$$
 def normalize_quantum_state(state_vector):
     """
     归一化量子态向量
-    
+
     参数:
         state_vector: 复数向量
-    
+
     返回:
         归一化后的量子态向量
     """
@@ -144,11 +211,11 @@ def normalize_quantum_state(state_vector):
 def check_normalization(state_vector, tolerance=1e-10):
     """
     检查量子态是否归一化
-    
+
     参数:
         state_vector: 量子态向量
         tolerance: 容差
-    
+
     返回:
         是否归一化
     """
@@ -162,35 +229,35 @@ def check_normalization(state_vector, tolerance=1e-10):
 def quantum_superposition(states, coefficients):
     """
     构造量子叠加态
-    
+
     参数:
         states: 量子态列表
         coefficients: 复数系数列表
-    
+
     返回:
         叠加态向量
     """
     if len(states) != len(coefficients):
         raise ValueError("态和系数数量不匹配")
-    
+
     # 确保所有态具有相同维度
     dim = len(states[0])
     for state in states:
         if len(state) != dim:
             raise ValueError("所有态必须具有相同维度")
-    
+
     # 构造叠加态
     superposition = np.zeros(dim, dtype=complex)
     for state, coeff in zip(states, coefficients):
         superposition += coeff * state
-    
+
     # 归一化
     return normalize_quantum_state(superposition)
 ```
 
 ### 算符与可观测量 / Operators and Observables
 
-#### 1形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **厄米算符** 对应物理可观测量：
 $$\hat{A} = \hat{A}^\dagger$$
@@ -204,7 +271,7 @@ $$\hat{A}|\psi_n\rangle = a_n|\psi_n\rangle$$
 - $a_n$: 本征值
 - $|\psi_n\rangle$: 本征态
 
-#### 1公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **可观测量公理系统** $\mathcal{OB} = \langle \mathcal{O}, \mathcal{E}, \mathcal{M}, \mathcal{P} \rangle$：
 
@@ -214,7 +281,7 @@ $$\hat{A}|\psi_n\rangle = a_n|\psi_n\rangle$$
 **OB4 (完备性公理)**: 本征态构成完备基
 **OB5 (测量公理)**: 测量结果为本征值，概率由玻恩规则决定
 
-#### 2形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.4 (厄米算符本征值定理)**: 厄米算符的本征值都是实数
 **证明**: 设 $\hat{A}|\psi\rangle = a|\psi\rangle$，则 $a = \langle\psi|\hat{A}|\psi\rangle = \langle\psi|\hat{A}^\dagger|\psi\rangle = a^*$，故 $a$ 为实数。
@@ -225,7 +292,7 @@ $$\hat{A}|\psi_n\rangle = a_n|\psi_n\rangle$$
 **定理2.2.6 (谱分解定理)**: 厄米算符可表示为 $\hat{A} = \sum_n a_n|n\rangle\langle n|$
 **证明**: 由本征态的完备性，任意态可展开为 $|\psi\rangle = \sum_n c_n|n\rangle$，故 $\hat{A}|\psi\rangle = \sum_n a_n c_n|n\rangle = \sum_n a_n|n\rangle\langle n|\psi\rangle$。
 
-#### 2算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.3 (厄米算符验证算法)**:
 
@@ -233,10 +300,10 @@ $$\hat{A}|\psi_n\rangle = a_n|\psi_n\rangle$$
 def is_hermitian(operator):
     """
     检查算符是否为厄米算符
-    
+
     参数:
         operator: 复数矩阵
-    
+
     返回:
         是否为厄米算符
     """
@@ -245,16 +312,16 @@ def is_hermitian(operator):
 def find_eigenvalues_eigenvectors(operator):
     """
     计算厄米算符的本征值和本征向量
-    
+
     参数:
         operator: 厄米算符矩阵
-    
+
     返回:
         本征值数组, 本征向量矩阵
     """
     if not is_hermitian(operator):
         raise ValueError("算符必须是厄米的")
-    
+
     eigenvalues, eigenvectors = np.linalg.eigh(operator)
     return eigenvalues, eigenvectors
 ```
@@ -265,11 +332,11 @@ def find_eigenvalues_eigenvectors(operator):
 def expectation_value(operator, state):
     """
     计算可观测量在给定态下的期望值
-    
+
     参数:
         operator: 厄米算符
         state: 量子态向量
-    
+
     返回:
         期望值
     """
@@ -278,11 +345,11 @@ def expectation_value(operator, state):
 def variance(operator, state):
     """
     计算可观测量在给定态下的方差
-    
+
     参数:
         operator: 厄米算符
         state: 量子态向量
-    
+
     返回:
         方差
     """
@@ -293,7 +360,7 @@ def variance(operator, state):
 
 ### 测量与坍缩 / Measurement and Collapse
 
-#### 3形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **测量公设**: 测量可观测量 $\hat{A}$ 得到本征值 $a_n$ 的概率为：
 $$P(a_n) = |\langle\psi_n|\psi\rangle|^2$$
@@ -301,7 +368,7 @@ $$P(a_n) = |\langle\psi_n|\psi\rangle|^2$$
 **测量后坍缩**: 测量后系统坍缩到对应的本征态：
 $$|\psi\rangle \xrightarrow{\text{measurement}} |\psi_n\rangle$$
 
-#### 3公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **测量公理系统** $\mathcal{MS} = \langle \mathcal{P}, \mathcal{C}, \mathcal{U}, \mathcal{R} \rangle$：
 
@@ -311,7 +378,7 @@ $$|\psi\rangle \xrightarrow{\text{measurement}} |\psi_n\rangle$$
 **MS4 (不确定性公理)**: 测量引入不确定性，满足海森堡不确定性原理
 **MS5 (投影公理)**: 测量可用投影算符 $\hat{P}_n = |n\rangle\langle n|$ 描述
 
-#### 3形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.7 (测量概率归一化定理)**: 测量概率满足 $\sum_n P(a_n) = 1$
 **证明**: $\sum_n P(a_n) = \sum_n |\langle\psi_n|\psi\rangle|^2 = \langle\psi|\psi\rangle = 1$，其中使用了本征态的完备性。
@@ -322,7 +389,7 @@ $$|\psi\rangle \xrightarrow{\text{measurement}} |\psi_n\rangle$$
 **定理2.2.9 (测量坍缩定理)**: 测量后密度矩阵变为 $\rho' = \sum_n P_n \rho P_n$
 **证明**: 由投影测量公理，测量后系统以概率 $P(a_n)$ 处于态 $|n\rangle$，故密度矩阵为 $\rho' = \sum_n P(a_n)|n\rangle\langle n| = \sum_n P_n \rho P_n$。
 
-#### 3算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.5 (量子测量算法)**:
 
@@ -330,26 +397,26 @@ $$|\psi\rangle \xrightarrow{\text{measurement}} |\psi_n\rangle$$
 def quantum_measurement(operator, state, num_measurements=1000):
     """
     模拟量子测量过程
-    
+
     参数:
         operator: 厄米算符
         state: 量子态向量
         num_measurements: 测量次数
-    
+
     返回:
         测量结果统计
     """
     eigenvalues, eigenvectors = find_eigenvalues_eigenvectors(operator)
-    
+
     # 计算测量概率
     probabilities = []
     for i in range(len(eigenvalues)):
         prob = abs(np.dot(eigenvectors[:, i].conj(), state))**2
         probabilities.append(prob)
-    
+
     # 模拟测量
     results = np.random.choice(eigenvalues, size=num_measurements, p=probabilities)
-    
+
     return {
         'eigenvalues': eigenvalues,
         'probabilities': probabilities,
@@ -361,22 +428,22 @@ def quantum_measurement(operator, state, num_measurements=1000):
 def projective_measurement(projector, state):
     """
     投影测量
-    
+
     参数:
         projector: 投影算符
         state: 量子态向量
-    
+
     返回:
         测量概率, 坍缩后的态
     """
     # 计算测量概率
     probability = np.real(np.dot(state.conj(), np.dot(projector, state)))
-    
+
     # 计算坍缩后的态
     collapsed_state = np.dot(projector, state)
     if probability > 0:
         collapsed_state = collapsed_state / np.sqrt(probability)
-    
+
     return probability, collapsed_state
 ```
 
@@ -386,27 +453,27 @@ def projective_measurement(projector, state):
 def heisenberg_uncertainty(operator_A, operator_B, state):
     """
     计算两个可观测量之间的不确定性关系
-    
+
     参数:
         operator_A: 可观测量A
         operator_B: 可观测量B
         state: 量子态向量
-    
+
     返回:
         不确定性关系
     """
     # 计算标准差
     delta_A = np.sqrt(variance(operator_A, state))
     delta_B = np.sqrt(variance(operator_B, state))
-    
+
     # 计算交换子
     commutator = operator_A @ operator_B - operator_B @ operator_A
     commutator_expectation = expectation_value(commutator, state)
-    
+
     # 不确定性关系
     uncertainty_product = delta_A * delta_B
     commutator_bound = abs(commutator_expectation) / 2
-    
+
     return {
         'delta_A': delta_A,
         'delta_B': delta_B,
@@ -420,9 +487,75 @@ def heisenberg_uncertainty(operator_A, operator_B, state):
 
 ## 2.2.2 薛定谔方程 / Schrödinger Equation
 
+### 薛定谔方程框架图 / Framework Diagram of Schrödinger Equation
+
+```mermaid
+graph TB
+    A[薛定谔方程] --> B[时间相关薛定谔方程]
+    A --> C[定态薛定谔方程]
+    A --> D[本征值问题]
+
+    B --> E[iℏ∂|ψ⟩/∂t = H|ψ⟩]
+    B --> F[时间演化算符 U]
+    B --> G[幺正演化]
+
+    C --> H[H|ψ⟩ = E|ψ⟩]
+    C --> I[能量本征态]
+    C --> J[能级结构]
+
+    D --> K[本征值 En]
+    D --> L[本征函数 |n⟩]
+    D --> M[谱分解]
+
+    E --> N[量子动力学]
+    H --> N
+    K --> N
+
+    N --> O[物理预测]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style N fill:#e8f5e9
+    style O fill:#e8f5e9
+```
+
+### 薛定谔方程求解流程图 / Flowchart of Schrödinger Equation Solution
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 哈密顿算符 H, 初始态 |ψ0⟩]
+    Input --> CheckType{方程类型?}
+    CheckType -->|时间相关| TimeDep[时间相关薛定谔方程]
+    CheckType -->|定态| TimeIndep[定态薛定谔方程]
+
+    TimeDep --> ConstructU[构造时间演化算符 U]
+    ConstructU --> TimeEvolve[时间演化 |ψt⟩ = U|ψ0⟩]
+    TimeEvolve --> Output1[输出: 时间演化态]
+
+    TimeIndep --> SolveEigen[求解本征值问题 H|n⟩ = En|n⟩]
+    SolveEigen --> FindEigenval[找到本征值 En]
+    SolveEigen --> FindEigenvec[找到本征态 |n⟩]
+    FindEigenval --> ExpandState[展开初始态 |ψ0⟩ = Σcn|n⟩]
+    FindEigenvec --> ExpandState
+    ExpandState --> TimeEvolve2[时间演化 |ψt⟩ = Σcn e^(-iEnt/ℏ)|n⟩]
+    TimeEvolve2 --> Output2[输出: 时间演化态]
+
+    Output1 --> End([结束])
+    Output2 --> End
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style ConstructU fill:#fff4e1
+    style SolveEigen fill:#fff4e1
+    style TimeEvolve fill:#e8f5e9
+    style TimeEvolve2 fill:#e8f5e9
+```
+
 ### 时间相关薛定谔方程 / Time-dependent Schrödinger Equation
 
-#### 9形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **一般形式**:
 $$i\hbar\frac{\partial}{\partial t}|\psi(t)\rangle = \hat{H}|\psi(t)\rangle$$
@@ -436,7 +569,7 @@ $$i\hbar\frac{\partial}{\partial t}|\psi(t)\rangle = \hat{H}|\psi(t)\rangle$$
 **一维势场中的形式**:
 $$i\hbar\frac{\partial}{\partial t}\psi(x,t) = \left[-\frac{\hbar^2}{2m}\frac{\partial^2}{\partial x^2} + V(x)\right]\psi(x,t)$$
 
-#### 9公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **薛定谔方程公理系统** $\mathcal{SE} = \langle \mathcal{H}, \mathcal{T}, \mathcal{U}, \mathcal{E} \rangle$：
 
@@ -446,7 +579,7 @@ $$i\hbar\frac{\partial}{\partial t}\psi(x,t) = \left[-\frac{\hbar^2}{2m}\frac{\p
 **SE4 (确定性公理)**: 给定初始态和哈密顿量，演化是确定的
 **SE5 (能量守恒公理)**: 在保守系统中，能量期望值守恒
 
-#### 9形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.10 (时间演化幺正性定理)**: 薛定谔方程的解保持内积不变
 **证明**: $\frac{d}{dt}\langle\psi(t)|\phi(t)\rangle = \frac{i}{\hbar}\langle\psi(t)|[\hat{H}^\dagger - \hat{H}]|\phi(t)\rangle = 0$，因为 $\hat{H}$ 是厄米的。
@@ -457,7 +590,7 @@ $$i\hbar\frac{\partial}{\partial t}\psi(x,t) = \left[-\frac{\hbar^2}{2m}\frac{\p
 **定理2.2.12 (时间演化算符定理)**: $|\psi(t)\rangle = U(t)|\psi(0)\rangle$，其中 $U(t) = e^{-i\hat{H}t/\hbar}$
 **证明**: 直接代入薛定谔方程验证。
 
-#### 9算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.7 (时间演化算法)**:
 
@@ -465,17 +598,17 @@ $$i\hbar\frac{\partial}{\partial t}\psi(x,t) = \left[-\frac{\hbar^2}{2m}\frac{\p
 def time_evolution(hamiltonian, initial_state, time_points):
     """
     计算量子态的时间演化
-    
+
     参数:
         hamiltonian: 哈密顿算符
         initial_state: 初始量子态
         time_points: 时间点数组
-    
+
     返回:
         时间演化后的量子态列表
     """
     eigenvalues, eigenvectors = find_eigenvalues_eigenvectors(hamiltonian)
-    
+
     evolved_states = []
     for t in time_points:
         # 计算演化算符
@@ -484,21 +617,21 @@ def time_evolution(hamiltonian, initial_state, time_points):
             phase = np.exp(-1j * eigenvalue * t / hbar)
             eigenvector = eigenvectors[:, i].reshape(-1, 1)
             evolution_operator += phase * (eigenvector @ eigenvector.conj().T)
-        
+
         # 计算演化后的态
         evolved_state = evolution_operator @ initial_state
         evolved_states.append(evolved_state)
-    
+
     return evolved_states
 
 def energy_expectation(hamiltonian, state):
     """
     计算能量期望值
-    
+
     参数:
         hamiltonian: 哈密顿算符
         state: 量子态
-    
+
     返回:
         能量期望值
     """
@@ -507,7 +640,7 @@ def energy_expectation(hamiltonian, state):
 
 ### 定态薛定谔方程 / Time-independent Schrödinger Equation
 
-#### 4形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **定态解**:
 $$\psi(x,t) = \psi(x)e^{-iEt/\hbar}$$
@@ -518,7 +651,7 @@ $$\hat{H}\psi(x) = E\psi(x)$$
 **一维形式**:
 $$-\frac{\hbar^2}{2m}\frac{d^2\psi}{dx^2} + V(x)\psi(x) = E\psi(x)$$
 
-#### 4公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **定态公理系统** $\mathcal{SS} = \langle \mathcal{E}, \mathcal{P}, \mathcal{O}, \mathcal{N} \rangle$：
 
@@ -528,7 +661,7 @@ $$-\frac{\hbar^2}{2m}\frac{d^2\psi}{dx^2} + V(x)\psi(x) = E\psi(x)$$
 **SS4 (正交性公理)**: 不同能量的定态正交
 **SS5 (完备性公理)**: 定态构成完备基
 
-#### 5形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.13 (定态能量定理)**: 定态的能量是确定的
 **证明**: 定态是哈密顿算符的本征态，故能量为确定的本征值。
@@ -539,7 +672,7 @@ $$-\frac{\hbar^2}{2m}\frac{d^2\psi}{dx^2} + V(x)\psi(x) = E\psi(x)$$
 **定理2.2.15 (定态完备性定理)**: 任意态可展开为定态的线性组合
 **证明**: 由哈密顿算符本征态的完备性。
 
-#### 5算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.8 (定态求解算法)**:
 
@@ -547,29 +680,29 @@ $$-\frac{\hbar^2}{2m}\frac{d^2\psi}{dx^2} + V(x)\psi(x) = E\psi(x)$$
 def solve_stationary_states(hamiltonian):
     """
     求解定态薛定谔方程
-    
+
     参数:
         hamiltonian: 哈密顿算符
-    
+
     返回:
         能量本征值和本征态
     """
     eigenvalues, eigenvectors = find_eigenvalues_eigenvectors(hamiltonian)
-    
+
     # 按能量排序
     sorted_indices = np.argsort(eigenvalues)
     sorted_energies = eigenvalues[sorted_indices]
     sorted_states = eigenvectors[:, sorted_indices]
-    
+
     return sorted_energies, sorted_states
 
 def ground_state_energy(hamiltonian):
     """
     计算基态能量
-    
+
     参数:
         hamiltonian: 哈密顿算符
-    
+
     返回:
         基态能量
     """
@@ -579,7 +712,7 @@ def ground_state_energy(hamiltonian):
 
 ### 本征值问题 / Eigenvalue Problems
 
-#### 6形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **无限深势阱**:
 $$
@@ -595,7 +728,7 @@ $$\psi_n(x) = \sqrt{\frac{2}{a}}\sin\left(\frac{n\pi x}{a}\right)$$
 **本征值**:
 $$E_n = \frac{n^2\pi^2\hbar^2}{2ma^2}$$
 
-#### 6公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **势阱公理系统** $\mathcal{PW} = \langle \mathcal{V}, \mathcal{B}, \mathcal{E}, \mathcal{N} \rangle$：
 
@@ -605,7 +738,7 @@ $$E_n = \frac{n^2\pi^2\hbar^2}{2ma^2}$$
 **PW4 (完备性公理)**: 本征函数构成完备基
 **PW5 (节点定理)**: 第n个本征函数有n-1个节点
 
-#### 7形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.16 (节点定理)**: 第n个本征函数在势阱内有n-1个节点
 **证明**: 由Sturm-Liouville理论，本征函数按节点数递增排列。
@@ -616,7 +749,7 @@ $$E_n = \frac{n^2\pi^2\hbar^2}{2ma^2}$$
 **定理2.2.18 (基态无节点定理)**: 基态本征函数在势阱内无节点
 **证明**: 基态对应最低能量，由变分原理，无节点的函数能量最低。
 
-#### 7算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.9 (无限深势阱求解算法)**:
 
@@ -624,38 +757,38 @@ $$E_n = \frac{n^2\pi^2\hbar^2}{2ma^2}$$
 def infinite_potential_well(a, n_max, mass=1.0):
     """
     求解无限深势阱的本征值和本征函数
-    
+
     参数:
         a: 势阱宽度
         n_max: 最大能级数
         mass: 粒子质量
-    
+
     返回:
         能级和本征函数
     """
     energies = []
     wavefunctions = []
-    
+
     for n in range(1, n_max + 1):
         # 计算能级
         energy = (n**2 * np.pi**2 * hbar**2) / (2 * mass * a**2)
         energies.append(energy)
-        
+
         # 计算本征函数（在离散点上）
         x = np.linspace(0, a, 1000)
         wavefunction = np.sqrt(2/a) * np.sin(n * np.pi * x / a)
         wavefunctions.append(wavefunction)
-    
+
     return np.array(energies), np.array(wavefunctions)
 
 def probability_density(wavefunction, x):
     """
     计算概率密度
-    
+
     参数:
         wavefunction: 波函数
         x: 位置坐标
-    
+
     返回:
         概率密度
     """
@@ -668,7 +801,7 @@ def probability_density(wavefunction, x):
 
 ### 位置-动量不确定性 / Position-Momentum Uncertainty
 
-#### 8形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **不确定性关系**:
 $$\Delta x \Delta p \geq \frac{\hbar}{2}$$
@@ -681,7 +814,7 @@ $$\Delta x \Delta p \geq \frac{\hbar}{2}$$
 **高斯波包的最小不确定性**:
 $$\Delta x \Delta p = \frac{\hbar}{2}$$
 
-#### 8公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **不确定性公理系统** $\mathcal{UP} = \langle \mathcal{O}, \mathcal{S}, \mathcal{M}, \mathcal{B} \rangle$：
 
@@ -691,7 +824,7 @@ $$\Delta x \Delta p = \frac{\hbar}{2}$$
 **UP4 (测量干扰公理)**: 测量一个量会影响另一个量的精度
 **UP5 (量子本质公理)**: 不确定性是量子力学的本质特征
 
-#### 10形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.19 (海森堡不确定性定理)**: $\Delta x \Delta p \geq \frac{\hbar}{2}$
 **证明**: 使用施瓦茨不等式和交换子关系 $[\hat{x},\hat{p}] = i\hbar$。
@@ -702,7 +835,7 @@ $$\Delta x \Delta p = \frac{\hbar}{2}$$
 **定理2.2.21 (不确定性传播定理)**: 不确定性关系在时间演化下保持不变
 **证明**: 幺正演化保持内积，故不确定性关系不变。
 
-#### 10算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.10 (位置-动量不确定性算法)**:
 
@@ -710,46 +843,46 @@ $$\Delta x \Delta p = \frac{\hbar}{2}$$
 def position_momentum_uncertainty(wavefunction, x_grid, hbar=1.0):
     """
     计算位置-动量不确定性关系
-    
+
     参数:
         wavefunction: 波函数
         x_grid: 位置网格
         hbar: 约化普朗克常数
-    
+
     返回:
         位置和动量的标准差
     """
     # 归一化波函数
     norm = np.sqrt(np.trapz(np.abs(wavefunction)**2, x_grid))
     wavefunction = wavefunction / norm
-    
+
     # 计算位置期望值和方差
     x_expectation = np.trapz(x_grid * np.abs(wavefunction)**2, x_grid)
     x_variance = np.trapz((x_grid - x_expectation)**2 * np.abs(wavefunction)**2, x_grid)
-    
+
     # 计算动量期望值和方差（通过傅里叶变换）
     dx = x_grid[1] - x_grid[0]
     k_grid = np.fft.fftfreq(len(x_grid), dx) * 2 * np.pi
     momentum_wavefunction = np.fft.fft(wavefunction) * dx / np.sqrt(2 * np.pi)
-    
+
     p_expectation = np.trapz(k_grid * hbar * np.abs(momentum_wavefunction)**2, k_grid)
     p_variance = np.trapz((k_grid * hbar - p_expectation)**2 * np.abs(momentum_wavefunction)**2, k_grid)
-    
+
     delta_x = np.sqrt(x_variance)
     delta_p = np.sqrt(p_variance)
-    
+
     return delta_x, delta_p, delta_x * delta_p
 
 def gaussian_wave_packet(x, x0, sigma, k0):
     """
     构造高斯波包
-    
+
     参数:
         x: 位置坐标
         x0: 中心位置
         sigma: 宽度参数
         k0: 中心动量
-    
+
     返回:
         高斯波包
     """
@@ -758,14 +891,14 @@ def gaussian_wave_packet(x, x0, sigma, k0):
 
 ### 时间-能量不确定性 / Time-Energy Uncertainty
 
-#### 5形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **时间-能量不确定性**:
 $$\Delta t \Delta E \geq \frac{\hbar}{2}$$
 
 **应用**: 解释粒子寿命与能量宽度的关系。
 
-#### 5公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **时间-能量不确定性公理系统** $\mathcal{TE} = \langle \mathcal{T}, \mathcal{E}, \mathcal{L}, \mathcal{W} \rangle$：
 
@@ -775,7 +908,7 @@ $$\Delta t \Delta E \geq \frac{\hbar}{2}$$
 **TE4 (共振公理)**: 共振态的能量宽度与寿命相关
 **TE5 (量子隧道公理)**: 隧道效应中的时间-能量关系
 
-#### 1形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.22 (时间-能量不确定性定理)**: $\Delta t \Delta E \geq \frac{\hbar}{2}$
 **证明**: 通过傅里叶变换和时间-频率对偶性证明。
@@ -786,7 +919,7 @@ $$\Delta t \Delta E \geq \frac{\hbar}{2}$$
 **定理2.2.24 (测量时间定理)**: 测量时间 $\Delta t$ 与能量精度 $\Delta E$ 满足不确定性关系
 **证明**: 测量过程的时间分辨率和能量分辨率相互制约。
 
-#### 1算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.11 (时间-能量不确定性算法)**:
 
@@ -794,45 +927,45 @@ $$\Delta t \Delta E \geq \frac{\hbar}{2}$$
 def time_energy_uncertainty(time_signal, time_grid, hbar=1.0):
     """
     计算时间-能量不确定性关系
-    
+
     参数:
         time_signal: 时间信号
         time_grid: 时间网格
         hbar: 约化普朗克常数
-    
+
     返回:
         时间和能量的标准差
     """
     # 归一化信号
     norm = np.sqrt(np.trapz(np.abs(time_signal)**2, time_grid))
     signal = time_signal / norm
-    
+
     # 计算时间期望值和方差
     t_expectation = np.trapz(time_grid * np.abs(signal)**2, time_grid)
     t_variance = np.trapz((time_grid - t_expectation)**2 * np.abs(signal)**2, time_grid)
-    
+
     # 计算能量期望值和方差（通过傅里叶变换）
     dt = time_grid[1] - time_grid[0]
     omega_grid = np.fft.fftfreq(len(time_grid), dt) * 2 * np.pi
     energy_signal = np.fft.fft(signal) * dt / np.sqrt(2 * np.pi)
-    
+
     E_expectation = np.trapz(omega_grid * hbar * np.abs(energy_signal)**2, omega_grid)
     E_variance = np.trapz((omega_grid * hbar - E_expectation)**2 * np.abs(energy_signal)**2, omega_grid)
-    
+
     delta_t = np.sqrt(t_variance)
     delta_E = np.sqrt(E_variance)
-    
+
     return delta_t, delta_E, delta_t * delta_E
 
 def exponential_decay(t, tau, E0):
     """
     构造指数衰变信号
-    
+
     参数:
         t: 时间
         tau: 寿命
         E0: 初始能量
-    
+
     返回:
         衰变信号
     """
@@ -841,14 +974,14 @@ def exponential_decay(t, tau, E0):
 
 ### 一般不确定性关系 / General Uncertainty Relations
 
-#### 2形式化定义 / Formal Definition
+#### 形式化定义 / Formal Definition
 
 **任意两个可观测量**:
 $$\Delta A \Delta B \geq \frac{1}{2}|\langle[\hat{A},\hat{B}]\rangle|$$
 
 其中 $[\hat{A},\hat{B}] = \hat{A}\hat{B} - \hat{B}\hat{A}$ 是交换子。
 
-#### 2公理化定义 / Axiomatic Definition
+#### 公理化定义 / Axiomatic Definition
 
 **一般不确定性公理系统** $\mathcal{GU} = \langle \mathcal{O}, \mathcal{C}, \mathcal{I}, \mathcal{B} \rangle$：
 
@@ -858,7 +991,7 @@ $$\Delta A \Delta B \geq \frac{1}{2}|\langle[\hat{A},\hat{B}]\rangle|$$
 **GU4 (互补性公理)**: 不对易的算符具有互补性
 **GU5 (测量精度公理)**: 测量精度受不确定性关系限制
 
-#### 4形式化定理 / Formal Theorems
+#### 形式化定理 / Formal Theorems
 
 **定理2.2.25 (一般不确定性定理)**: $\Delta A \Delta B \geq \frac{1}{2}|\langle[\hat{A},\hat{B}]\rangle|$
 **证明**: 使用施瓦茨不等式 $|\langle f|g\rangle|^2 \leq \langle f|f\rangle\langle g|g\rangle$。
@@ -869,7 +1002,7 @@ $$\Delta A \Delta B \geq \frac{1}{2}|\langle[\hat{A},\hat{B}]\rangle|$$
 **定理2.2.27 (最小不确定性态定理)**: 最小不确定性态满足 $(\hat{A} - \langle A \rangle)|\psi\rangle = i\lambda(\hat{B} - \langle B \rangle)|\psi\rangle$
 **证明**: 当施瓦茨不等式取等号时，$|f\rangle$ 和 $|g\rangle$ 线性相关。
 
-#### 4算法实现 / Algorithmic Implementation
+#### 算法实现 / Algorithmic Implementation
 
 **算法2.2.12 (一般不确定性算法)**:
 
@@ -877,27 +1010,27 @@ $$\Delta A \Delta B \geq \frac{1}{2}|\langle[\hat{A},\hat{B}]\rangle|$$
 def general_uncertainty(operator_A, operator_B, state):
     """
     计算两个可观测量的一般不确定性关系
-    
+
     参数:
         operator_A: 可观测量A
         operator_B: 可观测量B
         state: 量子态
-    
+
     返回:
         不确定性关系
     """
     # 计算标准差
     delta_A = np.sqrt(variance(operator_A, state))
     delta_B = np.sqrt(variance(operator_B, state))
-    
+
     # 计算交换子
     commutator = operator_A @ operator_B - operator_B @ operator_A
     commutator_expectation = expectation_value(commutator, state)
-    
+
     # 不确定性关系
     uncertainty_product = delta_A * delta_B
     commutator_bound = abs(commutator_expectation) / 2
-    
+
     return {
         'delta_A': delta_A,
         'delta_B': delta_B,
@@ -910,12 +1043,12 @@ def general_uncertainty(operator_A, operator_B, state):
 def check_commutation(operator_A, operator_B, tolerance=1e-10):
     """
     检查两个算符是否对易
-    
+
     参数:
         operator_A: 算符A
         operator_B: 算符B
         tolerance: 容差
-    
+
     返回:
         是否对易
     """
@@ -1070,6 +1203,22 @@ $$\mathcal{L} = \bar{\psi}(i\gamma^\mu D_\mu - m)\psi - \frac{1}{4}G^a_{\mu\nu}G
 - **玻色子**: 光子、W/Z玻色子、胶子、希格斯玻色子
 
 ---
+
+## 相关模型 / Related Models
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../01-经典力学模型/README.md) - 量子力学的经典极限，对应原理
+- [相对论模型](../03-相对论模型/README.md) - 相对论量子力学，狄拉克方程
+- [热力学模型](../04-热力学模型/README.md) - 量子统计力学，费米-狄拉克统计
+- [光学模型](../06-光学模型/README.md) - 量子光学，光子与光子的相互作用
+- [电磁学模型](../05-电磁学模型/README.md) - 量子电动力学，电磁场的量子化
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 量子力学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 量子力学的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 量子力学作为科学模型的理论基础
 
 ## 参考文献 / References
 

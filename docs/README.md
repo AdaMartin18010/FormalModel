@@ -34,9 +34,12 @@
 
 - [2.1 经典力学模型 / Classical Mechanics Models](02-物理科学模型/01-经典力学模型/README.md) ✅
 - [2.2 量子力学模型 / Quantum Mechanics Models](02-物理科学模型/02-量子力学模型/README.md) ✅
-- [2.3 相对论模型 / Relativity Models](02-物理科学模型/03-相对论模型/README.md)
-- [2.4 热力学模型 / Thermodynamics Models](02-物理科学模型/04-热力学模型/README.md)
-- [2.5 统计物理模型 / Statistical Physics Models](02-物理科学模型/05-统计物理模型/README.md)
+- [2.3 相对论模型 / Relativity Models](02-物理科学模型/03-相对论模型/README.md) ✅
+- [2.4 热力学模型 / Thermodynamics Models](02-物理科学模型/04-热力学模型/README.md) ✅
+- [2.5 电磁学模型 / Electromagnetism Models](02-物理科学模型/05-电磁学模型/README.md) ✅
+- [2.6 光学模型 / Optical Models](02-物理科学模型/06-光学模型/README.md) ✅
+- [2.7 声学模型 / Acoustic Models](02-物理科学模型/07-声学模型/README.md) ✅
+- [2.8 流体力学模型 / Fluid Mechanics Models](02-物理科学模型/08-流体力学模型/README.md) ✅
 
 ### 3. 数学科学模型 / Mathematical Science Models
 

@@ -4,6 +4,8 @@
 
 - [7.4 材料科学模型 / Materials Science Models](#74-材料科学模型--materials-science-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [材料科学模型框架图 / Framework Diagram of Materials Science Models](#材料科学模型框架图--framework-diagram-of-materials-science-models)
+  - [相变过程流程图 / Flowchart of Phase Transformation Process](#相变过程流程图--flowchart-of-phase-transformation-process)
   - [7.4.1 晶体结构模型 / Crystal Structure Models](#741-晶体结构模型--crystal-structure-models)
     - [布拉格定律 / Bragg's Law](#布拉格定律--braggs-law)
     - [倒易点阵 / Reciprocal Lattice](#倒易点阵--reciprocal-lattice)
@@ -35,9 +37,95 @@
       - [材料设计 / Materials Design](#材料设计--materials-design)
       - [工艺优化 / Process Optimization](#工艺优化--process-optimization)
       - [失效分析 / Failure Analysis](#失效分析--failure-analysis)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 材料科学模型框架图 / Framework Diagram of Materials Science Models
+
+```mermaid
+graph TB
+    A[材料科学模型] --> B[晶体结构]
+    A --> C[相变]
+    A --> D[力学性能]
+    A --> E[热力学]
+    A --> F[扩散]
+    A --> G[断裂力学]
+
+    B --> H[布拉格定律]
+    B --> I[倒易点阵]
+    B --> J[缺陷模型]
+
+    C --> K[成核理论]
+    C --> L[生长动力学]
+    C --> M[相图]
+
+    D --> N[弹性理论]
+    D --> O[塑性变形]
+    D --> P[蠕变]
+
+    E --> Q[吉布斯自由能]
+    E --> R[相变热力学]
+    E --> S[固溶体]
+
+    F --> T[菲克定律]
+    F --> U[扩散机制]
+    F --> V[扩散方程]
+
+    G --> W[线弹性断裂]
+    G --> X[塑性断裂]
+    G --> Y[疲劳]
+
+    H --> Z[材料科学理论]
+    K --> Z
+    N --> Z
+    Q --> Z
+
+    Z --> AA[材料应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style Z fill:#e8f5e9
+    style AA fill:#e8f5e9
+```
+
+## 相变过程流程图 / Flowchart of Phase Transformation Process
+
+```mermaid
+flowchart TD
+    Start([初始相态]) --> Nucleation[成核<br/>临界半径 r*<br/>成核功 ΔG*]
+    Nucleation --> Growth[生长<br/>界面速度 v<br/>扩散控制/界面控制]
+
+    Growth --> Check{相变<br/>完成?}
+    Check -->|否| Growth
+    Check -->|是| Final[最终相态]
+
+    Nucleation --> Temp{温度<br/>T < T0?}
+    Temp -->|是| Homogeneous[均匀成核]
+    Temp -->|否| Heterogeneous[非均匀成核]
+
+    Homogeneous --> Growth
+    Heterogeneous --> Growth
+
+    Growth --> Diffusion[扩散过程<br/>菲克定律<br/>D = D0·exp(-Q/RT)]
+    Diffusion --> Microstructure[微观结构<br/>晶粒尺寸<br/>相分布]
+
+    Microstructure --> Properties[材料性能<br/>强度<br/>韧性<br/>导电性]
+
+    Properties --> End([材料应用])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Properties fill:#e8f5e9
+```
 
 ## 7.4.1 晶体结构模型 / Crystal Structure Models
 
@@ -240,7 +328,7 @@ impl CrystalStructure {
             atomic_positions: Vec::new(),
         }
     }
-    
+
     pub fn add_atom(&mut self, element: String, position: [f64; 3], occupancy: f64) {
         self.atomic_positions.push(AtomicPosition {
             element,
@@ -248,7 +336,7 @@ impl CrystalStructure {
             occupancy,
         });
     }
-    
+
     pub fn calculate_volume(&self) -> f64 {
         let a = self.lattice_parameters[0];
         let b = self.lattice_parameters[1];
@@ -256,38 +344,38 @@ impl CrystalStructure {
         let alpha = self.lattice_angles[0] * PI / 180.0;
         let beta = self.lattice_angles[1] * PI / 180.0;
         let gamma = self.lattice_angles[2] * PI / 180.0;
-        
-        a * b * c * (1.0 + 2.0 * alpha.cos() * beta.cos() * gamma.cos() 
+
+        a * b * c * (1.0 + 2.0 * alpha.cos() * beta.cos() * gamma.cos()
                       - alpha.cos().powi(2) - beta.cos().powi(2) - gamma.cos().powi(2)).sqrt()
     }
-    
+
     pub fn bragg_angle(&self, wavelength: f64, h: i32, k: i32, l: i32) -> f64 {
         let d_spacing = self.d_spacing(h, k, l);
         (wavelength / (2.0 * d_spacing)).asin()
     }
-    
+
     pub fn d_spacing(&self, h: i32, k: i32, l: i32) -> f64 {
         let a = self.lattice_parameters[0];
         let b = self.lattice_parameters[1];
         let c = self.lattice_parameters[2];
-        
+
         let h_sq = (h as f64).powi(2);
         let k_sq = (k as f64).powi(2);
         let l_sq = (l as f64).powi(2);
-        
+
         (h_sq / a.powi(2) + k_sq / b.powi(2) + l_sq / c.powi(2)).powf(-0.5)
     }
-    
+
     pub fn structure_factor(&self, h: i32, k: i32, l: i32) -> f64 {
         let mut f_total = 0.0;
-        
+
         for atom in &self.atomic_positions {
-            let phase = 2.0 * PI * (h as f64 * atom.position[0] + 
-                                   k as f64 * atom.position[1] + 
+            let phase = 2.0 * PI * (h as f64 * atom.position[0] +
+                                   k as f64 * atom.position[1] +
                                    l as f64 * atom.position[2]);
             f_total += atom.occupancy * phase.cos();
         }
-        
+
         f_total
     }
 }
@@ -301,7 +389,7 @@ pub struct PhaseTransformation {
 }
 
 impl PhaseTransformation {
-    pub fn new(transformation_type: String, temperature: f64, 
+    pub fn new(transformation_type: String, temperature: f64,
                activation_energy: f64, pre_exponential: f64) -> Self {
         Self {
             transformation_type,
@@ -310,31 +398,31 @@ impl PhaseTransformation {
             pre_exponential,
         }
     }
-    
+
     pub fn nucleation_rate(&self, undercooling: f64, interfacial_energy: f64) -> f64 {
         let kb = 8.617333262145e-5; // eV/K
         let t = self.temperature;
         let delta_g = self.gibbs_free_energy_change(undercooling);
-        
+
         let critical_radius = 2.0 * interfacial_energy / delta_g;
         let nucleation_work = 16.0 * PI * interfacial_energy.powi(3) / (3.0 * delta_g.powi(2));
-        
+
         self.pre_exponential * (-nucleation_work / (kb * t)).exp()
     }
-    
+
     pub fn gibbs_free_energy_change(&self, undercooling: f64) -> f64 {
         // 简化的吉布斯自由能变化计算
         let latent_heat = 1000.0; // J/mol
         let melting_temp = 1000.0; // K
         let t = self.temperature;
-        
+
         latent_heat * undercooling / melting_temp
     }
-    
+
     pub fn growth_velocity(&self, driving_force: f64, mobility: f64) -> f64 {
         mobility * driving_force
     }
-    
+
     pub fn avrami_equation(&self, time: f64, n: f64, k: f64) -> f64 {
         1.0 - (-k * time.powf(n)).exp()
     }
@@ -350,7 +438,7 @@ pub struct MechanicalProperties {
 }
 
 impl MechanicalProperties {
-    pub fn new(youngs_modulus: f64, poissons_ratio: f64, yield_strength: f64, 
+    pub fn new(youngs_modulus: f64, poissons_ratio: f64, yield_strength: f64,
                ultimate_strength: f64, fracture_toughness: f64) -> Self {
         Self {
             youngs_modulus,
@@ -360,33 +448,33 @@ impl MechanicalProperties {
             fracture_toughness,
         }
     }
-    
+
     pub fn shear_modulus(&self) -> f64 {
         self.youngs_modulus / (2.0 * (1.0 + self.poissons_ratio))
     }
-    
+
     pub fn bulk_modulus(&self) -> f64 {
         self.youngs_modulus / (3.0 * (1.0 - 2.0 * self.poissons_ratio))
     }
-    
+
     pub fn von_mises_stress(&self, sigma1: f64, sigma2: f64, sigma3: f64) -> f64 {
         let term1 = (sigma1 - sigma2).powi(2);
         let term2 = (sigma2 - sigma3).powi(2);
         let term3 = (sigma3 - sigma1).powi(2);
-        
+
         ((term1 + term2 + term3) / 2.0).sqrt()
     }
-    
+
     pub fn strain_hardening(&self, strain: f64, k: f64, n: f64) -> f64 {
         k * strain.powf(n)
     }
-    
+
     pub fn creep_rate(&self, stress: f64, temperature: f64, activation_energy: f64) -> f64 {
         let kb = 8.617333262145e-5; // eV/K
         let pre_exponential = 1e-6; // s^-1
         let stress_exponent = 5.0;
-        
-        pre_exponential * (stress / self.yield_strength).powf(stress_exponent) * 
+
+        pre_exponential * (stress / self.yield_strength).powf(stress_exponent) *
         (-activation_energy / (kb * temperature)).exp()
     }
 }
@@ -406,24 +494,24 @@ impl DiffusionModel {
             pre_exponential,
         }
     }
-    
+
     pub fn calculate_diffusion_coefficient(&mut self, temperature: f64) {
         let kb = 8.617333262145e-5; // eV/K
-        self.diffusion_coefficient = self.pre_exponential * 
+        self.diffusion_coefficient = self.pre_exponential *
             (-self.activation_energy / (kb * temperature)).exp();
     }
-    
+
     pub fn fick_first_law(&self, concentration_gradient: f64) -> f64 {
         -self.diffusion_coefficient * concentration_gradient
     }
-    
+
     pub fn concentration_profile(&self, initial_concentration: f64, surface_concentration: f64,
                                distance: f64, time: f64) -> f64 {
         let erf_arg = distance / (2.0 * (self.diffusion_coefficient * time).sqrt());
-        initial_concentration + (surface_concentration - initial_concentration) * 
+        initial_concentration + (surface_concentration - initial_concentration) *
         (1.0 - self.error_function(erf_arg))
     }
-    
+
     fn error_function(&self, x: f64) -> f64 {
         // 简化的误差函数近似
         let a1 = 0.254829592;
@@ -432,13 +520,13 @@ impl DiffusionModel {
         let a4 = -1.453152027;
         let a5 = 1.061405429;
         let p = 0.3275911;
-        
+
         let sign = if x < 0.0 { -1.0 } else { 1.0 };
         let x = x.abs();
-        
+
         let t = 1.0 / (1.0 + p * x);
         let y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * (-x * x).exp();
-        
+
         sign * y
     }
 }
@@ -458,24 +546,24 @@ impl FractureMechanics {
             poissons_ratio,
         }
     }
-    
+
     pub fn stress_intensity_factor(&self, applied_stress: f64, crack_length: f64) -> f64 {
         applied_stress * (PI * crack_length).sqrt()
     }
-    
+
     pub fn critical_crack_length(&self, applied_stress: f64) -> f64 {
         (self.fracture_toughness / (applied_stress * PI.sqrt())).powi(2)
     }
-    
+
     pub fn energy_release_rate(&self, stress_intensity_factor: f64) -> f64 {
         let e_prime = self.youngs_modulus / (1.0 - self.poissons_ratio.powi(2));
         stress_intensity_factor.powi(2) / e_prime
     }
-    
+
     pub fn fatigue_crack_growth(&self, delta_k: f64, c: f64, m: f64) -> f64 {
         c * delta_k.powf(m)
     }
-    
+
     pub fn s_n_curve(&self, stress_amplitude: f64, a: f64, m: f64) -> f64 {
         a * stress_amplitude.powf(-m)
     }
@@ -496,23 +584,23 @@ impl ThermodynamicsModel {
             composition,
         }
     }
-    
+
     pub fn gibbs_free_energy(&self, enthalpy: f64, entropy: f64) -> f64 {
         enthalpy - self.temperature * entropy
     }
-    
+
     pub fn chemical_potential(&self, standard_potential: f64, activity: f64) -> f64 {
         let r = 8.314; // J/mol/K
         standard_potential + r * self.temperature * activity.ln()
     }
-    
+
     pub fn phase_equilibrium(&self, potential1: f64, potential2: f64) -> bool {
         (potential1 - potential2).abs() < 1e-6
     }
-    
-    pub fn lever_rule(&self, composition_alpha: f64, composition_beta: f64, 
+
+    pub fn lever_rule(&self, composition_alpha: f64, composition_beta: f64,
                       overall_composition: f64) -> (f64, f64) {
-        let fraction_alpha = (composition_beta - overall_composition) / 
+        let fraction_alpha = (composition_beta - overall_composition) /
                             (composition_beta - composition_alpha);
         let fraction_beta = 1.0 - fraction_alpha;
         (fraction_alpha, fraction_beta)
@@ -527,20 +615,20 @@ fn main() {
         [90.0, 90.0, 90.0],
         "Fm-3m".to_string()
     );
-    
+
     crystal.add_atom("Fe".to_string(), [0.0, 0.0, 0.0], 1.0);
     crystal.add_atom("Fe".to_string(), [0.5, 0.5, 0.0], 1.0);
     crystal.add_atom("Fe".to_string(), [0.5, 0.0, 0.5], 1.0);
     crystal.add_atom("Fe".to_string(), [0.0, 0.5, 0.5], 1.0);
-    
+
     let volume = crystal.calculate_volume();
     let d_spacing = crystal.d_spacing(1, 1, 1);
     let bragg_angle = crystal.bragg_angle(1.54, 1, 1, 1); // Cu Kα
-    
+
     println!("Crystal volume: {:.3} Å³", volume);
     println!("d-spacing (111): {:.3} Å", d_spacing);
     println!("Bragg angle: {:.3}°", bragg_angle * 180.0 / PI);
-    
+
     // 相变示例
     let transformation = PhaseTransformation::new(
         "martensitic".to_string(),
@@ -548,15 +636,15 @@ fn main() {
         0.5,   // eV
         1e12   // s^-1
     );
-    
+
     let nucleation_rate = transformation.nucleation_rate(100.0, 0.5);
     let growth_velocity = transformation.growth_velocity(1000.0, 1e-6);
     let fraction_transformed = transformation.avrami_equation(100.0, 3.0, 1e-6);
-    
+
     println!("Nucleation rate: {:.3e} m⁻³s⁻¹", nucleation_rate);
     println!("Growth velocity: {:.3e} m/s", growth_velocity);
     println!("Fraction transformed: {:.3}", fraction_transformed);
-    
+
     // 力学性能示例
     let mechanical = MechanicalProperties::new(
         200e9,  // GPa
@@ -565,44 +653,44 @@ fn main() {
         400e6,  // Pa
         50e6    // Pa·m^0.5
     );
-    
+
     let shear_modulus = mechanical.shear_modulus();
     let von_mises = mechanical.von_mises_stress(100e6, 50e6, 0.0);
     let creep_rate = mechanical.creep_rate(50e6, 800.0, 2.0);
-    
+
     println!("Shear modulus: {:.1e} Pa", shear_modulus);
     println!("Von Mises stress: {:.1e} Pa", von_mises);
     println!("Creep rate: {:.3e} s⁻¹", creep_rate);
-    
+
     // 扩散示例
     let mut diffusion = DiffusionModel::new(1e-4, 2.0);
     diffusion.calculate_diffusion_coefficient(800.0);
-    
+
     let flux = diffusion.fick_first_law(1000.0);
     let concentration = diffusion.concentration_profile(0.0, 1.0, 1e-6, 3600.0);
-    
+
     println!("Diffusion coefficient: {:.3e} m²/s", diffusion.diffusion_coefficient);
     println!("Diffusion flux: {:.3e} mol/m²s", flux);
     println!("Concentration at 1μm: {:.3}", concentration);
-    
+
     // 断裂力学示例
     let fracture = FractureMechanics::new(50e6, 200e9, 0.3);
-    
+
     let k1 = fracture.stress_intensity_factor(100e6, 1e-3);
     let critical_length = fracture.critical_crack_length(100e6);
     let crack_growth = fracture.fatigue_crack_growth(10e6, 1e-12, 3.0);
-    
+
     println!("Stress intensity factor: {:.1e} Pa·m^0.5", k1);
     println!("Critical crack length: {:.3e} m", critical_length);
     println!("Crack growth rate: {:.3e} m/cycle", crack_growth);
-    
+
     // 热力学示例
     let thermo = ThermodynamicsModel::new(800.0, 1e5, vec![0.5, 0.5]);
-    
+
     let gibbs = thermo.gibbs_free_energy(1000.0, 5.0);
     let chemical_potential = thermo.chemical_potential(-1000.0, 0.5);
     let phase_equilibrium = thermo.phase_equilibrium(-1000.0, -999.9);
-    
+
     println!("Gibbs free energy: {:.1e} J/mol", gibbs);
     println!("Chemical potential: {:.1e} J/mol", chemical_potential);
     println!("Phase equilibrium: {}", phase_equilibrium);
@@ -645,23 +733,23 @@ addAtom elem pos occ crystal = crystal {
 }
 
 calculateVolume :: CrystalStructure -> Double
-calculateVolume crystal = 
+calculateVolume crystal =
     let [a, b, c] = latticeParameters crystal
         [alpha, beta, gamma] = map (\x -> x * pi / 180.0) (latticeAngles crystal)
         cos_alpha = cos alpha
         cos_beta = cos beta
         cos_gamma = cos gamma
-        term = 1.0 + 2.0 * cos_alpha * cos_beta * cos_gamma 
+        term = 1.0 + 2.0 * cos_alpha * cos_beta * cos_gamma
                - cos_alpha^2 - cos_beta^2 - cos_gamma^2
     in a * b * c * sqrt term
 
 braggAngle :: CrystalStructure -> Double -> Int -> Int -> Int -> Double
-braggAngle crystal wavelength h k l = 
+braggAngle crystal wavelength h k l =
     let d_spacing = dSpacing crystal h k l
     in asin (wavelength / (2.0 * d_spacing))
 
 dSpacing :: CrystalStructure -> Int -> Int -> Int -> Double
-dSpacing crystal h k l = 
+dSpacing crystal h k l =
     let [a, b, c] = latticeParameters crystal
         h_sq = fromIntegral h ^ 2
         k_sq = fromIntegral k ^ 2
@@ -669,8 +757,8 @@ dSpacing crystal h k l =
     in (h_sq / a^2 + k_sq / b^2 + l_sq / c^2) ** (-0.5)
 
 structureFactor :: CrystalStructure -> Int -> Int -> Int -> Double
-structureFactor crystal h k l = 
-    let phase_contributions = map (\atom -> 
+structureFactor crystal h k l =
+    let phase_contributions = map (\atom ->
             let [x, y, z] = position atom
                 phase = 2.0 * pi * (fromIntegral h * x + fromIntegral k * y + fromIntegral l * z)
             in occupancy atom * cos phase) (atomicPositions crystal)
@@ -693,7 +781,7 @@ newPhaseTransformation t_type temp act_energy pre_exp = PhaseTransformation {
 }
 
 nucleationRate :: PhaseTransformation -> Double -> Double -> Double
-nucleationRate transformation undercooling interfacial_energy = 
+nucleationRate transformation undercooling interfacial_energy =
     let kb = 8.617333262145e-5 -- eV/K
         t = temperature transformation
         delta_g = gibbsFreeEnergyChange transformation undercooling
@@ -702,7 +790,7 @@ nucleationRate transformation undercooling interfacial_energy =
     in preExponential transformation * exp (-nucleation_work / (kb * t))
 
 gibbsFreeEnergyChange :: PhaseTransformation -> Double -> Double
-gibbsFreeEnergyChange transformation undercooling = 
+gibbsFreeEnergyChange transformation undercooling =
     let latent_heat = 1000.0 -- J/mol
         melting_temp = 1000.0 -- K
         t = temperature transformation
@@ -739,7 +827,7 @@ bulkModulus :: MechanicalProperties -> Double
 bulkModulus props = youngsModulus props / (3.0 * (1.0 - 2.0 * poissonsRatio props))
 
 vonMisesStress :: MechanicalProperties -> Double -> Double -> Double -> Double
-vonMisesStress props sigma1 sigma2 sigma3 = 
+vonMisesStress props sigma1 sigma2 sigma3 =
     let term1 = (sigma1 - sigma2)^2
         term2 = (sigma2 - sigma3)^2
         term3 = (sigma3 - sigma1)^2
@@ -749,11 +837,11 @@ strainHardening :: MechanicalProperties -> Double -> Double -> Double -> Double
 strainHardening props strain k n = k * strain^n
 
 creepRate :: MechanicalProperties -> Double -> Double -> Double -> Double
-creepRate props stress temperature activation_energy = 
+creepRate props stress temperature activation_energy =
     let kb = 8.617333262145e-5 -- eV/K
         pre_exponential = 1e-6 -- s^-1
         stress_exponent = 5.0
-    in pre_exponential * (stress / yieldStrength props)^stress_exponent * 
+    in pre_exponential * (stress / yieldStrength props)^stress_exponent *
        exp (-activation_energy / (kb * temperature))
 
 -- 扩散模型
@@ -771,29 +859,29 @@ newDiffusionModel pre_exp act_energy = DiffusionModel {
 }
 
 calculateDiffusionCoefficient :: DiffusionModel -> Double -> DiffusionModel
-calculateDiffusionCoefficient model temperature = 
+calculateDiffusionCoefficient model temperature =
     let kb = 8.617333262145e-5 -- eV/K
         d_coeff = preExponential model * exp (-activationEnergy model / (kb * temperature))
     in model { diffusionCoefficient = d_coeff }
 
 fickFirstLaw :: DiffusionModel -> Double -> Double
-fickFirstLaw model concentration_gradient = 
+fickFirstLaw model concentration_gradient =
     -diffusionCoefficient model * concentration_gradient
 
 concentrationProfile :: DiffusionModel -> Double -> Double -> Double -> Double -> Double
-concentrationProfile model c0 cs distance time = 
+concentrationProfile model c0 cs distance time =
     let erf_arg = distance / (2.0 * sqrt (diffusionCoefficient model * time))
     in c0 + (cs - c0) * (1.0 - errorFunction erf_arg)
 
 errorFunction :: Double -> Double
-errorFunction x = 
+errorFunction x =
     let a1 = 0.254829592
         a2 = -0.284496736
         a3 = 1.421413741
         a4 = -1.453152027
         a5 = 1.061405429
         p = 0.3275911
-        
+
         sign = if x < 0.0 then -1.0 else 1.0
         x_abs = abs x
         t = 1.0 / (1.0 + p * x_abs)
@@ -815,15 +903,15 @@ newFractureMechanics k_ic e nu = FractureMechanics {
 }
 
 stressIntensityFactor :: FractureMechanics -> Double -> Double -> Double
-stressIntensityFactor fracture applied_stress crack_length = 
+stressIntensityFactor fracture applied_stress crack_length =
     applied_stress * sqrt (pi * crack_length)
 
 criticalCrackLength :: FractureMechanics -> Double -> Double
-criticalCrackLength fracture applied_stress = 
+criticalCrackLength fracture applied_stress =
     (fractureToughness fracture / (applied_stress * sqrt pi))^2
 
 energyReleaseRate :: FractureMechanics -> Double -> Double
-energyReleaseRate fracture stress_intensity_factor = 
+energyReleaseRate fracture stress_intensity_factor =
     let e_prime = youngsModulus fracture / (1.0 - poissonsRatio fracture^2)
     in stress_intensity_factor^2 / e_prime
 
@@ -851,7 +939,7 @@ gibbsFreeEnergy :: ThermodynamicsModel -> Double -> Double -> Double
 gibbsFreeEnergy thermo enthalpy entropy = enthalpy - temperature thermo * entropy
 
 chemicalPotential :: ThermodynamicsModel -> Double -> Double -> Double
-chemicalPotential thermo standard_potential activity = 
+chemicalPotential thermo standard_potential activity =
     let r = 8.314 -- J/mol/K
     in standard_potential + r * temperature thermo * log activity
 
@@ -859,7 +947,7 @@ phaseEquilibrium :: ThermodynamicsModel -> Double -> Double -> Bool
 phaseEquilibrium thermo potential1 potential2 = abs (potential1 - potential2) < 1e-6
 
 leverRule :: ThermodynamicsModel -> Double -> Double -> Double -> (Double, Double)
-leverRule thermo comp_alpha comp_beta overall_comp = 
+leverRule thermo comp_alpha comp_beta overall_comp =
     let fraction_alpha = (comp_beta - overall_comp) / (comp_beta - comp_alpha)
         fraction_beta = 1.0 - fraction_alpha
     in (fraction_alpha, fraction_beta)
@@ -873,60 +961,60 @@ example = do
                  addAtom "Fe" [0.5, 0.0, 0.5] 1.0 $
                  addAtom "Fe" [0.0, 0.5, 0.5] 1.0 $
                  newCrystalStructure [3.615, 3.615, 3.615] [90.0, 90.0, 90.0] "Fm-3m"
-    
+
     let volume = calculateVolume crystal
         d_spacing = dSpacing crystal 1 1 1
         bragg_angle = braggAngle crystal 1.54 1 1 1
-    
+
     putStrLn $ "Crystal volume: " ++ show volume ++ " Å³"
     putStrLn $ "d-spacing (111): " ++ show d_spacing ++ " Å"
     putStrLn $ "Bragg angle: " ++ show (bragg_angle * 180.0 / pi) ++ "°"
-    
+
     -- 相变示例
     let transformation = newPhaseTransformation "martensitic" 800.0 0.5 1e12
         nucleation_rate = nucleationRate transformation 100.0 0.5
         growth_velocity = growthVelocity transformation 1000.0 1e-6
         fraction_transformed = avramiEquation transformation 100.0 3.0 1e-6
-    
+
     putStrLn $ "Nucleation rate: " ++ show nucleation_rate ++ " m⁻³s⁻¹"
     putStrLn $ "Growth velocity: " ++ show growth_velocity ++ " m/s"
     putStrLn $ "Fraction transformed: " ++ show fraction_transformed
-    
+
     -- 力学性能示例
     let mechanical = newMechanicalProperties 200e9 0.3 250e6 400e6 50e6
         shear_modulus = shearModulus mechanical
         von_mises = vonMisesStress mechanical 100e6 50e6 0.0
         creep_rate = creepRate mechanical 50e6 800.0 2.0
-    
+
     putStrLn $ "Shear modulus: " ++ show shear_modulus ++ " Pa"
     putStrLn $ "Von Mises stress: " ++ show von_mises ++ " Pa"
     putStrLn $ "Creep rate: " ++ show creep_rate ++ " s⁻¹"
-    
+
     -- 扩散示例
     let diffusion = calculateDiffusionCoefficient (newDiffusionModel 1e-4 2.0) 800.0
         flux = fickFirstLaw diffusion 1000.0
         concentration = concentrationProfile diffusion 0.0 1.0 1e-6 3600.0
-    
+
     putStrLn $ "Diffusion coefficient: " ++ show (diffusionCoefficient diffusion) ++ " m²/s"
     putStrLn $ "Diffusion flux: " ++ show flux ++ " mol/m²s"
     putStrLn $ "Concentration at 1μm: " ++ show concentration
-    
+
     -- 断裂力学示例
     let fracture = newFractureMechanics 50e6 200e9 0.3
         k1 = stressIntensityFactor fracture 100e6 1e-3
         critical_length = criticalCrackLength fracture 100e6
         crack_growth = fatigueCrackGrowth fracture 10e6 1e-12 3.0
-    
+
     putStrLn $ "Stress intensity factor: " ++ show k1 ++ " Pa·m^0.5"
     putStrLn $ "Critical crack length: " ++ show critical_length ++ " m"
     putStrLn $ "Crack growth rate: " ++ show crack_growth ++ " m/cycle"
-    
+
     -- 热力学示例
     let thermo = newThermodynamicsModel 800.0 1e5 [0.5, 0.5]
         gibbs = gibbsFreeEnergy thermo 1000.0 5.0
         chemical_potential = chemicalPotential thermo (-1000.0) 0.5
         phase_equilibrium = phaseEquilibrium thermo (-1000.0) (-999.9)
-    
+
     putStrLn $ "Gibbs free energy: " ++ show gibbs ++ " J/mol"
     putStrLn $ "Chemical potential: " ++ show chemical_potential ++ " J/mol"
     putStrLn $ "Phase equilibrium: " ++ show phase_equilibrium
@@ -953,6 +1041,35 @@ example = do
 - **磨损分析**: 摩擦磨损、磨粒磨损
 
 ---
+
+## 相关模型 / Related Models
+
+### 工程科学模型 / Engineering Science Models
+
+- [优化模型](../01-优化模型/README.md) - 材料优化设计
+- [控制论模型](../02-控制论模型/README.md) - 材料控制
+- [信号处理模型](../03-信号处理模型/README.md) - 材料信号处理
+- [机械工程模型](../05-机械工程模型/README.md) - 材料力学和结构材料
+- [电子工程模型](../06-电子工程模型/README.md) - 电子材料和半导体材料
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 材料力学和固体力学
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 材料热力学和相变热力学
+- [量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md) - 材料量子力学和电子结构
+- [电磁学模型](../../02-物理科学模型/05-电磁学模型/README.md) - 材料电磁学
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 材料代数和晶体对称性
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 晶体几何和材料几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 材料拓扑
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 材料科学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 材料科学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 材料科学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

@@ -4,6 +4,8 @@
 
 - [7.2 控制论模型 / Cybernetics Models](#72-控制论模型--cybernetics-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [控制论模型框架图 / Framework Diagram of Cybernetics Models](#控制论模型框架图--framework-diagram-of-cybernetics-models)
+  - [PID控制系统流程图 / Flowchart of PID Control System](#pid控制系统流程图--flowchart-of-pid-control-system)
   - [7.2.1 反馈控制系统 / Feedback Control Systems](#721-反馈控制系统--feedback-control-systems)
     - [开环控制 / Open-Loop Control](#开环控制--open-loop-control)
     - [闭环控制 / Closed-Loop Control](#闭环控制--closed-loop-control)
@@ -35,9 +37,98 @@
       - [工业自动化 / Industrial Automation](#工业自动化--industrial-automation)
       - [机器人控制 / Robotics Control](#机器人控制--robotics-control)
       - [航空航天 / Aerospace](#航空航天--aerospace)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 控制论模型框架图 / Framework Diagram of Cybernetics Models
+
+```mermaid
+graph TB
+    A[控制论模型] --> B[反馈控制]
+    A --> C[稳定性分析]
+    A --> D[状态空间]
+    A --> E[最优控制]
+    A --> F[自适应控制]
+    A --> G[智能控制]
+
+    B --> H[开环控制]
+    B --> I[闭环控制]
+    B --> J[PID控制器]
+
+    C --> K[Lyapunov稳定性]
+    C --> L[Routh-Hurwitz]
+    C --> M[Nyquist判据]
+
+    D --> N[线性系统]
+    D --> O[非线性系统]
+    D --> P[可观可控性]
+
+    E --> Q[变分法]
+    E --> R[动态规划]
+    E --> S[极大值原理]
+
+    F --> T[模型参考自适应]
+    F --> U[自校正控制]
+    F --> V[鲁棒控制]
+
+    G --> W[模糊控制]
+    G --> X[神经网络控制]
+    G --> Y[遗传算法控制]
+
+    H --> Z[控制理论]
+    K --> Z
+    N --> Z
+    Q --> Z
+
+    Z --> AA[控制应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style Z fill:#e8f5e9
+    style AA fill:#e8f5e9
+```
+
+## PID控制系统流程图 / Flowchart of PID Control System
+
+```mermaid
+flowchart TD
+    Start([系统启动]) --> Ref[参考输入<br/>r(t)]
+    Ref --> Error[误差计算<br/>e(t) = r(t) - y(t)]
+    Error --> PID[PID控制器<br/>u(t) = Kp·e + Ki·∫e + Kd·de/dt]
+
+    PID --> Plant[被控对象<br/>G(s)]
+    Plant --> Output[系统输出<br/>y(t)]
+    Output --> Feedback[反馈]
+    Feedback --> Error
+
+    PID --> P[比例项<br/>Kp·e]
+    PID --> I[积分项<br/>Ki·∫e]
+    PID --> D[微分项<br/>Kd·de/dt]
+
+    P --> Sum[求和]
+    I --> Sum
+    D --> Sum
+    Sum --> Plant
+
+    Output --> Monitor{性能<br/>满足要求?}
+    Monitor -->|否| Tune[参数调整<br/>Kp, Ki, Kd]
+    Tune --> PID
+    Monitor -->|是| End([控制完成])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style PID fill:#e8f5e9
+```
 
 ## 7.2.1 反馈控制系统 / Feedback Control Systems
 
@@ -277,31 +368,31 @@ impl PIDController {
             integral_max: 50.0,
         }
     }
-    
+
     pub fn compute(&mut self, measurement: f64, dt: f64) -> f64 {
         let error = self.setpoint - measurement;
-        
+
         // 比例项
         let proportional = self.kp * error;
-        
+
         // 积分项
         self.integral += error * dt;
         self.integral = self.integral.max(self.integral_min).min(self.integral_max);
         let integral = self.ki * self.integral;
-        
+
         // 微分项
         let derivative = self.kd * (error - self.previous_error) / dt;
         self.previous_error = error;
-        
+
         // 总输出
         let output = proportional + integral + derivative;
         output.max(self.output_min).min(self.output_max)
     }
-    
+
     pub fn set_setpoint(&mut self, setpoint: f64) {
         self.setpoint = setpoint;
     }
-    
+
     pub fn reset(&mut self) {
         self.integral = 0.0;
         self.previous_error = 0.0;
@@ -324,7 +415,7 @@ impl StateSpaceSystem {
     pub fn new(a: Vec<Vec<f64>>, b: Vec<Vec<f64>>, c: Vec<Vec<f64>>, d: Vec<Vec<f64>>) -> Self {
         let state_size = a.len();
         let state = vec![0.0; state_size];
-        
+
         Self {
             a,
             b,
@@ -336,11 +427,11 @@ impl StateSpaceSystem {
             state_size,
         }
     }
-    
+
     pub fn update(&mut self, input: &[f64], dt: f64) -> Vec<f64> {
         // 计算状态导数
         let mut state_derivative = vec![0.0; self.state_size];
-        
+
         for i in 0..self.state_size {
             // Ax项
             for j in 0..self.state_size {
@@ -351,12 +442,12 @@ impl StateSpaceSystem {
                 state_derivative[i] += self.b[i][j] * input[j];
             }
         }
-        
+
         // 欧拉积分
         for i in 0..self.state_size {
             self.state[i] += state_derivative[i] * dt;
         }
-        
+
         // 计算输出
         let mut output = vec![0.0; self.output_size];
         for i in 0..self.output_size {
@@ -369,14 +460,14 @@ impl StateSpaceSystem {
                 output[i] += self.d[i][j] * input[j];
             }
         }
-        
+
         output
     }
-    
+
     pub fn get_state(&self) -> Vec<f64> {
         self.state.clone()
     }
-    
+
     pub fn set_state(&mut self, state: Vec<f64>) {
         if state.len() == self.state_size {
             self.state = state;
@@ -393,27 +484,27 @@ impl LyapunovStability {
     pub fn new(system: StateSpaceSystem) -> Self {
         Self { system }
     }
-    
+
     pub fn check_stability(&self) -> bool {
         // 简化的稳定性检查：计算特征值
         let eigenvalues = self.compute_eigenvalues();
-        
+
         // 检查所有特征值的实部是否小于零
         eigenvalues.iter().all(|&e| e.re < 0.0)
     }
-    
+
     fn compute_eigenvalues(&self) -> Vec<num_complex::Complex<f64>> {
         // 简化的特征值计算
         let n = self.system.state_size;
         let mut eigenvalues = Vec::new();
-        
+
         // 对于2x2系统，直接计算特征值
         if n == 2 {
             let a = &self.system.a;
             let trace = a[0][0] + a[1][1];
             let det = a[0][0] * a[1][1] - a[0][1] * a[1][0];
             let discriminant = trace * trace - 4.0 * det;
-            
+
             if discriminant >= 0.0 {
                 let lambda1 = (trace + discriminant.sqrt()) / 2.0;
                 let lambda2 = (trace - discriminant.sqrt()) / 2.0;
@@ -426,7 +517,7 @@ impl LyapunovStability {
                 eigenvalues.push(num_complex::Complex::new(real, -imag));
             }
         }
-        
+
         eigenvalues
     }
 }
@@ -442,22 +533,22 @@ impl OptimalControl {
     pub fn new(system: StateSpaceSystem, q: Vec<Vec<f64>>, r: Vec<Vec<f64>>) -> Self {
         Self { system, q, r }
     }
-    
+
     pub fn lqr_control(&self, state: &[f64]) -> Vec<f64> {
         // 简化的LQR控制
         let n = self.system.state_size;
         let m = self.system.input_size;
-        
+
         // 计算反馈增益矩阵K（简化版本）
         let mut k = vec![vec![0.0; n]; m];
-        
+
         // 对于简单情况，使用经验公式
         for i in 0..m {
             for j in 0..n {
                 k[i][j] = -1.0 * (i as f64 + j as f64 + 1.0);
             }
         }
-        
+
         // 计算控制输入 u = -Kx
         let mut control = vec![0.0; m];
         for i in 0..m {
@@ -465,27 +556,27 @@ impl OptimalControl {
                 control[i] -= k[i][j] * state[j];
             }
         }
-        
+
         control
     }
-    
+
     pub fn compute_cost(&self, state: &[f64], control: &[f64]) -> f64 {
         let mut cost = 0.0;
-        
+
         // 状态成本 x^T Q x
         for i in 0..self.system.state_size {
             for j in 0..self.system.state_size {
                 cost += state[i] * self.q[i][j] * state[j];
             }
         }
-        
+
         // 控制成本 u^T R u
         for i in 0..self.system.input_size {
             for j in 0..self.system.input_size {
                 cost += control[i] * self.r[i][j] * control[j];
             }
         }
-        
+
         cost
     }
 }
@@ -509,22 +600,22 @@ impl FuzzyController {
             membership_functions: HashMap::new(),
         }
     }
-    
+
     pub fn add_membership_function(&mut self, variable: String, term: String, a: f64, b: f64, c: f64) {
         let key = format!("{}_{}", variable, term);
         self.membership_functions.insert(key, vec![(a, b, c)]);
     }
-    
+
     pub fn add_rule(&mut self, antecedents: Vec<(String, String)>, consequent: (String, String)) {
         self.rules.push(FuzzyRule { antecedents, consequent });
     }
-    
+
     pub fn compute(&self, inputs: &HashMap<String, f64>) -> HashMap<String, f64> {
         let mut outputs = HashMap::new();
-        
+
         for rule in &self.rules {
             let mut rule_strength = 1.0;
-            
+
             // 计算规则强度（取最小值）
             for (variable, term) in &rule.antecedents {
                 if let Some(&input_value) = inputs.get(variable) {
@@ -532,16 +623,16 @@ impl FuzzyController {
                     rule_strength = rule_strength.min(membership);
                 }
             }
-            
+
             // 应用规则
             let (output_var, output_term) = &rule.consequent;
             let current_output = outputs.get(output_var).unwrap_or(&0.0);
             outputs.insert(output_var.clone(), current_output + rule_strength);
         }
-        
+
         outputs
     }
-    
+
     fn compute_membership(&self, variable: &str, term: &str, value: f64) -> f64 {
         let key = format!("{}_{}", variable, term);
         if let Some(functions) = self.membership_functions.get(&key) {
@@ -565,60 +656,60 @@ fn main() {
     // PID控制器示例
     let mut pid = PIDController::new(1.0, 0.1, 0.01, 10.0);
     let mut measurement = 0.0;
-    
+
     for step in 0..100 {
         let control = pid.compute(measurement, 0.01);
         measurement += control * 0.01; // 简化的系统响应
-        println!("Step {}: Setpoint={}, Measurement={:.3}, Control={:.3}", 
+        println!("Step {}: Setpoint={}, Measurement={:.3}, Control={:.3}",
                 step, pid.setpoint, measurement, control);
     }
-    
+
     // 状态空间系统示例
     let a = vec![vec![0.0, 1.0], vec![-1.0, -1.0]];
     let b = vec![vec![0.0], vec![1.0]];
     let c = vec![vec![1.0, 0.0]];
     let d = vec![vec![0.0]];
-    
+
     let mut system = StateSpaceSystem::new(a, b, c, d);
     let input = vec![1.0];
-    
+
     for step in 0..50 {
         let output = system.update(&input, 0.01);
-        println!("Step {}: Output={:.3}, State=[{:.3}, {:.3}]", 
+        println!("Step {}: Output={:.3}, State=[{:.3}, {:.3}]",
                 step, output[0], system.state[0], system.state[1]);
     }
-    
+
     // 稳定性分析
     let stability = LyapunovStability::new(system);
     let is_stable = stability.check_stability();
     println!("System is stable: {}", is_stable);
-    
+
     // 最优控制
     let q = vec![vec![1.0, 0.0], vec![0.0, 1.0]];
     let r = vec![vec![1.0]];
     let optimal_control = OptimalControl::new(system, q, r);
-    
+
     let state = vec![1.0, 0.5];
     let control = optimal_control.lqr_control(&state);
     let cost = optimal_control.compute_cost(&state, &control);
-    
+
     println!("Optimal control: {:?}, Cost: {:.3}", control, cost);
-    
+
     // 模糊控制
     let mut fuzzy = FuzzyController::new();
     fuzzy.add_membership_function("error".to_string(), "negative".to_string(), -10.0, -5.0, 0.0);
     fuzzy.add_membership_function("error".to_string(), "zero".to_string(), -5.0, 0.0, 5.0);
     fuzzy.add_membership_function("error".to_string(), "positive".to_string(), 0.0, 5.0, 10.0);
-    
-    fuzzy.add_rule(vec![("error".to_string(), "negative".to_string())], 
+
+    fuzzy.add_rule(vec![("error".to_string(), "negative".to_string())],
                    ("control".to_string(), "positive".to_string()));
-    fuzzy.add_rule(vec![("error".to_string(), "positive".to_string())], 
+    fuzzy.add_rule(vec![("error".to_string(), "positive".to_string())],
                    ("control".to_string(), "negative".to_string()));
-    
+
     let mut inputs = HashMap::new();
     inputs.insert("error".to_string(), 3.0);
     let outputs = fuzzy.compute(&inputs);
-    
+
     println!("Fuzzy control output: {:?}", outputs);
 }
 ```
@@ -661,19 +752,19 @@ newPIDController kp_val ki_val kd_val setpoint_val = PIDController {
 }
 
 computePID :: PIDController -> Double -> Double -> PIDController
-computePID pid measurement dt = 
+computePID pid measurement dt =
     let error = setpoint pid - measurement
-        
+
         -- 比例项
         proportional = kp pid * error
-        
+
         -- 积分项
         newIntegral = max (integralMin pid) (min (integralMax pid) (integral pid + error * dt))
         integralTerm = ki pid * newIntegral
-        
+
         -- 微分项
         derivative = kd pid * (error - previousError pid) / dt
-        
+
         -- 总输出
         output = max (outputMin pid) (min (outputMax pid) (proportional + integralTerm + derivative))
     in pid {
@@ -682,7 +773,7 @@ computePID pid measurement dt =
     }
 
 getOutput :: PIDController -> Double -> Double -> Double
-getOutput pid measurement dt = 
+getOutput pid measurement dt =
     let error = setpoint pid - measurement
         proportional = kp pid * error
         integralTerm = ki pid * integral pid
@@ -702,7 +793,7 @@ data StateSpaceSystem = StateSpaceSystem {
 } deriving Show
 
 newStateSpaceSystem :: [[Double]] -> [[Double]] -> [[Double]] -> [[Double]] -> StateSpaceSystem
-newStateSpaceSystem a_matrix b_matrix c_matrix d_matrix = 
+newStateSpaceSystem a_matrix b_matrix c_matrix d_matrix =
     let state_size = length a_matrix
         state = replicate state_size 0.0
     in StateSpaceSystem {
@@ -717,20 +808,20 @@ newStateSpaceSystem a_matrix b_matrix c_matrix d_matrix =
     }
 
 updateSystem :: StateSpaceSystem -> [Double] -> Double -> StateSpaceSystem
-updateSystem system input dt = 
+updateSystem system input dt =
     let -- 计算状态导数
         stateDerivative = [sum [a system !! i !! j * (state system !! j) | j <- [0..stateSize system-1]] +
-                          sum [b system !! i !! j * (input !! j) | j <- [0..inputSize system-1]] | 
+                          sum [b system !! i !! j * (input !! j) | j <- [0..inputSize system-1]] |
                           i <- [0..stateSize system-1]]
-        
+
         -- 欧拉积分
         newState = [state system !! i + stateDerivative !! i * dt | i <- [0..stateSize system-1]]
     in system { state = newState }
 
 computeOutput :: StateSpaceSystem -> [Double] -> [Double]
-computeOutput system input = 
+computeOutput system input =
     [sum [c system !! i !! j * (state system !! j) | j <- [0..stateSize system-1]] +
-     sum [d system !! i !! j * (input !! j) | j <- [0..inputSize system-1]] | 
+     sum [d system !! i !! j * (input !! j) | j <- [0..inputSize system-1]] |
      i <- [0..outputSize system-1]]
 
 -- Lyapunov稳定性
@@ -742,15 +833,15 @@ newLyapunovStability :: StateSpaceSystem -> LyapunovStability
 newLyapunovStability sys = LyapunovStability sys
 
 checkStability :: LyapunovStability -> Bool
-checkStability stability = 
+checkStability stability =
     let eigenvalues = computeEigenvalues (system stability)
     in all (\e -> realPart e < 0.0) eigenvalues
 
 computeEigenvalues :: StateSpaceSystem -> [Complex Double]
-computeEigenvalues system = 
+computeEigenvalues system =
     let a_matrix = a system
         n = stateSize system
-    in if n == 2 
+    in if n == 2
        then let a11 = a_matrix !! 0 !! 0
                 a12 = a_matrix !! 0 !! 1
                 a21 = a_matrix !! 1 !! 0
@@ -758,7 +849,7 @@ computeEigenvalues system =
                 trace = a11 + a22
                 det = a11 * a22 - a12 * a21
                 discriminant = trace^2 - 4 * det
-            in if discriminant >= 0 
+            in if discriminant >= 0
                then let lambda1 = (trace + sqrt discriminant) / 2
                         lambda2 = (trace - sqrt discriminant) / 2
                     in [lambda1 :+ 0.0, lambda2 :+ 0.0]
@@ -782,7 +873,7 @@ newOptimalControl sys q_matrix r_matrix = OptimalControl {
 }
 
 lqrControl :: OptimalControl -> [Double] -> [Double]
-lqrControl control state = 
+lqrControl control state =
     let n = stateSize (controlSystem control)
         m = inputSize (controlSystem control)
         -- 简化的反馈增益矩阵
@@ -790,13 +881,13 @@ lqrControl control state =
     in [sum [-k !! i !! j * (state !! j) | j <- [0..n-1]] | i <- [0..m-1]]
 
 computeCost :: OptimalControl -> [Double] -> [Double] -> Double
-computeCost control state control_input = 
+computeCost control state control_input =
     let -- 状态成本 x^T Q x
-        stateCost = sum [state !! i * (q control !! i !! j) * (state !! j) | 
+        stateCost = sum [state !! i * (q control !! i !! j) * (state !! j) |
                         i <- [0..length state-1], j <- [0..length state-1]]
-        
+
         -- 控制成本 u^T R u
-        controlCost = sum [control_input !! i * (r control !! i !! j) * (control_input !! j) | 
+        controlCost = sum [control_input !! i * (r control !! i !! j) * (control_input !! j) |
                           i <- [0..length control_input-1], j <- [0..length control_input-1]]
     in stateCost + controlCost
 
@@ -818,41 +909,41 @@ newFuzzyController = FuzzyController {
 }
 
 addMembershipFunction :: String -> String -> Double -> Double -> Double -> FuzzyController -> FuzzyController
-addMembershipFunction variable term a b c controller = 
+addMembershipFunction variable term a b c controller =
     let key = variable ++ "_" ++ term
         newFunctions = Map.insert key [(a, b, c)] (membershipFunctions controller)
     in controller { membershipFunctions = newFunctions }
 
 addRule :: [(String, String)] -> (String, String) -> FuzzyController -> FuzzyController
-addRule antecedents consequent controller = 
+addRule antecedents consequent controller =
     let newRule = FuzzyRule antecedents consequent
     in controller { rules = newRule : rules controller }
 
 computeFuzzy :: FuzzyController -> Map String Double -> Map String Double
-computeFuzzy controller inputs = 
+computeFuzzy controller inputs =
     let ruleOutputs = map (\rule -> computeRule controller rule inputs) (rules controller)
         -- 合并规则输出
-        combineOutputs outputs = 
-            foldl (\acc (var, value) -> 
+        combineOutputs outputs =
+            foldl (\acc (var, value) ->
                 Map.insertWith (+) var value acc) Map.empty outputs
     in combineOutputs ruleOutputs
 
 computeRule :: FuzzyController -> FuzzyRule -> Map String Double -> (String, Double)
-computeRule controller rule inputs = 
+computeRule controller rule inputs =
     let -- 计算规则强度
-        ruleStrength = minimum [computeMembership controller variable term (inputs Map.! variable) | 
+        ruleStrength = minimum [computeMembership controller variable term (inputs Map.! variable) |
                                (variable, term) <- antecedents rule]
         (outputVar, outputTerm) = consequent rule
     in (outputVar, ruleStrength)
 
 computeMembership :: FuzzyController -> String -> String -> Double -> Double
-computeMembership controller variable term value = 
+computeMembership controller variable term value =
     let key = variable ++ "_" ++ term
     in case Map.lookup key (membershipFunctions controller) of
-        Just [(a, b, c)] -> 
-            if value <= a || value >= c 
+        Just [(a, b, c)] ->
+            if value <= a || value >= c
             then 0.0
-            else if value <= b 
+            else if value <= b
                  then (value - a) / (b - a)
                  else (c - value) / (c - b)
         _ -> 0.0
@@ -869,9 +960,9 @@ example = do
                 newPID = computePID pid measurement 0.01
             putStrLn $ "Step " ++ show (100 - steps) ++ ": Measurement=" ++ show newMeasurement ++ ", Control=" ++ show control
             simulatePID (steps - 1) newPID newMeasurement
-    
+
     simulatePID 100 pid 0.0
-    
+
     -- 状态空间系统示例
     let a_matrix = [[0.0, 1.0], [-1.0, -1.0]]
         b_matrix = [[0.0], [1.0]]
@@ -879,22 +970,22 @@ example = do
         d_matrix = [[0.0]]
         system = newStateSpaceSystem a_matrix b_matrix c_matrix d_matrix
         input = [1.0]
-        
+
         simulateSystem 0 sys = return ()
         simulateSystem steps sys = do
             let newSys = updateSystem sys input 0.01
                 output = computeOutput newSys input
-            putStrLn $ "Step " ++ show (50 - steps) ++ ": Output=" ++ show (head output) ++ 
+            putStrLn $ "Step " ++ show (50 - steps) ++ ": Output=" ++ show (head output) ++
                       ", State=[" ++ show (state newSys !! 0) ++ ", " ++ show (state newSys !! 1) ++ "]"
             simulateSystem (steps - 1) newSys
-    
+
     simulateSystem 50 system
-    
+
     -- 稳定性分析
     let stability = newLyapunovStability system
         isStable = checkStability stability
     putStrLn $ "System is stable: " ++ show isStable
-    
+
     -- 最优控制
     let q_matrix = [[1.0, 0.0], [0.0, 1.0]]
         r_matrix = [[1.0]]
@@ -902,7 +993,7 @@ example = do
         state = [1.0, 0.5]
         control = lqrControl optimalControl state
         cost = computeCost optimalControl state control
-    
+
     putStrLn $ "Optimal control: " ++ show control
     putStrLn $ "Cost: " ++ show cost
 ```
@@ -928,6 +1019,38 @@ example = do
 - **导弹制导**: 精确制导和导航
 
 ---
+
+## 相关模型 / Related Models
+
+### 工程科学模型 / Engineering Science Models
+
+- [优化模型](../01-优化模型/README.md) - 最优控制和优化控制
+- [信号处理模型](../03-信号处理模型/README.md) - 信号控制和滤波器控制
+- [材料科学模型](../04-材料科学模型/README.md) - 材料控制
+- [机械工程模型](../05-机械工程模型/README.md) - 机械控制和机器人控制
+- [电子工程模型](../06-电子工程模型/README.md) - 电子系统控制
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 线性代数和矩阵理论在控制中的应用
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 控制几何和状态空间几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 控制拓扑
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 控制算法和实时算法
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 智能控制和神经网络控制
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 力学控制和动力学控制
+- [量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md) - 量子控制
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 控制论模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 控制论模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 控制论模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

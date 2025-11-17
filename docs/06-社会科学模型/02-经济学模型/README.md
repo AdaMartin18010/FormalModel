@@ -4,6 +4,8 @@
 
 - [6.2 经济学模型 / Economic Models](#62-经济学模型--economic-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [经济学模型框架图 / Framework Diagram of Economic Models](#经济学模型框架图--framework-diagram-of-economic-models)
+  - [市场均衡关系图 / Relationship Diagram of Market Equilibrium](#市场均衡关系图--relationship-diagram-of-market-equilibrium)
   - [6.2.1 微观经济学模型 / Microeconomic Models](#621-微观经济学模型--microeconomic-models)
     - [消费者理论 / Consumer Theory](#消费者理论--consumer-theory)
     - [生产者理论 / Producer Theory](#生产者理论--producer-theory)
@@ -31,9 +33,85 @@
       - [政策分析 / Policy Analysis](#政策分析--policy-analysis)
       - [市场预测 / Market Forecasting](#市场预测--market-forecasting)
       - [风险管理 / Risk Management](#风险管理--risk-management)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 经济学模型框架图 / Framework Diagram of Economic Models
+
+```mermaid
+graph TB
+    A[经济学模型] --> B[微观经济学]
+    A --> C[宏观经济学]
+    A --> D[博弈论]
+    A --> E[金融经济学]
+    A --> F[计量经济学]
+
+    B --> G[消费者理论]
+    B --> H[生产者理论]
+    B --> I[市场均衡]
+
+    C --> J[IS-LM模型]
+    C --> K[AD-AS模型]
+    C --> L[经济增长]
+
+    D --> M[纳什均衡]
+    D --> N[重复博弈]
+    D --> O[演化博弈]
+
+    E --> P[资产定价]
+    E --> Q[投资组合]
+    E --> R[期权定价]
+
+    F --> S[回归分析]
+    F --> T[时间序列]
+    F --> U[面板数据]
+
+    G --> V[经济学理论]
+    J --> V
+    M --> V
+    P --> V
+
+    V --> W[经济应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style V fill:#e8f5e9
+    style W fill:#e8f5e9
+```
+
+## 市场均衡关系图 / Relationship Diagram of Market Equilibrium
+
+```mermaid
+graph LR
+    A[市场] --> B[需求曲线<br/>Qd = Dp]
+    A --> C[供给曲线<br/>Qs = Sp]
+
+    B --> D[均衡点<br/>Q* = Dp* = Sp*]
+    C --> D
+
+    D --> E[均衡价格 p*]
+    D --> F[均衡数量 Q*]
+
+    E --> G[消费者剩余 CS]
+    E --> H[生产者剩余 PS]
+
+    G --> I[社会福利]
+    H --> I
+
+    style A fill:#e1f5ff
+    style D fill:#e8f5e9
+    style I fill:#e8f5e9
+```
 
 ## 6.2.1 微观经济学模型 / Microeconomic Models
 
@@ -231,28 +309,28 @@ impl Consumer {
             prices: HashMap::new(),
         }
     }
-    
+
     pub fn add_preference(&mut self, good: String, utility: f64) {
         self.preferences.insert(good, utility);
     }
-    
+
     pub fn set_price(&mut self, good: String, price: f64) {
         self.prices.insert(good, price);
     }
-    
+
     pub fn optimize_consumption(&self) -> HashMap<String, f64> {
         let mut consumption = HashMap::new();
         let total_utility: f64 = self.preferences.values().sum();
-        
+
         for (good, utility) in &self.preferences {
             let price = self.prices.get(good).unwrap_or(&1.0);
             let quantity = (utility / total_utility) * self.income / price;
             consumption.insert(good.clone(), quantity);
         }
-        
+
         consumption
     }
-    
+
     pub fn calculate_utility(&self, consumption: &HashMap<String, f64>) -> f64 {
         consumption.iter()
             .map(|(good, quantity)| {
@@ -282,26 +360,26 @@ impl Producer {
             rental_rate: 0.1,
         }
     }
-    
+
     pub fn production_function(&self, k: f64, l: f64) -> f64 {
         self.technology * k.powf(0.3) * l.powf(0.7)
     }
-    
+
     pub fn cost_function(&self, output: f64) -> f64 {
         let k = (output / self.technology).powf(1.0 / 0.3);
         let l = (output / self.technology).powf(1.0 / 0.7);
         self.rental_rate * k + self.wage * l
     }
-    
+
     pub fn marginal_cost(&self, output: f64) -> f64 {
         let delta = 0.01;
         (self.cost_function(output + delta) - self.cost_function(output)) / delta
     }
-    
+
     pub fn profit_maximization(&self, price: f64) -> f64 {
         let mut output = 10.0;
         let learning_rate = 0.01;
-        
+
         for _ in 0..100 {
             let marginal_revenue = price;
             let marginal_cost = self.marginal_cost(output);
@@ -309,7 +387,7 @@ impl Producer {
             output += learning_rate * gradient;
             output = output.max(0.0);
         }
-        
+
         output
     }
 }
@@ -331,15 +409,15 @@ impl Market {
             equilibrium_quantity: 0.0,
         }
     }
-    
+
     pub fn add_consumer(&mut self, consumer: Consumer) {
         self.consumers.push(consumer);
     }
-    
+
     pub fn add_producer(&mut self, producer: Producer) {
         self.producers.push(producer);
     }
-    
+
     pub fn calculate_demand(&self, price: f64) -> f64 {
         self.consumers.iter()
             .map(|consumer| {
@@ -350,29 +428,29 @@ impl Market {
             })
             .sum()
     }
-    
+
     pub fn calculate_supply(&self, price: f64) -> f64 {
         self.producers.iter()
             .map(|producer| producer.profit_maximization(price))
             .sum()
     }
-    
+
     pub fn find_equilibrium(&mut self) -> (f64, f64) {
         let mut price = 1.0;
         let learning_rate = 0.01;
-        
+
         for _ in 0..1000 {
             let demand = self.calculate_demand(price);
             let supply = self.calculate_supply(price);
             let excess_demand = demand - supply;
-            
+
             price += learning_rate * excess_demand;
             price = price.max(0.0);
         }
-        
+
         self.equilibrium_price = price;
         self.equilibrium_quantity = self.calculate_demand(price);
-        
+
         (self.equilibrium_price, self.equilibrium_quantity)
     }
 }
@@ -392,12 +470,12 @@ impl Game {
             payoffs: Vec::new(),
         }
     }
-    
+
     pub fn add_player(&mut self, player: String, strategies: Vec<String>) {
         self.players.push(player);
         self.strategies.push(strategies);
     }
-    
+
     pub fn set_payoff(&mut self, player: usize, strategy1: usize, strategy2: usize, payoff: f64) {
         if self.payoffs.len() <= player {
             self.payoffs.push(Vec::new());
@@ -410,14 +488,14 @@ impl Game {
         }
         self.payoffs[player][strategy1][strategy2] = payoff;
     }
-    
+
     pub fn find_nash_equilibrium(&self) -> Vec<usize> {
         let mut best_responses = Vec::new();
-        
+
         for player in 0..self.players.len() {
             let mut best_strategy = 0;
             let mut best_payoff = f64::NEG_INFINITY;
-            
+
             for strategy in 0..self.strategies[player].len() {
                 let payoff = self.payoffs[player][strategy][0]; // 简化：假设对手策略固定
                 if payoff > best_payoff {
@@ -425,10 +503,10 @@ impl Game {
                     best_strategy = strategy;
                 }
             }
-            
+
             best_responses.push(best_strategy);
         }
-        
+
         best_responses
     }
 }
@@ -451,55 +529,55 @@ impl Portfolio {
             risk_free_rate,
         }
     }
-    
+
     pub fn add_returns(&mut self, returns: Vec<f64>) {
         self.returns.push(returns);
     }
-    
+
     pub fn calculate_expected_return(&self) -> f64 {
         if self.returns.is_empty() { return 0.0; }
-        
+
         let n_assets = self.assets.len();
         let n_periods = self.returns.len();
         let mut expected_returns = vec![0.0; n_assets];
-        
+
         for period in &self.returns {
             for (i, &ret) in period.iter().enumerate() {
                 expected_returns[i] += ret;
             }
         }
-        
+
         for ret in &mut expected_returns {
             *ret /= n_periods as f64;
         }
-        
+
         self.weights.iter()
             .zip(expected_returns.iter())
             .map(|(w, r)| w * r)
             .sum()
     }
-    
+
     pub fn calculate_variance(&self) -> f64 {
         if self.returns.len() < 2 { return 0.0; }
-        
+
         let n_assets = self.assets.len();
         let mut covariance_matrix = vec![vec![0.0; n_assets]; n_assets];
-        
+
         // 计算协方差矩阵
         for i in 0..n_assets {
             for j in 0..n_assets {
                 let mut covariance = 0.0;
                 let mean_i = self.returns.iter().map(|r| r[i]).sum::<f64>() / self.returns.len() as f64;
                 let mean_j = self.returns.iter().map(|r| r[j]).sum::<f64>() / self.returns.len() as f64;
-                
+
                 for period in &self.returns {
                     covariance += (period[i] - mean_i) * (period[j] - mean_j);
                 }
-                
+
                 covariance_matrix[i][j] = covariance / (self.returns.len() - 1) as f64;
             }
         }
-        
+
         // 计算组合方差
         let mut variance = 0.0;
         for i in 0..n_assets {
@@ -507,17 +585,17 @@ impl Portfolio {
                 variance += self.weights[i] * self.weights[j] * covariance_matrix[i][j];
             }
         }
-        
+
         variance
     }
-    
+
     pub fn calculate_sharpe_ratio(&self) -> f64 {
         let expected_return = self.calculate_expected_return();
         let variance = self.calculate_variance();
         let std_dev = variance.sqrt();
-        
+
         if std_dev == 0.0 { return 0.0; }
-        
+
         (expected_return - self.risk_free_rate) / std_dev
     }
 }
@@ -530,52 +608,52 @@ fn main() {
     consumer.add_preference("clothing".to_string(), 0.4);
     consumer.set_price("food".to_string(), 2.0);
     consumer.set_price("clothing".to_string(), 5.0);
-    
+
     let consumption = consumer.optimize_consumption();
     println!("Optimal consumption: {:?}", consumption);
-    
+
     // 生产者优化
     let producer = Producer::new(1.0, 100.0, 50.0);
     let optimal_output = producer.profit_maximization(10.0);
     println!("Optimal output: {:.2}", optimal_output);
-    
+
     // 市场均衡
     let mut market = Market::new();
     market.add_consumer(consumer);
     market.add_producer(producer);
-    
+
     let (price, quantity) = market.find_equilibrium();
     println!("Equilibrium price: {:.2}, quantity: {:.2}", price, quantity);
-    
+
     // 博弈论
     let mut game = Game::new();
     game.add_player("Player 1".to_string(), vec!["Cooperate".to_string(), "Defect".to_string()]);
     game.add_player("Player 2".to_string(), vec!["Cooperate".to_string(), "Defect".to_string()]);
-    
+
     // 囚徒困境
     game.set_payoff(0, 0, 0, 3.0); // 双方合作
     game.set_payoff(0, 0, 1, 0.0); // 1合作，2背叛
     game.set_payoff(0, 1, 0, 5.0); // 1背叛，2合作
     game.set_payoff(0, 1, 1, 1.0); // 双方背叛
-    
+
     let nash_equilibrium = game.find_nash_equilibrium();
     println!("Nash equilibrium: {:?}", nash_equilibrium);
-    
+
     // 投资组合
     let mut portfolio = Portfolio::new(
         vec!["Stock A".to_string(), "Stock B".to_string()],
         0.02
     );
-    
+
     // 添加历史收益数据
     portfolio.add_returns(vec![0.05, 0.03]);
     portfolio.add_returns(vec![0.02, 0.04]);
     portfolio.add_returns(vec![0.03, 0.01]);
-    
+
     let expected_return = portfolio.calculate_expected_return();
     let variance = portfolio.calculate_variance();
     let sharpe_ratio = portfolio.calculate_sharpe_ratio();
-    
+
     println!("Expected return: {:.4}", expected_return);
     println!("Variance: {:.4}", variance);
     println!("Sharpe ratio: {:.4}", sharpe_ratio);
@@ -616,15 +694,15 @@ setPrice good price consumer = consumer {
 }
 
 optimizeConsumption :: Consumer -> Map String Double
-optimizeConsumption consumer = 
+optimizeConsumption consumer =
     let totalUtility = sum (Map.elems (preferences consumer))
-        consumption = Map.fromList [(good, (utility / totalUtility) * income consumer / (prices consumer Map.! good)) | 
+        consumption = Map.fromList [(good, (utility / totalUtility) * income consumer / (prices consumer Map.! good)) |
                                    (good, utility) <- Map.toList (preferences consumer)]
     in consumption
 
 calculateUtility :: Consumer -> Map String Double -> Double
-calculateUtility consumer consumption = 
-    sum [utility * (consumption Map.! good) | 
+calculateUtility consumer consumption =
+    sum [utility * (consumption Map.! good) |
          (good, utility) <- Map.toList (preferences consumer)]
 
 -- 生产者模型
@@ -646,24 +724,24 @@ newProducer tech cap lab = Producer {
 }
 
 productionFunction :: Producer -> Double -> Double -> Double
-productionFunction producer k l = 
+productionFunction producer k l =
     technology producer * k^0.3 * l^0.7
 
 costFunction :: Producer -> Double -> Double
-costFunction producer output = 
+costFunction producer output =
     let k = (output / technology producer)^(1.0 / 0.3)
         l = (output / technology producer)^(1.0 / 0.7)
     in rentalRate producer * k + wage producer * l
 
 marginalCost :: Producer -> Double -> Double
-marginalCost producer output = 
+marginalCost producer output =
     let delta = 0.01
     in (costFunction producer (output + delta) - costFunction producer output) / delta
 
 profitMaximization :: Producer -> Double -> Double
-profitMaximization producer price = 
+profitMaximization producer price =
     let go 0 output = output
-        go steps output = 
+        go steps output =
             let marginalRevenue = price
                 marginalCost = marginalCost producer output
                 gradient = marginalRevenue - marginalCost
@@ -689,19 +767,19 @@ addProducer :: Producer -> Market -> Market
 addProducer producer market = market { producers = producer : producers market }
 
 calculateDemand :: Market -> Double -> Double
-calculateDemand market price = 
+calculateDemand market price =
     sum [let consumer' = setPrice "good" price consumer
-         in Map.findWithDefault 0.0 "good" (optimizeConsumption consumer') | 
+         in Map.findWithDefault 0.0 "good" (optimizeConsumption consumer') |
          consumer <- consumers market]
 
 calculateSupply :: Market -> Double -> Double
-calculateSupply market price = 
+calculateSupply market price =
     sum [profitMaximization producer price | producer <- producers market]
 
 findEquilibrium :: Market -> (Double, Double)
-findEquilibrium market = 
+findEquilibrium market =
     let go 0 price = (price, calculateDemand market price)
-        go steps price = 
+        go steps price =
             let demand = calculateDemand market price
                 supply = calculateSupply market price
                 excessDemand = demand - supply
@@ -726,22 +804,22 @@ addPlayer player strategies game = game {
 }
 
 setPayoff :: Int -> Int -> Int -> Double -> Game -> Game
-setPayoff player strategy1 strategy2 payoff game = 
+setPayoff player strategy1 strategy2 payoff game =
     let newPayoffs = updatePayoffs (payoffs game) player strategy1 strategy2 payoff
     in game { payoffs = newPayoffs }
 
 updatePayoffs :: [[[Double]]] -> Int -> Int -> Int -> Double -> [[[Double]]]
-updatePayoffs payoffs player strategy1 strategy2 payoff = 
+updatePayoffs payoffs player strategy1 strategy2 payoff =
     -- 简化的更新逻辑
     payoffs
 
 findNashEquilibrium :: Game -> [Int]
-findNashEquilibrium game = 
+findNashEquilibrium game =
     let nPlayers = length (players game)
     in [findBestResponse game player | player <- [0..nPlayers-1]]
 
 findBestResponse :: Game -> Int -> Int
-findBestResponse game player = 
+findBestResponse game player =
     let strategies = strategies game !! player
         payoffs = payoffs game !! player
         bestStrategy = maximum [payoffs !! strategy !! 0 | strategy <- [0..length strategies-1]]
@@ -767,24 +845,24 @@ addReturns :: [Double] -> Portfolio -> Portfolio
 addReturns returns portfolio = portfolio { returns = returns : returns portfolio }
 
 calculateExpectedReturn :: Portfolio -> Double
-calculateExpectedReturn portfolio = 
-    if null (returns portfolio) 
-    then 0.0 
+calculateExpectedReturn portfolio =
+    if null (returns portfolio)
+    then 0.0
     else let nAssets = length (assets portfolio)
              nPeriods = length (returns portfolio)
              expectedReturns = [sum [returns portfolio !! period !! asset | period <- [0..nPeriods-1]] / fromIntegral nPeriods | asset <- [0..nAssets-1]]
          in sum [weights portfolio !! i * expectedReturns !! i | i <- [0..nAssets-1]]
 
 calculateVariance :: Portfolio -> Double
-calculateVariance portfolio = 
-    if length (returns portfolio) < 2 
-    then 0.0 
+calculateVariance portfolio =
+    if length (returns portfolio) < 2
+    then 0.0
     else let nAssets = length (assets portfolio)
              covarianceMatrix = [[calculateCovariance portfolio i j | j <- [0..nAssets-1]] | i <- [0..nAssets-1]]
          in sum [weights portfolio !! i * weights portfolio !! j * covarianceMatrix !! i !! j | i <- [0..nAssets-1], j <- [0..nAssets-1]]
 
 calculateCovariance :: Portfolio -> Int -> Int -> Double
-calculateCovariance portfolio asset1 asset2 = 
+calculateCovariance portfolio asset1 asset2 =
     let returns1 = [returns portfolio !! period !! asset1 | period <- [0..length (returns portfolio)-1]]
         returns2 = [returns portfolio !! period !! asset2 | period <- [0..length (returns portfolio)-1]]
         mean1 = sum returns1 / fromIntegral (length returns1)
@@ -793,50 +871,50 @@ calculateCovariance portfolio asset1 asset2 =
     in sum [(returns1 !! i - mean1) * (returns2 !! i - mean2) | i <- [0..n-1]] / fromIntegral (n-1)
 
 calculateSharpeRatio :: Portfolio -> Double
-calculateSharpeRatio portfolio = 
+calculateSharpeRatio portfolio =
     let expectedReturn = calculateExpectedReturn portfolio
         variance = calculateVariance portfolio
         stdDev = sqrt variance
-    in if stdDev == 0.0 
-       then 0.0 
+    in if stdDev == 0.0
+       then 0.0
        else (expectedReturn - riskFreeRate portfolio) / stdDev
 
 -- 示例使用
 example :: IO ()
 example = do
     -- 消费者优化
-    let consumer = setPrice "clothing" 5.0 $ 
-                   setPrice "food" 2.0 $ 
-                   addPreference "clothing" 0.4 $ 
-                   addPreference "food" 0.6 $ 
+    let consumer = setPrice "clothing" 5.0 $
+                   setPrice "food" 2.0 $
+                   addPreference "clothing" 0.4 $
+                   addPreference "food" 0.6 $
                    newConsumer 1000.0
-        
+
         consumption = optimizeConsumption consumer
     putStrLn $ "Optimal consumption: " ++ show consumption
-    
+
     -- 生产者优化
     let producer = newProducer 1.0 100.0 50.0
         optimalOutput = profitMaximization producer 10.0
     putStrLn $ "Optimal output: " ++ show optimalOutput
-    
+
     -- 市场均衡
-    let market = addProducer producer $ 
-                 addConsumer consumer $ 
+    let market = addProducer producer $
+                 addConsumer consumer $
                  newMarket
-        
+
         (price, quantity) = findEquilibrium market
     putStrLn $ "Equilibrium price: " ++ show price ++ ", quantity: " ++ show quantity
-    
+
     -- 投资组合
-    let portfolio = addReturns [0.03, 0.01] $ 
-                    addReturns [0.02, 0.04] $ 
-                    addReturns [0.05, 0.03] $ 
+    let portfolio = addReturns [0.03, 0.01] $
+                    addReturns [0.02, 0.04] $
+                    addReturns [0.05, 0.03] $
                     newPortfolio ["Stock A", "Stock B"] 0.02
-        
+
         expectedReturn = calculateExpectedReturn portfolio
         variance = calculateVariance portfolio
         sharpeRatio = calculateSharpeRatio portfolio
-    
+
     putStrLn $ "Expected return: " ++ show expectedReturn
     putStrLn $ "Variance: " ++ show variance
     putStrLn $ "Sharpe ratio: " ++ show sharpeRatio
@@ -863,6 +941,37 @@ example = do
 - **市场风险**: 价格波动风险
 
 ---
+
+## 相关模型 / Related Models
+
+### 社会科学模型 / Social Science Models
+
+- [社会网络模型](../01-社会网络模型/README.md) - 网络经济学和社会经济网络
+- [心理学模型](../03-心理学模型/README.md) - 行为经济学和决策心理学
+- [认知科学模型](../04-认知科学模型/README.md) - 认知经济学和行为经济学
+- [语言学模型](../05-语言学模型/README.md) - 语言经济学
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 经济代数和线性代数在经济学中的应用
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 经济几何和优化几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 经济拓扑和一般均衡理论
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 经济动力学和系统动力学
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 经济热力学和熵理论
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 经济优化算法和计算经济学
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 机器学习在经济学中的应用
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 经济学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 经济学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 经济学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

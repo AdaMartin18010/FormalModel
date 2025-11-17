@@ -6,14 +6,40 @@
   - [目录 / Table of Contents](#目录--table-of-contents)
   - [2.1.1 牛顿力学模型 / Newtonian Mechanics Models](#211-牛顿力学模型--newtonian-mechanics-models)
     - [牛顿三大定律 / Newton's Three Laws](#牛顿三大定律--newtons-three-laws)
+      - [牛顿三大定律的关系图 / Relationship Diagram of Newton's Three Laws](#牛顿三大定律的关系图--relationship-diagram-of-newtons-three-laws)
+      - [经典力学模型分类图 / Classification Diagram of Classical Mechanics Models](#经典力学模型分类图--classification-diagram-of-classical-mechanics-models)
+      - [牛顿三大定律的形式化定义 / Formal Definition of Newton's Three Laws](#牛顿三大定律的形式化定义--formal-definition-of-newtons-three-laws)
+      - [牛顿三大定律的公理化系统 / Axiomatic System of Newton's Three Laws](#牛顿三大定律的公理化系统--axiomatic-system-of-newtons-three-laws)
+      - [牛顿三大定律的形式化定理 / Formal Theorems of Newton's Three Laws](#牛顿三大定律的形式化定理--formal-theorems-of-newtons-three-laws)
+      - [经典力学系统状态转换图 / State Transition Diagram of Classical Mechanics System](#经典力学系统状态转换图--state-transition-diagram-of-classical-mechanics-system)
+      - [牛顿第二定律求解算法流程图 / Flowchart of Newton's Second Law Solution Algorithm](#牛顿第二定律求解算法流程图--flowchart-of-newtons-second-law-solution-algorithm)
+      - [牛顿三大定律的算法实现 / Algorithmic Implementation of Newton's Three Laws](#牛顿三大定律的算法实现--algorithmic-implementation-of-newtons-three-laws)
     - [万有引力定律 / Law of Universal Gravitation](#万有引力定律--law-of-universal-gravitation)
+      - [万有引力定律关系图 / Relationship Diagram of Universal Gravitation Law](#万有引力定律关系图--relationship-diagram-of-universal-gravitation-law)
+      - [开普勒定律关系图 / Relationship Diagram of Kepler's Laws](#开普勒定律关系图--relationship-diagram-of-keplers-laws)
+      - [多体引力系统计算流程图 / Flowchart of N-Body Gravitational System Calculation](#多体引力系统计算流程图--flowchart-of-n-body-gravitational-system-calculation)
+      - [万有引力定律的形式化定义 / Formal Definition of Universal Gravitation](#万有引力定律的形式化定义--formal-definition-of-universal-gravitation)
+      - [万有引力定律的公理化定义 / Axiomatic Definition of Universal Gravitation](#万有引力定律的公理化定义--axiomatic-definition-of-universal-gravitation)
+      - [万有引力定律的形式化定理 / Formal Theorems of Universal Gravitation](#万有引力定律的形式化定理--formal-theorems-of-universal-gravitation)
+      - [万有引力定律的算法实现 / Algorithmic Implementation of Universal Gravitation](#万有引力定律的算法实现--algorithmic-implementation-of-universal-gravitation)
+      - [万有引力定律的应用 / Applications of Universal Gravitation](#万有引力定律的应用--applications-of-universal-gravitation)
     - [动量与冲量 / Momentum and Impulse](#动量与冲量--momentum-and-impulse)
+      - [动量与冲量的形式化定义 / Formal Definition of Momentum and Impulse](#动量与冲量的形式化定义--formal-definition-of-momentum-and-impulse)
+      - [动量与冲量的公理化定义 / Axiomatic Definition of Momentum and Impulse](#动量与冲量的公理化定义--axiomatic-definition-of-momentum-and-impulse)
+      - [动量与冲量的形式化定理 / Formal Theorems of Momentum and Impulse](#动量与冲量的形式化定理--formal-theorems-of-momentum-and-impulse)
+      - [动量与冲量的算法实现 / Algorithmic Implementation of Momentum and Impulse](#动量与冲量的算法实现--algorithmic-implementation-of-momentum-and-impulse)
+      - [动量与冲量的应用 / Applications of Momentum and Impulse](#动量与冲量的应用--applications-of-momentum-and-impulse)
   - [2.1.2 拉格朗日力学模型 / Lagrangian Mechanics Models](#212-拉格朗日力学模型--lagrangian-mechanics-models)
+    - [拉格朗日力学框架图 / Framework Diagram of Lagrangian Mechanics](#拉格朗日力学框架图--framework-diagram-of-lagrangian-mechanics)
+    - [拉格朗日方程求解流程图 / Flowchart of Lagrange's Equation Solution](#拉格朗日方程求解流程图--flowchart-of-lagranges-equation-solution)
     - [拉格朗日函数 / Lagrangian Function](#拉格朗日函数--lagrangian-function)
     - [拉格朗日方程 / Lagrange's Equations](#拉格朗日方程--lagranges-equations)
     - [约束系统 / Constrained Systems](#约束系统--constrained-systems)
     - [示例：单摆 / Example: Simple Pendulum](#示例单摆--example-simple-pendulum)
   - [2.1.3 哈密顿力学模型 / Hamiltonian Mechanics Models](#213-哈密顿力学模型--hamiltonian-mechanics-models)
+    - [哈密顿力学框架图 / Framework Diagram of Hamiltonian Mechanics](#哈密顿力学框架图--framework-diagram-of-hamiltonian-mechanics)
+    - [拉格朗日与哈密顿力学关系图 / Relationship Diagram between Lagrangian and Hamiltonian Mechanics](#拉格朗日与哈密顿力学关系图--relationship-diagram-between-lagrangian-and-hamiltonian-mechanics)
+    - [哈密顿方程求解流程图 / Flowchart of Hamilton's Equations Solution](#哈密顿方程求解流程图--flowchart-of-hamiltons-equations-solution)
     - [哈密顿函数 / Hamiltonian Function](#哈密顿函数--hamiltonian-function)
     - [哈密顿方程 / Hamilton's Equations](#哈密顿方程--hamiltons-equations)
     - [泊松括号 / Poisson Brackets](#泊松括号--poisson-brackets)
@@ -37,9 +63,14 @@
   - [2.1.8 实现与应用 / Implementation and Applications](#218-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Python实现示例 / Python Implementation Example](#python实现示例--python-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [工程应用 / Engineering Applications](#工程应用--engineering-applications)
       - [科学研究 / Scientific Research](#科学研究--scientific-research)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
@@ -47,6 +78,78 @@
 ## 2.1.1 牛顿力学模型 / Newtonian Mechanics Models
 
 ### 牛顿三大定律 / Newton's Three Laws
+
+#### 牛顿三大定律的关系图 / Relationship Diagram of Newton's Three Laws
+
+```mermaid
+graph TB
+    A[牛顿三大定律] --> B[第一定律: 惯性定律]
+    A --> C[第二定律: 运动定律]
+    A --> D[第三定律: 作用反作用定律]
+
+    B --> E[合外力为零]
+    B --> F[速度恒定]
+
+    C --> G[力 F]
+    C --> H[质量 m]
+    C --> I[加速度 a]
+    G --> J[F = ma]
+    H --> J
+    I --> J
+
+    D --> K[物体1对物体2的力]
+    D --> L[物体2对物体1的力]
+    K --> M[F₁₂ = -F₂₁]
+    L --> M
+
+    J --> N[动量守恒]
+    M --> N
+    J --> O[能量守恒]
+    J --> P[角动量守恒]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style N fill:#e8f5e9
+    style O fill:#e8f5e9
+    style P fill:#e8f5e9
+```
+
+#### 经典力学模型分类图 / Classification Diagram of Classical Mechanics Models
+
+```mermaid
+mindmap
+  root((经典力学模型))
+    牛顿力学
+      三大定律
+      万有引力
+      动量与冲量
+    拉格朗日力学
+      拉格朗日函数
+      拉格朗日方程
+      约束系统
+    哈密顿力学
+      哈密顿函数
+      哈密顿方程
+      泊松括号
+    分析力学
+      变分原理
+      正则变换
+      作用量-角度变量
+    刚体力学
+      转动惯量
+      欧拉方程
+      角动量
+    流体力学
+      连续性方程
+      纳维-斯托克斯方程
+      伯努利方程
+    振动与波动
+      简谐振动
+      阻尼振动
+      波动方程
+```
 
 #### 牛顿三大定律的形式化定义 / Formal Definition of Newton's Three Laws
 
@@ -97,6 +200,50 @@ $$\vec{F}_{12} = -\vec{F}_{21}$$
 
 **证明**: 对于中心力，$\vec{\tau} = \vec{r} \times \vec{F} = 0$，因此 $\frac{d\vec{L}}{dt} = 0$，即 $\vec{L} = \text{constant}$。
 
+#### 经典力学系统状态转换图 / State Transition Diagram of Classical Mechanics System
+
+```mermaid
+stateDiagram-v2
+    [*] --> 初始状态: 给定初始条件
+    初始状态 --> 计算合力: 应用第一定律检查
+    计算合力 --> 判断运动: F=0?
+    判断运动 --> 匀速运动: F=0
+    判断运动 --> 加速运动: F≠0
+    加速运动 --> 应用第二定律: F=ma
+    应用第二定律 --> 更新状态: 计算新位置和速度
+    匀速运动 --> 更新状态
+    更新状态 --> 检查碰撞: 存在相互作用?
+    检查碰撞 --> 应用第三定律: 是
+    检查碰撞 --> 更新状态: 否
+    应用第三定律 --> 更新状态: F₁₂=-F₂₁
+    更新状态 --> 计算合力: 继续模拟
+    更新状态 --> [*]: 模拟结束
+```
+
+#### 牛顿第二定律求解算法流程图 / Flowchart of Newton's Second Law Solution Algorithm
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 质量m, 初始位置r₀, 初始速度v₀, 力函数F]
+    Input --> Init[初始化: t=0, r=r₀, v=v₀]
+    Init --> Check{时间t < 终止时间?}
+    Check -->|否| End([结束])
+    Check -->|是| CalcF[计算合力 F = ΣFᵢ]
+    CalcF --> CalcA[计算加速度 a = F/m]
+    CalcA --> UpdateV[更新速度 v = v + a·Δt]
+    UpdateV --> UpdateR[更新位置 r = r + v·Δt]
+    UpdateR --> Save[保存状态 r, v, t]
+    Save --> Increment[时间步进 t = t + Δt]
+    Increment --> Check
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style CalcF fill:#fff4e1
+    style CalcA fill:#fff4e1
+    style UpdateV fill:#e8f5e9
+    style UpdateR fill:#e8f5e9
+```
+
 #### 牛顿三大定律的算法实现 / Algorithmic Implementation of Newton's Three Laws
 
 **算法1 (牛顿第二定律求解算法)**:
@@ -141,6 +288,95 @@ $$\vec{F}_{12} = -\vec{F}_{21}$$
 ```
 
 ### 万有引力定律 / Law of Universal Gravitation
+
+#### 万有引力定律关系图 / Relationship Diagram of Universal Gravitation Law
+
+```mermaid
+graph TB
+    A[万有引力定律] --> B[引力公式 F = Gm₁m₂/r²]
+    A --> C[开普勒三大定律]
+
+    B --> D[引力常数 G]
+    B --> E[质量 m₁, m₂]
+    B --> F[距离 r]
+
+    C --> G[第一定律: 椭圆轨道]
+    C --> H[第二定律: 面积速度恒定]
+    C --> I[第三定律: T² ∝ a³]
+
+    B --> J[引力势能 V = -Gm₁m₂/r]
+    J --> K[机械能守恒]
+
+    B --> L[多体问题]
+    L --> M[N体引力计算]
+    L --> N[轨道稳定性]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style J fill:#e8f5e9
+    style K fill:#e8f5e9
+```
+
+#### 开普勒定律关系图 / Relationship Diagram of Kepler's Laws
+
+```mermaid
+graph LR
+    A[开普勒第一定律] --> B[椭圆轨道]
+    A --> C[太阳在焦点]
+
+    D[开普勒第二定律] --> E[面积速度恒定]
+    D --> F[角动量守恒]
+
+    G[开普勒第三定律] --> H[T² = ka³]
+    G --> I[周期与半长轴关系]
+
+    B --> J[行星运动]
+    E --> J
+    H --> J
+
+    J --> K[万有引力定律]
+    K --> L[牛顿力学]
+
+    style A fill:#e1f5ff
+    style D fill:#e1f5ff
+    style G fill:#e1f5ff
+    style J fill:#fff4e1
+    style K fill:#e8f5e9
+```
+
+#### 多体引力系统计算流程图 / Flowchart of N-Body Gravitational System Calculation
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: N个物体的位置rᵢ, 质量mᵢ, 初始速度vᵢ]
+    Input --> Init[初始化: t=0, 设置时间步长dt]
+    Init --> Loop{时间t < 终止时间?}
+    Loop -->|否| End([结束])
+    Loop -->|是| CalcForces[计算所有物体间的引力]
+    CalcForces --> CalcAccel[计算每个物体的加速度 aᵢ = Fᵢ/mᵢ]
+    CalcAccel --> UpdateVel[更新速度 vᵢ = vᵢ + aᵢ·Δt]
+    UpdateVel --> UpdatePos[更新位置 rᵢ = rᵢ + vᵢ·Δt]
+    UpdatePos --> CheckEnergy{检查能量守恒?}
+    CheckEnergy -->|是| SaveState[保存状态]
+    CheckEnergy -->|否| Adjust[调整时间步长]
+    Adjust --> SaveState
+    SaveState --> Increment[时间步进 t = t + Δt]
+    Increment --> Loop
+
+    CalcForces --> SubCalc[对每对物体i,j]
+    SubCalc --> CalcDist[计算距离 rᵢⱼ]
+    CalcDist --> CalcForce[计算引力 Fᵢⱼ = Gmᵢmⱼ/rᵢⱼ²]
+    CalcForce --> SumForce[累加总力 Fᵢ = ΣFᵢⱼ]
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style CalcForces fill:#fff4e1
+    style CalcAccel fill:#fff4e1
+    style UpdateVel fill:#e8f5e9
+    style UpdatePos fill:#e8f5e9
+    style CheckEnergy fill:#ffe1f5
+```
 
 #### 万有引力定律的形式化定义 / Formal Definition of Universal Gravitation
 
@@ -351,6 +587,68 @@ $$\vec{F} = G\frac{m_1m_2}{r^2}\hat{r}$$
 
 ## 2.1.2 拉格朗日力学模型 / Lagrangian Mechanics Models
 
+### 拉格朗日力学框架图 / Framework Diagram of Lagrangian Mechanics
+
+```mermaid
+graph TB
+    A[拉格朗日力学] --> B[拉格朗日函数 L = T - V]
+    A --> C[拉格朗日方程]
+    A --> D[约束系统]
+
+    B --> E[动能 T]
+    B --> F[势能 V]
+
+    C --> G[d/dt ∂L/∂q̇ᵢ = ∂L/∂qᵢ]
+    C --> H[广义坐标 qᵢ]
+    C --> I[广义速度 q̇ᵢ]
+
+    D --> J[完整约束]
+    D --> K[非完整约束]
+    D --> L[拉格朗日乘数法]
+
+    G --> M[运动方程]
+    M --> N[守恒量]
+    M --> O[对称性]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style M fill:#e8f5e9
+    style N fill:#e8f5e9
+    style O fill:#e8f5e9
+```
+
+### 拉格朗日方程求解流程图 / Flowchart of Lagrange's Equation Solution
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 系统配置, 约束条件]
+    Input --> ChooseCoord[选择广义坐标 qᵢ]
+    ChooseCoord --> CalcT[计算动能 Tq, q̇]
+    CalcT --> CalcV[计算势能 Vq]
+    CalcV --> ConstructL[构造拉格朗日函数 L = T - V]
+    ConstructL --> CalcPartial[计算偏导数]
+    CalcPartial --> CalcDLdq[∂L/∂qᵢ]
+    CalcPartial --> CalcDLdqdot[∂L/∂q̇ᵢ]
+    CalcDLdqdot --> CalcDDT[计算 d/dt∂L/∂q̇ᵢ]
+    CalcDLdq --> LagrangeEq[拉格朗日方程: d/dt∂L/∂q̇ᵢ = ∂L/∂qᵢ]
+    CalcDDT --> LagrangeEq
+    LagrangeEq --> SolveEq[求解运动方程]
+    SolveEq --> CheckConserved{检查守恒量?}
+    CheckConserved -->|是| FindConserved[寻找守恒量]
+    CheckConserved -->|否| Result[得到运动方程]
+    FindConserved --> Result
+    Result --> End([结束])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style ConstructL fill:#fff4e1
+    style LagrangeEq fill:#fff4e1
+    style SolveEq fill:#e8f5e9
+    style FindConserved fill:#e8f5e9
+```
+
 ### 拉格朗日函数 / Lagrangian Function
 
 $$\mathcal{L} = T - V$$
@@ -383,6 +681,99 @@ $$\ddot{\theta} + \frac{g}{l}\sin\theta = 0$$
 ---
 
 ## 2.1.3 哈密顿力学模型 / Hamiltonian Mechanics Models
+
+### 哈密顿力学框架图 / Framework Diagram of Hamiltonian Mechanics
+
+```mermaid
+graph TB
+    A[哈密顿力学] --> B[哈密顿函数 H = Σpᵢq̇ᵢ - L]
+    A --> C[哈密顿方程]
+    A --> D[相空间]
+
+    B --> E[广义动量 pᵢ]
+    B --> F[广义坐标 qᵢ]
+    B --> G[拉格朗日函数 L]
+
+    C --> H[q̇ᵢ = ∂H/∂pᵢ]
+    C --> I[ṗᵢ = -∂H/∂qᵢ]
+
+    D --> J[相空间轨迹]
+    D --> K[相空间体积守恒]
+
+    C --> L[泊松括号]
+    L --> M[守恒量]
+    L --> N[对称性]
+
+    M --> O[能量守恒]
+    M --> P[角动量守恒]
+    M --> Q[其他守恒量]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style L fill:#e8f5e9
+    style M fill:#e8f5e9
+```
+
+### 拉格朗日与哈密顿力学关系图 / Relationship Diagram between Lagrangian and Hamiltonian Mechanics
+
+```mermaid
+graph LR
+    A[拉格朗日力学] --> B[拉格朗日函数 Lq, q̇]
+    B --> C[勒让德变换]
+    C --> D[哈密顿函数 Hq, p]
+    D --> E[哈密顿力学]
+
+    B --> F[拉格朗日方程]
+    F --> G[d/dt ∂L/∂q̇ᵢ = ∂L/∂qᵢ]
+
+    D --> H[哈密顿方程]
+    H --> I[q̇ᵢ = ∂H/∂pᵢ]
+    H --> J[ṗᵢ = -∂H/∂qᵢ]
+
+    G --> K[运动方程]
+    I --> K
+    J --> K
+
+    K --> L[物理预测]
+
+    style A fill:#e1f5ff
+    style E fill:#e1f5ff
+    style C fill:#fff4e1
+    style K fill:#e8f5e9
+```
+
+### 哈密顿方程求解流程图 / Flowchart of Hamilton's Equations Solution
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 哈密顿函数 Hq, p]
+    Input --> CalcQdot[计算 q̇ᵢ = ∂H/∂pᵢ]
+    Input --> CalcPdot[计算 ṗᵢ = -∂H/∂qᵢ]
+    CalcQdot --> InitState[初始化: qᵢ0, pᵢ0, t=0]
+    CalcPdot --> InitState
+    InitState --> Loop{时间t < 终止时间?}
+    Loop -->|否| End([结束])
+    Loop -->|是| UpdateQ[更新坐标 qᵢ = qᵢ + q̇ᵢ·Δt]
+    UpdateQ --> UpdateP[更新动量 pᵢ = pᵢ + ṗᵢ·Δt]
+    UpdateP --> RecalcQdot[重新计算 q̇ᵢ]
+    RecalcQdot --> RecalcPdot[重新计算 ṗᵢ]
+    RecalcPdot --> CheckConserved{检查守恒量?}
+    CheckConserved -->|是| VerifyConserved[验证守恒量]
+    CheckConserved -->|否| SaveState[保存状态]
+    VerifyConserved --> SaveState
+    SaveState --> Increment[时间步进 t = t + Δt]
+    Increment --> Loop
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style CalcQdot fill:#fff4e1
+    style CalcPdot fill:#fff4e1
+    style UpdateQ fill:#e8f5e9
+    style UpdateP fill:#e8f5e9
+    style VerifyConserved fill:#ffe1f5
+```
 
 ### 哈密顿函数 / Hamiltonian Function
 
@@ -513,19 +904,19 @@ impl Particle {
             force: [0.0; 3],
         }
     }
-    
+
     pub fn update_position(&mut self, dt: f64) {
         for i in 0..3 {
             self.position[i] += self.velocity[i] * dt;
         }
     }
-    
+
     pub fn update_velocity(&mut self, dt: f64) {
         for i in 0..3 {
             self.velocity[i] += self.force[i] / self.mass * dt;
         }
     }
-    
+
     pub fn calculate_kinetic_energy(&self) -> f64 {
         0.5 * self.mass * self.velocity.iter().map(|v| v * v).sum::<f64>()
     }
@@ -550,22 +941,22 @@ impl SimplePendulum {
             omega: 0.0,
         }
     }
-    
+
     pub fn step(&mut self, dt: f64) {
         // 拉格朗日方程: d²θ/dt² + (g/l)sin(θ) = 0
         let acceleration = -(self.gravity / self.length) * self.theta.sin();
-        
+
         self.omega += acceleration * dt;
         self.theta += self.omega * dt;
     }
-    
+
     pub fn get_position(&self) -> [f64; 2] {
         [
             self.length * self.theta.sin(),
             -self.length * self.theta.cos(),
         ]
     }
-    
+
     pub fn get_energy(&self) -> f64 {
         let kinetic = 0.5 * self.mass * self.length * self.length * self.omega * self.omega;
         let potential = self.mass * self.gravity * self.length * (1.0 - self.theta.cos());
@@ -576,16 +967,16 @@ impl SimplePendulum {
 // 使用示例
 fn main() {
     let mut pendulum = SimplePendulum::new(1.0, 1.0, PI / 4.0);
-    
+
     println!("Initial energy: {}", pendulum.get_energy());
-    
+
     for i in 0..100 {
         pendulum.step(0.01);
         let pos = pendulum.get_position();
-        println!("Step {}: θ={:.3}, x={:.3}, y={:.3}", 
+        println!("Step {}: θ={:.3}, x={:.3}, y={:.3}",
                 i, pendulum.theta, pos[0], pos[1]);
     }
-    
+
     println!("Final energy: {}", pendulum.get_energy());
 }
 ```
@@ -612,7 +1003,7 @@ newParticle m pos = Particle m pos (V.replicate 3 0.0) (V.replicate 3 0.0)
 
 -- 更新位置
 updatePosition :: Double -> Particle -> Particle
-updatePosition dt p = p { position = V.zipWith (+) (position p) 
+updatePosition dt p = p { position = V.zipWith (+) (position p)
                                        (V.map (* dt) (velocity p)) }
 
 -- 更新速度
@@ -639,7 +1030,7 @@ newPendulum l m angle = SimplePendulum l m 9.81 angle 0.0
 
 -- 单摆演化
 stepPendulum :: Double -> SimplePendulum -> SimplePendulum
-stepPendulum dt p = p { 
+stepPendulum dt p = p {
     omega = omega p + acceleration * dt,
     theta = theta p + omega p * dt
 }
@@ -665,16 +1056,290 @@ example :: IO ()
 example = do
     let pendulum = newPendulum 1.0 1.0 (pi / 4.0)
         steps = take 100 $ iterate (stepPendulum 0.01) pendulum
-    
+
     putStrLn $ "Initial energy: " ++ show (getEnergy pendulum)
-    
+
     mapM_ (\(i, p) -> do
         let (x, y) = getPosition p
-        putStrLn $ "Step " ++ show i ++ ": θ=" ++ show (theta p) ++ 
-                  ", x=" ++ show x ++ ", y=" ++ show y) 
+        putStrLn $ "Step " ++ show i ++ ": θ=" ++ show (theta p) ++
+                  ", x=" ++ show x ++ ", y=" ++ show y)
         (zip [0..] steps)
-    
+
     putStrLn $ "Final energy: " ++ show (getEnergy (last steps))
+```
+
+### Python实现示例 / Python Implementation Example
+
+```python
+import numpy as np
+from dataclasses import dataclass
+from typing import Tuple
+
+@dataclass
+class Particle:
+    """粒子"""
+    mass: float
+    position: np.ndarray  # [x, y, z]
+    velocity: np.ndarray  # [vx, vy, vz]
+
+    def __post_init__(self):
+        """初始化"""
+        if self.position.shape != (3,):
+            raise ValueError("Position must be a 3D vector")
+        if self.velocity.shape != (3,):
+            raise ValueError("Velocity must be a 3D vector")
+
+class NewtonianMechanics:
+    """牛顿力学系统"""
+
+    @staticmethod
+    def calculate_force(mass: float, acceleration: np.ndarray) -> np.ndarray:
+        """计算力：F = ma"""
+        return mass * acceleration
+
+    @staticmethod
+    def calculate_acceleration(force: np.ndarray, mass: float) -> np.ndarray:
+        """计算加速度：a = F/m"""
+        return force / mass
+
+    @staticmethod
+    def update_position(particle: Particle, dt: float) -> Particle:
+        """更新位置：r = r0 + v*dt"""
+        new_position = particle.position + particle.velocity * dt
+        return Particle(particle.mass, new_position, particle.velocity)
+
+    @staticmethod
+    def update_velocity(particle: Particle, acceleration: np.ndarray, dt: float) -> Particle:
+        """更新速度：v = v0 + a*dt"""
+        new_velocity = particle.velocity + acceleration * dt
+        return Particle(particle.mass, particle.position, new_velocity)
+
+    @staticmethod
+    def calculate_momentum(particle: Particle) -> np.ndarray:
+        """计算动量：p = mv"""
+        return particle.mass * particle.velocity
+
+    @staticmethod
+    def calculate_kinetic_energy(particle: Particle) -> float:
+        """计算动能：E_k = (1/2)mv²"""
+        v_squared = np.dot(particle.velocity, particle.velocity)
+        return 0.5 * particle.mass * v_squared
+
+@dataclass
+class SimplePendulum:
+    """单摆"""
+    length: float
+    mass: float
+    theta: float  # 角度（弧度）
+    omega: float  # 角速度
+    gravity: float = 9.81
+
+    def step(self, dt: float) -> 'SimplePendulum':
+        """更新单摆状态"""
+        # 计算角加速度：α = -(g/L)sin(θ)
+        alpha = -(self.gravity / self.length) * np.sin(self.theta)
+
+        # 更新角速度：ω = ω0 + α*dt
+        new_omega = self.omega + alpha * dt
+
+        # 更新角度：θ = θ0 + ω*dt
+        new_theta = self.theta + new_omega * dt
+
+        return SimplePendulum(self.length, self.mass, new_theta, new_omega, self.gravity)
+
+    def get_position(self) -> Tuple[float, float]:
+        """获取位置坐标"""
+        x = self.length * np.sin(self.theta)
+        y = -self.length * np.cos(self.theta)
+        return (x, y)
+
+    def get_energy(self) -> float:
+        """计算总能量"""
+        # 动能：E_k = (1/2)mL²ω²
+        kinetic = 0.5 * self.mass * self.length**2 * self.omega**2
+
+        # 势能：E_p = mgL(1 - cos(θ))
+        potential = self.mass * self.gravity * self.length * (1.0 - np.cos(self.theta))
+
+        return kinetic + potential
+
+# 使用示例
+if __name__ == "__main__":
+    # 牛顿力学示例
+    particle = Particle(
+        mass=1.0,
+        position=np.array([0.0, 0.0, 0.0]),
+        velocity=np.array([1.0, 0.0, 0.0])
+    )
+
+    force = np.array([0.0, 0.0, -9.81])  # 重力
+    acceleration = NewtonianMechanics.calculate_acceleration(force, particle.mass)
+
+    print(f"Initial position: {particle.position}")
+    print(f"Initial velocity: {particle.velocity}")
+    print(f"Acceleration: {acceleration}")
+
+    # 更新状态
+    dt = 0.01
+    particle = NewtonianMechanics.update_velocity(particle, acceleration, dt)
+    particle = NewtonianMechanics.update_position(particle, dt)
+
+    print(f"After {dt}s:")
+    print(f"Position: {particle.position}")
+    print(f"Velocity: {particle.velocity}")
+    print(f"Momentum: {NewtonianMechanics.calculate_momentum(particle)}")
+    print(f"Kinetic energy: {NewtonianMechanics.calculate_kinetic_energy(particle)}")
+
+    # 单摆示例
+    pendulum = SimplePendulum(length=1.0, mass=1.0, theta=np.pi/4, omega=0.0)
+    print(f"\nInitial pendulum energy: {pendulum.get_energy()}")
+
+    # 模拟100步
+    steps = [pendulum]
+    for i in range(100):
+        steps.append(steps[-1].step(0.01))
+
+    print(f"Final pendulum energy: {steps[-1].get_energy()}")
+    x, y = steps[-1].get_position()
+    print(f"Final position: ({x:.4f}, {y:.4f})")
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+
+# 粒子结构
+struct Particle
+    mass::Float64
+    position::Vector{Float64}  # [x, y, z]
+    velocity::Vector{Float64}  # [vx, vy, vz]
+
+    function Particle(mass::Float64, position::Vector{Float64}, velocity::Vector{Float64})
+        if length(position) != 3 || length(velocity) != 3
+            error("Position and velocity must be 3D vectors")
+        end
+        new(mass, position, velocity)
+    end
+end
+
+# 牛顿力学系统
+module NewtonianMechanics
+    export calculate_force, calculate_acceleration, update_position,
+           update_velocity, calculate_momentum, calculate_kinetic_energy
+
+    """计算力：F = ma"""
+    function calculate_force(mass::Float64, acceleration::Vector{Float64})::Vector{Float64}
+        return mass * acceleration
+    end
+
+    """计算加速度：a = F/m"""
+    function calculate_acceleration(force::Vector{Float64}, mass::Float64)::Vector{Float64}
+        return force / mass
+    end
+
+    """更新位置：r = r0 + v*dt"""
+    function update_position(particle::Particle, dt::Float64)::Particle
+        new_position = particle.position + particle.velocity * dt
+        return Particle(particle.mass, new_position, particle.velocity)
+    end
+
+    """更新速度：v = v0 + a*dt"""
+    function update_velocity(particle::Particle, acceleration::Vector{Float64}, dt::Float64)::Particle
+        new_velocity = particle.velocity + acceleration * dt
+        return Particle(particle.mass, particle.position, new_velocity)
+    end
+
+    """计算动量：p = mv"""
+    function calculate_momentum(particle::Particle)::Vector{Float64}
+        return particle.mass * particle.velocity
+    end
+
+    """计算动能：E_k = (1/2)mv²"""
+    function calculate_kinetic_energy(particle::Particle)::Float64
+        v_squared = dot(particle.velocity, particle.velocity)
+        return 0.5 * particle.mass * v_squared
+    end
+end
+
+# 单摆结构
+mutable struct SimplePendulum
+    length::Float64
+    mass::Float64
+    theta::Float64  # 角度（弧度）
+    omega::Float64  # 角速度
+    gravity::Float64
+
+    function SimplePendulum(length::Float64, mass::Float64, theta::Float64, omega::Float64, gravity::Float64=9.81)
+        new(length, mass, theta, omega, gravity)
+    end
+end
+
+# 更新单摆状态
+function step!(pendulum::SimplePendulum, dt::Float64)
+    # 计算角加速度：α = -(g/L)sin(θ)
+    alpha = -(pendulum.gravity / pendulum.length) * sin(pendulum.theta)
+
+    # 更新角速度：ω = ω0 + α*dt
+    pendulum.omega += alpha * dt
+
+    # 更新角度：θ = θ0 + ω*dt
+    pendulum.theta += pendulum.omega * dt
+end
+
+# 获取位置坐标
+function get_position(pendulum::SimplePendulum)::Tuple{Float64, Float64}
+    x = pendulum.length * sin(pendulum.theta)
+    y = -pendulum.length * cos(pendulum.theta)
+    return (x, y)
+end
+
+# 计算总能量
+function get_energy(pendulum::SimplePendulum)::Float64
+    # 动能：E_k = (1/2)mL²ω²
+    kinetic = 0.5 * pendulum.mass * pendulum.length^2 * pendulum.omega^2
+
+    # 势能：E_p = mgL(1 - cos(θ))
+    potential = pendulum.mass * pendulum.gravity * pendulum.length * (1.0 - cos(pendulum.theta))
+
+    return kinetic + potential
+end
+
+# 使用示例
+using .NewtonianMechanics
+
+# 牛顿力学示例
+particle = Particle(1.0, [0.0, 0.0, 0.0], [1.0, 0.0, 0.0])
+force = [0.0, 0.0, -9.81]  # 重力
+acceleration = calculate_acceleration(force, particle.mass)
+
+println("Initial position: ", particle.position)
+println("Initial velocity: ", particle.velocity)
+println("Acceleration: ", acceleration)
+
+# 更新状态
+dt = 0.01
+particle = update_velocity(particle, acceleration, dt)
+particle = update_position(particle, dt)
+
+println("\nAfter $dt s:")
+println("Position: ", particle.position)
+println("Velocity: ", particle.velocity)
+println("Momentum: ", calculate_momentum(particle))
+println("Kinetic energy: ", calculate_kinetic_energy(particle))
+
+# 单摆示例
+pendulum = SimplePendulum(1.0, 1.0, π/4, 0.0)
+println("\nInitial pendulum energy: ", get_energy(pendulum))
+
+# 模拟100步
+for i in 1:100
+    step!(pendulum, 0.01)
+end
+
+println("Final pendulum energy: ", get_energy(pendulum))
+x, y = get_position(pendulum)
+println("Final position: ($(round(x, digits=4)), $(round(y, digits=4)))")
 ```
 
 ### 应用领域 / Application Domains
@@ -692,6 +1357,24 @@ example = do
 - **生物力学**: 人体运动、肌肉力学
 
 ---
+
+## 相关模型 / Related Models
+
+### 物理科学模型 / Physical Science Models
+
+- [量子力学模型](../02-量子力学模型/README.md) - 经典力学的量子化推广，对应原理
+- [相对论模型](../03-相对论模型/README.md) - 经典力学在高速情况下的相对论修正
+- [热力学模型](../04-热力学模型/README.md) - 统计力学与经典力学的联系
+- [电磁学模型](../05-电磁学模型/README.md) - 经典电磁场中的力学问题
+- [光学模型](../06-光学模型/README.md) - 几何光学与经典力学的类比
+- [声学模型](../07-声学模型/README.md) - 波动方程与经典力学的联系
+- [流体力学模型](../08-流体力学模型/README.md) - 连续介质中的力学问题
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 经典力学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 经典力学的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 经典力学作为科学模型的理论基础
 
 ## 参考文献 / References
 

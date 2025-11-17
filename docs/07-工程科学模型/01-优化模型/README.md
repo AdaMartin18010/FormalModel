@@ -4,6 +4,8 @@
 
 - [7.1 优化模型 / Optimization Models](#71-优化模型--optimization-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [优化模型框架图 / Framework Diagram of Optimization Models](#优化模型框架图--framework-diagram-of-optimization-models)
+  - [优化算法流程图 / Flowchart of Optimization Algorithms](#优化算法流程图--flowchart-of-optimization-algorithms)
   - [7.1.1 线性规划模型 / Linear Programming Models](#711-线性规划模型--linear-programming-models)
     - [标准形式 / Standard Form](#标准形式--standard-form)
     - [单纯形法 / Simplex Method](#单纯形法--simplex-method)
@@ -35,9 +37,96 @@
       - [运筹学 / Operations Research](#运筹学--operations-research)
       - [工程设计 / Engineering Design](#工程设计--engineering-design)
       - [人工智能 / Artificial Intelligence](#人工智能--artificial-intelligence)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 优化模型框架图 / Framework Diagram of Optimization Models
+
+```mermaid
+graph TB
+    A[优化模型] --> B[线性规划]
+    A --> C[非线性规划]
+    A --> D[动态规划]
+    A --> E[遗传算法]
+    A --> F[模拟退火]
+    A --> G[粒子群优化]
+
+    B --> H[单纯形法]
+    B --> I[内点法]
+
+    C --> J[无约束优化]
+    C --> K[约束优化]
+
+    D --> L[贝尔曼方程]
+    D --> M[背包问题]
+    D --> N[最短路径]
+
+    E --> O[编码解码]
+    E --> P[选择交叉变异]
+
+    F --> Q[温度调度]
+    F --> R[接受准则]
+
+    G --> S[速度更新]
+    G --> T[位置更新]
+
+    H --> U[优化理论]
+    J --> U
+    L --> U
+    O --> U
+
+    U --> V[优化应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style U fill:#e8f5e9
+    style V fill:#e8f5e9
+```
+
+## 优化算法流程图 / Flowchart of Optimization Algorithms
+
+```mermaid
+flowchart TD
+    Start([开始优化]) --> Init[初始化<br/>初始解/种群]
+    Init --> Eval[评估目标函数<br/>f(x)]
+    Eval --> Check{满足<br/>终止条件?}
+
+    Check -->|是| End([输出最优解])
+    Check -->|否| Select[选择策略]
+
+    Select --> Method{优化方法}
+
+    Method -->|线性规划| LP[单纯形法<br/>检验数计算]
+    Method -->|非线性| NLP[梯度下降<br/>牛顿法]
+    Method -->|动态规划| DP[贝尔曼方程<br/>状态转移]
+    Method -->|遗传算法| GA[选择交叉变异<br/>适应度评估]
+    Method -->|模拟退火| SA[温度调度<br/>接受准则]
+    Method -->|粒子群| PSO[速度位置更新<br/>全局局部最优]
+
+    LP --> Update[更新解]
+    NLP --> Update
+    DP --> Update
+    GA --> Update
+    SA --> Update
+    PSO --> Update
+
+    Update --> Eval
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Update fill:#e8f5e9
+```
 
 ## 7.1.1 线性规划模型 / Linear Programming Models
 
@@ -241,29 +330,29 @@ impl LinearProgram {
             bounds: Vec::new(),
         }
     }
-    
+
     pub fn add_constraint(&mut self, constraint: Vec<f64>, rhs: f64) {
         self.constraints.push(constraint);
         self.rhs.push(rhs);
     }
-    
+
     pub fn set_bounds(&mut self, bounds: Vec<(f64, f64)>) {
         self.bounds = bounds;
     }
-    
+
     pub fn solve_simplex(&self) -> Option<Vec<f64>> {
         // 简化的单纯形法实现
         let n_vars = self.objective.len();
         let n_constraints = self.constraints.len();
-        
+
         // 构造标准形式
         let mut tableau = vec![vec![0.0; n_vars + n_constraints + 1]; n_constraints + 1];
-        
+
         // 目标函数行
         for j in 0..n_vars {
             tableau[0][j] = -self.objective[j];
         }
-        
+
         // 约束条件
         for i in 0..n_constraints {
             for j in 0..n_vars {
@@ -272,7 +361,7 @@ impl LinearProgram {
             tableau[i + 1][n_vars + i] = 1.0; // 松弛变量
             tableau[i + 1][n_vars + n_constraints] = self.rhs[i];
         }
-        
+
         // 迭代求解
         for _ in 0..100 {
             // 选择入基变量
@@ -283,17 +372,17 @@ impl LinearProgram {
                     break;
                 }
             }
-            
+
             if entering.is_none() {
                 break; // 最优解
             }
-            
+
             let entering_col = entering.unwrap();
-            
+
             // 选择出基变量
             let mut leaving = None;
             let mut min_ratio = f64::INFINITY;
-            
+
             for i in 1..n_constraints + 1 {
                 if tableau[i][entering_col] > 1e-10 {
                     let ratio = tableau[i][n_vars + n_constraints] / tableau[i][entering_col];
@@ -303,19 +392,19 @@ impl LinearProgram {
                     }
                 }
             }
-            
+
             if leaving.is_none() {
                 return None; // 无界解
             }
-            
+
             let leaving_row = leaving.unwrap();
-            
+
             // 高斯消元
             let pivot = tableau[leaving_row][entering_col];
             for j in 0..n_vars + n_constraints + 1 {
                 tableau[leaving_row][j] /= pivot;
             }
-            
+
             for i in 0..n_constraints + 1 {
                 if i != leaving_row {
                     let factor = tableau[i][entering_col];
@@ -325,7 +414,7 @@ impl LinearProgram {
                 }
             }
         }
-        
+
         // 提取解
         let mut solution = vec![0.0; n_vars];
         for i in 1..n_constraints + 1 {
@@ -336,14 +425,14 @@ impl LinearProgram {
                     break;
                 }
             }
-            
+
             if let Some(j) = basic_var {
                 if j < n_vars {
                     solution[j] = tableau[i][n_vars + n_constraints];
                 }
             }
         }
-        
+
         Some(solution)
     }
 }
@@ -366,7 +455,7 @@ impl GeneticAlgorithm {
                 .collect();
             population.push(chromosome);
         }
-        
+
         Self {
             population_size,
             chromosome_length,
@@ -375,19 +464,19 @@ impl GeneticAlgorithm {
             population,
         }
     }
-    
+
     pub fn fitness(&self, chromosome: &[bool]) -> f64 {
         // 示例适应度函数：计算1的个数
         chromosome.iter().filter(|&&x| x).count() as f64
     }
-    
+
     pub fn selection(&self) -> Vec<Vec<bool>> {
         let mut new_population = Vec::new();
         let fitnesses: Vec<f64> = self.population.iter()
             .map(|chrom| self.fitness(chrom))
             .collect();
         let total_fitness: f64 = fitnesses.iter().sum();
-        
+
         for _ in 0..self.population_size {
             let r = rand::random::<f64>() * total_fitness;
             let mut cumsum = 0.0;
@@ -399,25 +488,25 @@ impl GeneticAlgorithm {
                 }
             }
         }
-        
+
         new_population
     }
-    
+
     pub fn crossover(&self, parent1: &[bool], parent2: &[bool]) -> (Vec<bool>, Vec<bool>) {
         if rand::random::<f64>() > self.crossover_rate {
             return (parent1.to_vec(), parent2.to_vec());
         }
-        
+
         let crossover_point = rand::random::<usize>() % self.chromosome_length;
         let mut child1 = parent1[..crossover_point].to_vec();
         child1.extend_from_slice(&parent2[crossover_point..]);
-        
+
         let mut child2 = parent2[..crossover_point].to_vec();
         child2.extend_from_slice(&parent1[crossover_point..]);
-        
+
         (child1, child2)
     }
-    
+
     pub fn mutation(&self, chromosome: &mut [bool]) {
         for gene in chromosome.iter_mut() {
             if rand::random::<f64>() < self.mutation_rate {
@@ -425,41 +514,41 @@ impl GeneticAlgorithm {
             }
         }
     }
-    
+
     pub fn evolve(&mut self, generations: usize) -> Vec<f64> {
         let mut best_fitnesses = Vec::new();
-        
+
         for generation in 0..generations {
             // 选择
             let selected = self.selection();
-            
+
             // 交叉和变异
             let mut new_population = Vec::new();
             for i in (0..self.population_size).step_by(2) {
                 let (child1, child2) = self.crossover(&selected[i], &selected[i + 1]);
                 let mut child1 = child1;
                 let mut child2 = child2;
-                
+
                 self.mutation(&mut child1);
                 self.mutation(&mut child2);
-                
+
                 new_population.push(child1);
                 new_population.push(child2);
             }
-            
+
             self.population = new_population;
-            
+
             // 记录最佳适应度
             let best_fitness = self.population.iter()
                 .map(|chrom| self.fitness(chrom))
                 .fold(0.0, f64::max);
             best_fitnesses.push(best_fitness);
-            
+
             if generation % 10 == 0 {
                 println!("Generation {}: Best fitness = {}", generation, best_fitness);
             }
         }
-        
+
         best_fitnesses
     }
 }
@@ -478,7 +567,7 @@ impl SimulatedAnnealing {
     pub fn new(initial_temp: f64, final_temp: f64, cooling_rate: f64, solution: Vec<f64>) -> Self {
         let best_solution = solution.clone();
         let best_energy = Self::energy(&solution);
-        
+
         Self {
             initial_temperature: initial_temp,
             final_temperature: final_temp,
@@ -488,7 +577,7 @@ impl SimulatedAnnealing {
             best_energy,
         }
     }
-    
+
     pub fn energy(solution: &[f64]) -> f64 {
         // 示例能量函数：Rastrigin函数
         let a = 10.0;
@@ -498,14 +587,14 @@ impl SimulatedAnnealing {
             .sum::<f64>();
         a * n + sum
     }
-    
+
     pub fn neighbor(&self, solution: &[f64]) -> Vec<f64> {
         let mut new_solution = solution.to_vec();
         let i = rand::random::<usize>() % solution.len();
         new_solution[i] += (rand::random::<f64>() - 0.5) * 0.1;
         new_solution
     }
-    
+
     pub fn accept_probability(&self, current_energy: f64, new_energy: f64, temperature: f64) -> f64 {
         if new_energy < current_energy {
             1.0
@@ -513,32 +602,32 @@ impl SimulatedAnnealing {
             ((current_energy - new_energy) / temperature).exp()
         }
     }
-    
+
     pub fn optimize(&mut self, iterations: usize) -> (Vec<f64>, f64) {
         let mut temperature = self.initial_temperature;
-        
+
         for iteration in 0..iterations {
             let current_energy = Self::energy(&self.current_solution);
             let new_solution = self.neighbor(&self.current_solution);
             let new_energy = Self::energy(&new_solution);
-            
+
             if self.accept_probability(current_energy, new_energy, temperature) > rand::random::<f64>() {
                 self.current_solution = new_solution;
-                
+
                 if new_energy < self.best_energy {
                     self.best_solution = self.current_solution.clone();
                     self.best_energy = new_energy;
                 }
             }
-            
+
             temperature *= self.cooling_rate;
-            
+
             if iteration % 100 == 0 {
-                println!("Iteration {}: Temperature = {:.6}, Best energy = {:.6}", 
+                println!("Iteration {}: Temperature = {:.6}, Best energy = {:.6}",
                         iteration, temperature, self.best_energy);
             }
         }
-        
+
         (self.best_solution.clone(), self.best_energy)
     }
 }
@@ -550,16 +639,16 @@ fn main() {
     lp.add_constraint(vec![1.0, 1.0], 4.0);
     lp.add_constraint(vec![2.0, 1.0], 5.0);
     lp.set_bounds(vec![(0.0, f64::INFINITY), (0.0, f64::INFINITY)]);
-    
+
     if let Some(solution) = lp.solve_simplex() {
         println!("LP Solution: {:?}", solution);
     }
-    
+
     // 遗传算法示例
     let mut ga = GeneticAlgorithm::new(50, 20);
     let fitness_history = ga.evolve(100);
     println!("Final best fitness: {}", fitness_history.last().unwrap());
-    
+
     // 模拟退火示例
     let initial_solution = vec![0.0; 10];
     let mut sa = SimulatedAnnealing::new(100.0, 0.01, 0.95, initial_solution);
@@ -600,82 +689,82 @@ setBounds :: [(Double, Double)] -> LinearProgram -> LinearProgram
 setBounds bounds_list lp = lp { bounds = bounds_list }
 
 solveSimplex :: LinearProgram -> Maybe [Double]
-solveSimplex lp = 
+solveSimplex lp =
     let n_vars = length (objective lp)
         n_constraints = length (constraints lp)
         tableau = constructTableau lp
     in solveTableau tableau n_vars n_constraints
 
 constructTableau :: LinearProgram -> [[Double]]
-constructTableau lp = 
+constructTableau lp =
     let n_vars = length (objective lp)
         n_constraints = length (constraints lp)
         objective_row = map negate (objective lp) ++ replicate n_constraints 0.0 ++ [0.0]
-        constraint_rows = zipWith (\constraint rhs_val -> 
-            constraint ++ replicate n_constraints 0.0 ++ [rhs_val]) 
+        constraint_rows = zipWith (\constraint rhs_val ->
+            constraint ++ replicate n_constraints 0.0 ++ [rhs_val])
             (constraints lp) (rhs lp)
     in objective_row : constraint_rows
 
 solveTableau :: [[Double]] -> Int -> Int -> Maybe [Double]
-solveTableau tableau n_vars n_constraints = 
+solveTableau tableau n_vars n_constraints =
     let iterations = iterate (simplexStep n_vars n_constraints) tableau
         converged = takeWhile (not . isOptimal) iterations
-    in if null converged 
-       then Nothing 
+    in if null converged
+       then Nothing
        else Just (extractSolution (last converged) n_vars n_constraints)
 
 isOptimal :: [[Double]] -> Bool
 isOptimal tableau = all (>= -1e-10) (head tableau)
 
 simplexStep :: Int -> Int -> [[Double]] -> [[Double]]
-simplexStep n_vars n_constraints tableau = 
+simplexStep n_vars n_constraints tableau =
     let entering_col = findEnteringColumn tableau
         leaving_row = findLeavingRow tableau entering_col
     in pivot tableau leaving_row entering_col
 
 findEnteringColumn :: [[Double]] -> Int
-findEnteringColumn tableau = 
+findEnteringColumn tableau =
     case findIndex (< -1e-10) (head tableau) of
         Just col -> col
         Nothing -> 0
 
 findLeavingRow :: [[Double]] -> Int -> Int
-findLeavingRow tableau col = 
-    let ratios = zipWith (\i row -> 
-        if row !! col > 1e-10 
+findLeavingRow tableau col =
+    let ratios = zipWith (\i row ->
+        if row !! col > 1e-10
         then Just (i, (row !! (length row - 1)) / (row !! col))
         else Nothing) [1..] (tail tableau)
         valid_ratios = catMaybes ratios
-    in if null valid_ratios 
-       then 0 
+    in if null valid_ratios
+       then 0
        else fst (minimumBy (comparing snd) valid_ratios)
 
 pivot :: [[Double]] -> Int -> Int -> [[Double]]
-pivot tableau row col = 
+pivot tableau row col =
     let pivot_val = tableau !! row !! col
         normalized_row = map (/ pivot_val) (tableau !! row)
-        new_tableau = map (\i -> 
-            if i == row 
-            then normalized_row 
-            else map (\j -> 
+        new_tableau = map (\i ->
+            if i == row
+            then normalized_row
+            else map (\j ->
                 let factor = tableau !! i !! col
-                in (tableau !! i !! j) - factor * (normalized_row !! j)) 
-                [0..length (head tableau) - 1]) 
+                in (tableau !! i !! j) - factor * (normalized_row !! j))
+                [0..length (head tableau) - 1])
             [0..length tableau - 1]
     in new_tableau
 
 extractSolution :: [[Double]] -> Int -> Int -> [Double]
-extractSolution tableau n_vars n_constraints = 
+extractSolution tableau n_vars n_constraints =
     let solution = replicate n_vars 0.0
         basic_vars = findBasicVariables tableau
-    in foldl (\sol (var, val) -> 
-        if var < n_vars 
+    in foldl (\sol (var, val) ->
+        if var < n_vars
         then take var sol ++ [val] ++ drop (var + 1) sol
         else sol) solution basic_vars
 
 findBasicVariables :: [[Double]] -> [(Int, Double)]
-findBasicVariables tableau = 
-    concatMap (\i -> 
+findBasicVariables tableau =
+    concatMap (\i ->
         let row = tableau !! i
             basic_col = findIndex (\x -> abs (x - 1.0) < 1e-10) row
         in case basic_col of
@@ -717,7 +806,7 @@ selection ga = do
     return $ take (populationSize ga) $ iterate (selectIndividual roulette) []
 
 selectIndividual :: [Double] -> [Bool]
-selectIndividual roulette = 
+selectIndividual roulette =
     let r = head $ randomRs (0.0, 1.0) gen
         cumsum = scanl1 (+) roulette
         selected = length $ takeWhile (< r) cumsum
@@ -739,8 +828,8 @@ mutation :: GeneticAlgorithm -> [Bool] -> IO [Bool]
 mutation ga chromosome = do
     gen <- newStdGen
     let mutation_rates = randomRs (0.0, 1.0) gen
-        mutated = zipWith (\gene rate -> 
-            if rate < mutationRate ga then not gene else gene) 
+        mutated = zipWith (\gene rate ->
+            if rate < mutationRate ga then not gene else gene)
             chromosome mutation_rates
     return mutated
 
@@ -751,18 +840,18 @@ evolve ga generations = go ga generations []
     go current_ga gen history = do
         -- 选择
         selected <- selection current_ga
-        
+
         -- 交叉和变异
         new_population <- crossoverAndMutate current_ga selected
-        
+
         let new_ga = current_ga { population = new_population }
             best_fitness = maximum $ map fitness new_population
-        
+
         go new_ga (gen - 1) (best_fitness : history)
 
 crossoverAndMutate :: GeneticAlgorithm -> [[Bool]] -> IO [[Bool]]
 crossoverAndMutate ga selected = do
-    let pairs = zip (take (populationSize ga `div` 2) selected) 
+    let pairs = zip (take (populationSize ga `div` 2) selected)
                    (drop (populationSize ga `div` 2) selected)
     children <- mapM (\(p1, p2) -> do
         (c1, c2) <- crossover ga p1 p2
@@ -782,7 +871,7 @@ data SimulatedAnnealing = SimulatedAnnealing {
 } deriving Show
 
 newSimulatedAnnealing :: Double -> Double -> Double -> [Double] -> SimulatedAnnealing
-newSimulatedAnnealing init_temp final_temp cooling_rate solution = 
+newSimulatedAnnealing init_temp final_temp cooling_rate solution =
     SimulatedAnnealing {
         initialTemperature = init_temp,
         finalTemperature = final_temp,
@@ -793,7 +882,7 @@ newSimulatedAnnealing init_temp final_temp cooling_rate solution =
     }
 
 energy :: [Double] -> Double
-energy solution = 
+energy solution =
     let a = 10.0
         n = fromIntegral $ length solution
         sum_terms = sum $ map (\x -> x * x - a * cos (2 * pi * x)) solution
@@ -807,9 +896,9 @@ neighbor solution = do
     return $ take i solution ++ [solution !! i + delta] ++ drop (i + 1) solution
 
 acceptProbability :: Double -> Double -> Double -> Double
-acceptProbability current_energy new_energy temperature = 
-    if new_energy < current_energy 
-    then 1.0 
+acceptProbability current_energy new_energy temperature =
+    if new_energy < current_energy
+    then 1.0
     else exp ((current_energy - new_energy) / temperature)
 
 optimize :: SimulatedAnnealing -> Int -> IO ([Double], Double)
@@ -820,22 +909,22 @@ optimize sa iterations = go sa iterations (initialTemperature sa)
         let current_energy = energy (currentSolution current_sa)
         new_solution <- neighbor (currentSolution current_sa)
         let new_energy = energy new_solution
-        
+
         gen <- newStdGen
         let r = head $ randomRs (0.0, 1.0) gen
             accept = acceptProbability current_energy new_energy temp > r
-        
-        let updated_sa = if accept 
+
+        let updated_sa = if accept
                          then current_sa { currentSolution = new_solution }
                          else current_sa
-        
+
         let final_sa = if new_energy < bestEnergy updated_sa
-                       then updated_sa { 
-                           bestSolution = new_solution, 
-                           bestEnergy = new_energy 
+                       then updated_sa {
+                           bestSolution = new_solution,
+                           bestEnergy = new_energy
                        }
                        else updated_sa
-        
+
         let new_temp = temp * coolingRate current_sa
         go final_sa (iter - 1) new_temp
 
@@ -847,16 +936,16 @@ example = do
              addConstraint [2.0, 1.0] 5.0 $
              addConstraint [1.0, 1.0] 4.0 $
              newLinearProgram [3.0, 2.0]
-    
+
     case solveSimplex lp of
         Just solution -> putStrLn $ "LP Solution: " ++ show solution
         Nothing -> putStrLn "No solution found"
-    
+
     -- 遗传算法示例
     ga <- newGeneticAlgorithm 50 20
     (fitness_history, final_ga) <- evolve ga 100
     putStrLn $ "Final best fitness: " ++ show (last fitness_history)
-    
+
     -- 模拟退火示例
     let initial_solution = replicate 10 0.0
         sa = newSimulatedAnnealing 100.0 0.01 0.95 initial_solution
@@ -888,6 +977,42 @@ example = do
 - **强化学习**: 策略优化、价值函数
 
 ---
+
+## 相关模型 / Related Models
+
+### 工程科学模型 / Engineering Science Models
+
+- [控制论模型](../02-控制论模型/README.md) - 最优控制和优化控制
+- [信号处理模型](../03-信号处理模型/README.md) - 信号优化和滤波器优化
+- [材料科学模型](../04-材料科学模型/README.md) - 材料优化设计
+- [机械工程模型](../05-机械工程模型/README.md) - 结构优化和机械优化
+- [电子工程模型](../06-电子工程模型/README.md) - 电路优化和电子系统优化
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 线性代数和矩阵优化
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 优化几何和凸优化
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 拓扑优化
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 优化算法和算法优化
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 机器学习优化和神经网络优化
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 力学优化和变分原理
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 热力学优化
+
+### 社会科学模型 / Social Science Models
+
+- [经济学模型](../../06-社会科学模型/02-经济学模型/README.md) - 经济优化和运筹学
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 优化模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 优化模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 优化模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

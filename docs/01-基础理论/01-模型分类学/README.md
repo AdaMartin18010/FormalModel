@@ -4,6 +4,8 @@
 
 - [1.1 模型分类学 / Model Taxonomy](#11-模型分类学--model-taxonomy)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [模型分类学框架图 / Framework Diagram of Model Taxonomy](#模型分类学框架图--framework-diagram-of-model-taxonomy)
+  - [模型分类流程 / Flowchart of Model Classification](#模型分类流程--flowchart-of-model-classification)
   - [1.1.1 模型定义与分类原则 / Model Definition and Classification Principles](#111-模型定义与分类原则--model-definition-and-classification-principles)
     - [模型定义 / Model Definition](#模型定义--model-definition)
       - [形式化定义 / Formal Definition](#形式化定义--formal-definition)
@@ -50,15 +52,127 @@
     - [现代模型 / Modern Models (1900-1950)](#现代模型--modern-models-1900-1950)
     - [当代模型 / Contemporary Models (1950-2000)](#当代模型--contemporary-models-1950-2000)
     - [新兴模型 / Emerging Models (2000年后)](#新兴模型--emerging-models-2000年后)
+    - [2025年最新模型 / Latest Models (2025)](#2025年最新模型--latest-models-2025)
   - [1.1.6 模型间关系图谱 / Inter-model Relationship Graph](#116-模型间关系图谱--inter-model-relationship-graph)
     - [关系类型 / Relationship Types](#关系类型--relationship-types)
   - [1.1.7 分类体系公理 / Classification System Axioms](#117-分类体系公理--classification-system-axioms)
     - [基础公理 / Basic Axioms](#基础公理--basic-axioms)
+  - [1.1.8 算法实现 / Algorithm Implementation](#118-算法实现--algorithm-implementation)
+    - [模型分类算法实现 / Model Classification Algorithm Implementation](#模型分类算法实现--model-classification-algorithm-implementation)
+      - [Rust实现 / Rust Implementation](#rust实现--rust-implementation)
+      - [Haskell实现 / Haskell Implementation](#haskell实现--haskell-implementation)
+      - [Python实现 / Python Implementation](#python实现--python-implementation)
+      - [Julia实现 / Julia Implementation](#julia实现--julia-implementation)
     - [推理规则 / Inference Rules](#推理规则--inference-rules)
     - [定理 / Theorems](#定理--theorems)
   - [参考文献 / References](#参考文献--references)
+    - [经典文献 / Classical References](#经典文献--classical-references)
+    - [2025年最新文献 / Latest References (2025)](#2025年最新文献--latest-references-2025)
+    - [国际标准文献 / International Standards](#国际标准文献--international-standards)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models-1)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models-1)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models-1)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models-1)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models-1)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
 
 ---
+
+## 模型分类学框架图 / Framework Diagram of Model Taxonomy
+
+```mermaid
+graph TB
+    A[模型分类学] --> B[按学科领域分类]
+    A --> C[按形式化程度分类]
+    A --> D[按应用范围分类]
+    A --> E[按历史发展分类]
+
+    B --> F[物理科学模型]
+    B --> G[数学科学模型]
+    B --> H[计算机科学模型]
+    B --> I[生命科学模型]
+    B --> J[社会科学模型]
+    B --> K[工程科学模型]
+    B --> L[行业应用模型]
+
+    C --> M[完全形式化模型]
+    C --> N[半形式化模型]
+    C --> O[概念模型]
+
+    D --> P[通用模型]
+    D --> Q[专用模型]
+
+    E --> R[古典模型]
+    E --> S[现代模型]
+    E --> T[当代模型]
+    E --> U[新兴模型]
+    E --> V[2025最新模型]
+
+    F --> W[模型应用]
+    G --> W
+    H --> W
+    I --> W
+    J --> W
+    K --> W
+    L --> W
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style W fill:#e8f5e9
+```
+
+## 模型分类流程 / Flowchart of Model Classification
+
+```mermaid
+flowchart TD
+    Start([新模型输入]) --> ModelAnalysis[模型分析<br/>模型特征<br/>模型结构<br/>模型功能<br/>模型应用]
+
+    ModelAnalysis --> ClassificationCriteria{分类标准选择}
+    ClassificationCriteria --> ByDiscipline[按学科领域分类<br/>物理科学<br/>数学科学<br/>计算机科学<br/>生命科学<br/>社会科学<br/>工程科学<br/>行业应用]
+    ClassificationCriteria --> ByFormalization[按形式化程度分类<br/>完全形式化<br/>半形式化<br/>概念模型]
+    ClassificationCriteria --> ByScope[按应用范围分类<br/>通用模型<br/>专用模型]
+    ClassificationCriteria --> ByHistory[按历史发展分类<br/>古典模型<br/>现代模型<br/>当代模型<br/>新兴模型<br/>最新模型]
+
+    ByDiscipline --> CategoryDetermination{类别确定}
+    ByFormalization --> CategoryDetermination
+    ByScope --> CategoryDetermination
+    ByHistory --> CategoryDetermination
+
+    CategoryDetermination --> Validation{分类验证}
+    Validation --> CompletenessCheck[完备性检查<br/>所有模型都有分类<br/>分类覆盖完整]
+    Validation --> ExclusivityCheck[互斥性检查<br/>模型不重复分类<br/>类别互不重叠]
+    Validation --> HierarchyCheck[层次性检查<br/>分类层次清晰<br/>层次关系正确]
+
+    CompletenessCheck --> ClassificationResult{分类结果}
+    ExclusivityCheck --> ClassificationResult
+    HierarchyCheck --> ClassificationResult
+
+    ClassificationResult -->|通过| ClassificationOutput[分类输出<br/>模型类别<br/>分类依据<br/>分类标签]
+    ClassificationResult -->|不通过| Reclassification[重新分类<br/>调整标准<br/>优化分类<br/>重新验证]
+
+    Reclassification --> ClassificationCriteria
+
+    ClassificationOutput --> RelationshipMapping[关系映射<br/>模型间关系<br/>依赖关系<br/>应用关系<br/>类比关系]
+
+    RelationshipMapping --> TaxonomyUpdate[分类体系更新<br/>更新分类树<br/>更新关系图<br/>更新索引]
+
+    TaxonomyUpdate --> Documentation[文档化<br/>分类文档<br/>关系文档<br/>索引文档]
+
+    Documentation --> End([分类完成])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style ClassificationCriteria fill:#e8f5e9
+    style CategoryDetermination fill:#e8f5e9
+    style Validation fill:#e8f5e9
+    style ClassificationResult fill:#e8f5e9
+```
 
 ## 1.1.1 模型定义与分类原则 / Model Definition and Classification Principles
 
@@ -404,7 +518,7 @@ graph TD
     A --> C[计算机科学模型]
     A --> D[生命科学模型]
     A --> E[社会科学模型]
-    
+
     B --> F[量子力学模型]
     B --> G[相对论模型]
     B --> H[热力学模型]
@@ -412,19 +526,19 @@ graph TD
     B --> OP[光学模型]
     B --> AC[声学模型]
     B --> FM[流体力学模型]
-    
+
     C --> I[算法模型]
     C --> J[数据结构模型]
     C --> K[人工智能模型]
-    
+
     D --> L[生物数学模型]
     D --> M[神经科学模型]
     D --> N[基因组学模型]
-    
+
     E --> O[经济学模型]
     E --> P[社会学模型]
     E --> Q[心理学模型]
-    
+
     F --> R[量子计算模型]
     G --> S[宇宙学模型]
     I --> T[机器学习模型]
@@ -448,6 +562,411 @@ graph TD
 **A1 (存在性公理)**: 每个模型都属于至少一个分类
 **A2 (唯一性公理)**: 每个模型在给定分类标准下属于唯一类别
 **A3 (完备性公理)**: 分类体系覆盖所有已知成熟模型
+
+## 1.1.8 算法实现 / Algorithm Implementation
+
+### 模型分类算法实现 / Model Classification Algorithm Implementation
+
+#### Rust实现 / Rust Implementation
+
+```rust
+use std::collections::HashMap;
+
+/// 模型分类器
+#[derive(Debug, Clone)]
+pub struct ModelClassifier {
+    /// 分类树：类别 -> 子类别列表
+    taxonomy: HashMap<String, Vec<String>>,
+    /// 模型特征：模型名 -> 特征向量
+    model_features: HashMap<String, Vec<f64>>,
+    /// 分类规则：类别 -> 特征匹配规则
+    classification_rules: HashMap<String, ClassificationRule>,
+}
+
+/// 分类规则
+#[derive(Debug, Clone)]
+pub enum ClassificationRule {
+    /// 按学科领域分类
+    ByDiscipline(String),
+    /// 按形式化程度分类
+    ByFormalizationLevel(String),
+    /// 按应用范围分类
+    ByApplicationScope(String),
+    /// 按历史发展分类
+    ByHistoricalDevelopment(String),
+}
+
+impl ModelClassifier {
+    /// 创建新的分类器
+    pub fn new() -> Self {
+        let mut taxonomy = HashMap::new();
+        taxonomy.insert("物理科学模型".to_string(), vec![
+            "经典力学模型".to_string(),
+            "量子力学模型".to_string(),
+            "相对论模型".to_string(),
+        ]);
+        taxonomy.insert("数学科学模型".to_string(), vec![
+            "代数模型".to_string(),
+            "几何模型".to_string(),
+            "拓扑模型".to_string(),
+        ]);
+
+        Self {
+            taxonomy,
+            model_features: HashMap::new(),
+            classification_rules: HashMap::new(),
+        }
+    }
+
+    /// 添加模型特征
+    pub fn add_model(&mut self, model_name: String, features: Vec<f64>) {
+        self.model_features.insert(model_name, features);
+    }
+
+    /// 分类模型
+    pub fn classify(&self, model_name: &str) -> Option<String> {
+        if let Some(features) = self.model_features.get(model_name) {
+            // 根据特征向量进行分类
+            self.classify_by_features(features)
+        } else {
+            None
+        }
+    }
+
+    /// 根据特征向量分类
+    fn classify_by_features(&self, features: &[f64]) -> Option<String> {
+        // 简化的分类逻辑：根据特征向量的第一个元素判断
+        if features.is_empty() {
+            return None;
+        }
+
+        let first_feature = features[0];
+        if first_feature < 0.3 {
+            Some("物理科学模型".to_string())
+        } else if first_feature < 0.6 {
+            Some("数学科学模型".to_string())
+        } else {
+            Some("计算机科学模型".to_string())
+        }
+    }
+
+    /// 验证分类的完备性
+    pub fn validate_completeness(&self) -> bool {
+        // 检查所有模型是否都有分类
+        for model_name in self.model_features.keys() {
+            if self.classify(model_name).is_none() {
+                return false;
+            }
+        }
+        true
+    }
+
+    /// 验证分类的互斥性
+    pub fn validate_exclusivity(&self) -> bool {
+        let mut classifications = Vec::new();
+        for model_name in self.model_features.keys() {
+            if let Some(classification) = self.classify(model_name) {
+                classifications.push((model_name.clone(), classification));
+            }
+        }
+
+        // 检查是否有模型被分到多个类别
+        for i in 0..classifications.len() {
+            for j in (i+1)..classifications.len() {
+                if classifications[i].0 == classifications[j].0
+                    && classifications[i].1 != classifications[j].1 {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_classification() {
+        let mut classifier = ModelClassifier::new();
+        classifier.add_model("牛顿力学".to_string(), vec![0.2]);
+        classifier.add_model("线性代数".to_string(), vec![0.5]);
+
+        assert_eq!(classifier.classify("牛顿力学"), Some("物理科学模型".to_string()));
+        assert_eq!(classifier.classify("线性代数"), Some("数学科学模型".to_string()));
+    }
+
+    #[test]
+    fn test_completeness() {
+        let mut classifier = ModelClassifier::new();
+        classifier.add_model("模型1".to_string(), vec![0.2]);
+        classifier.add_model("模型2".to_string(), vec![0.5]);
+
+        assert!(classifier.validate_completeness());
+    }
+}
+```
+
+#### Haskell实现 / Haskell Implementation
+
+```haskell
+module ModelClassifier where
+
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Maybe (fromMaybe)
+
+-- 模型分类器
+data ModelClassifier = ModelClassifier
+    { taxonomy :: Map String [String]
+    , modelFeatures :: Map String [Double]
+    , classificationRules :: Map String ClassificationRule
+    }
+
+-- 分类规则
+data ClassificationRule
+    = ByDiscipline String
+    | ByFormalizationLevel String
+    | ByApplicationScope String
+    | ByHistoricalDevelopment String
+    deriving (Show, Eq)
+
+-- 创建新的分类器
+newClassifier :: ModelClassifier
+newClassifier = ModelClassifier
+    { taxonomy = Map.fromList
+        [ ("物理科学模型", ["经典力学模型", "量子力学模型", "相对论模型"])
+        , ("数学科学模型", ["代数模型", "几何模型", "拓扑模型"])
+        ]
+    , modelFeatures = Map.empty
+    , classificationRules = Map.empty
+    }
+
+-- 添加模型特征
+addModel :: String -> [Double] -> ModelClassifier -> ModelClassifier
+addModel modelName features classifier =
+    classifier { modelFeatures = Map.insert modelName features (modelFeatures classifier) }
+
+-- 分类模型
+classify :: ModelClassifier -> String -> Maybe String
+classify classifier modelName =
+    case Map.lookup modelName (modelFeatures classifier) of
+        Just features -> Just (classifyByFeatures features)
+        Nothing -> Nothing
+
+-- 根据特征向量分类
+classifyByFeatures :: [Double] -> String
+classifyByFeatures features
+    | null features = "未知类别"
+    | head features < 0.3 = "物理科学模型"
+    | head features < 0.6 = "数学科学模型"
+    | otherwise = "计算机科学模型"
+
+-- 验证分类的完备性
+validateCompleteness :: ModelClassifier -> Bool
+validateCompleteness classifier =
+    all (\modelName -> classify classifier modelName /= Nothing)
+        (Map.keys (modelFeatures classifier))
+
+-- 验证分类的互斥性
+validateExclusivity :: ModelClassifier -> Bool
+validateExclusivity classifier =
+    let classifications = mapMaybe (\name -> fmap (name,) (classify classifier name))
+                        (Map.keys (modelFeatures classifier))
+    in all (\(name1, class1) ->
+            all (\(name2, class2) ->
+                name1 == name2 || class1 == class2 || name1 /= name2)
+            classifications)
+        classifications
+
+-- 辅助函数
+mapMaybe :: (a -> Maybe b) -> [a] -> [b]
+mapMaybe f = foldr (\x acc -> case f x of Just y -> y:acc; Nothing -> acc) []
+```
+
+#### Python实现 / Python Implementation
+
+```python
+from typing import Dict, List, Optional
+from dataclasses import dataclass, field
+from enum import Enum
+
+class ClassificationRule(Enum):
+    """分类规则类型"""
+    BY_DISCIPLINE = "by_discipline"
+    BY_FORMALIZATION_LEVEL = "by_formalization_level"
+    BY_APPLICATION_SCOPE = "by_application_scope"
+    BY_HISTORICAL_DEVELOPMENT = "by_historical_development"
+
+@dataclass
+class ModelClassifier:
+    """模型分类器"""
+    taxonomy: Dict[str, List[str]] = field(default_factory=lambda: {
+        "物理科学模型": ["经典力学模型", "量子力学模型", "相对论模型"],
+        "数学科学模型": ["代数模型", "几何模型", "拓扑模型"],
+    })
+    model_features: Dict[str, List[float]] = field(default_factory=dict)
+    classification_rules: Dict[str, ClassificationRule] = field(default_factory=dict)
+
+    def add_model(self, model_name: str, features: List[float]) -> None:
+        """添加模型特征"""
+        self.model_features[model_name] = features
+
+    def classify(self, model_name: str) -> Optional[str]:
+        """分类模型"""
+        if model_name not in self.model_features:
+            return None
+
+        features = self.model_features[model_name]
+        return self._classify_by_features(features)
+
+    def _classify_by_features(self, features: List[float]) -> str:
+        """根据特征向量分类"""
+        if not features:
+            return "未知类别"
+
+        first_feature = features[0]
+        if first_feature < 0.3:
+            return "物理科学模型"
+        elif first_feature < 0.6:
+            return "数学科学模型"
+        else:
+            return "计算机科学模型"
+
+    def validate_completeness(self) -> bool:
+        """验证分类的完备性"""
+        return all(self.classify(name) is not None
+                  for name in self.model_features.keys())
+
+    def validate_exclusivity(self) -> bool:
+        """验证分类的互斥性"""
+        classifications = [
+            (name, self.classify(name))
+            for name in self.model_features.keys()
+            if self.classify(name) is not None
+        ]
+
+        # 检查是否有模型被分到多个类别
+        for i, (name1, class1) in enumerate(classifications):
+            for name2, class2 in classifications[i+1:]:
+                if name1 == name2 and class1 != class2:
+                    return False
+        return True
+
+# 使用示例
+if __name__ == "__main__":
+    classifier = ModelClassifier()
+    classifier.add_model("牛顿力学", [0.2])
+    classifier.add_model("线性代数", [0.5])
+
+    print(f"牛顿力学分类: {classifier.classify('牛顿力学')}")
+    print(f"线性代数分类: {classifier.classify('线性代数')}")
+    print(f"完备性验证: {classifier.validate_completeness()}")
+    print(f"互斥性验证: {classifier.validate_exclusivity()}")
+```
+
+#### Julia实现 / Julia Implementation
+
+```julia
+using DataStructures
+
+# 分类规则类型
+abstract type ClassificationRule end
+
+struct ByDiscipline <: ClassificationRule
+    discipline::String
+end
+
+struct ByFormalizationLevel <: ClassificationRule
+    level::String
+end
+
+# 模型分类器
+mutable struct ModelClassifier
+    taxonomy::Dict{String, Vector{String}}
+    model_features::Dict{String, Vector{Float64}}
+    classification_rules::Dict{String, ClassificationRule}
+
+    function ModelClassifier()
+        taxonomy = Dict{String, Vector{String}}(
+            "物理科学模型" => ["经典力学模型", "量子力学模型", "相对论模型"],
+            "数学科学模型" => ["代数模型", "几何模型", "拓扑模型"]
+        )
+        new(taxonomy, Dict{String, Vector{Float64}}(), Dict{String, ClassificationRule}())
+    end
+end
+
+# 添加模型特征
+function add_model!(classifier::ModelClassifier, model_name::String, features::Vector{Float64})
+    classifier.model_features[model_name] = features
+end
+
+# 根据特征向量分类
+function classify_by_features(features::Vector{Float64})::String
+    if isempty(features)
+        return "未知类别"
+    end
+
+    first_feature = features[1]
+    if first_feature < 0.3
+        return "物理科学模型"
+    elseif first_feature < 0.6
+        return "数学科学模型"
+    else
+        return "计算机科学模型"
+    end
+end
+
+# 分类模型
+function classify(classifier::ModelClassifier, model_name::String)::Union{String, Nothing}
+    if haskey(classifier.model_features, model_name)
+        features = classifier.model_features[model_name]
+        return classify_by_features(features)
+    else
+        return nothing
+    end
+end
+
+# 验证分类的完备性
+function validate_completeness(classifier::ModelClassifier)::Bool
+    for model_name in keys(classifier.model_features)
+        if classify(classifier, model_name) === nothing
+            return false
+        end
+    end
+    return true
+end
+
+# 验证分类的互斥性
+function validate_exclusivity(classifier::ModelClassifier)::Bool
+    classifications = [(name, classify(classifier, name))
+                       for name in keys(classifier.model_features)
+                       if classify(classifier, name) !== nothing]
+
+    for i in 1:length(classifications)
+        for j in (i+1):length(classifications)
+            name1, class1 = classifications[i]
+            name2, class2 = classifications[j]
+            if name1 == name2 && class1 != class2
+                return false
+            end
+        end
+    end
+    return true
+end
+
+# 使用示例
+classifier = ModelClassifier()
+add_model!(classifier, "牛顿力学", [0.2])
+add_model!(classifier, "线性代数", [0.5])
+
+println("牛顿力学分类: $(classify(classifier, "牛顿力学"))")
+println("线性代数分类: $(classify(classifier, "线性代数"))")
+println("完备性验证: $(validate_completeness(classifier))")
+println("互斥性验证: $(validate_exclusivity(classifier))")
+```
+
 **A4 (一致性公理)**: 分类标准在逻辑上一致
 
 ### 推理规则 / Inference Rules
@@ -499,6 +1018,91 @@ graph TD
 1. ITU/ISO-IEC H.267 (2025). "Next-Generation Video Compression Standard"
 2. UNESCO (2024). "AI Competency Framework for Teachers and Students"
 3. IEEE Standards (2025). "Formal Methods in Software Engineering"
+
+---
+
+## 相关模型 / Related Models
+
+### 基础理论 / Basic Theory
+
+- **[形式化方法论](../02-形式化方法论/README.md)** - 模型分类学需要形式化方法论来提供形式化分类原则和分类算法
+- **[科学模型论](../03-科学模型论/README.md)** - 模型分类学是科学模型论的重要组成部分，为科学模型的分类提供理论基础
+
+### 物理科学模型 / Physical Science Models
+
+模型分类学为所有物理科学模型提供分类框架：
+
+- **[经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md)** - 按学科领域分类的物理科学模型
+- **[量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md)** - 按学科领域分类的物理科学模型
+- **[相对论模型](../../02-物理科学模型/03-相对论模型/README.md)** - 按学科领域分类的物理科学模型
+- **[热力学模型](../../02-物理科学模型/04-热力学模型/README.md)** - 按学科领域分类的物理科学模型
+- **[电磁学模型](../../02-物理科学模型/05-电磁学模型/README.md)** - 按学科领域分类的物理科学模型
+- **[光学模型](../../02-物理科学模型/06-光学模型/README.md)** - 按学科领域分类的物理科学模型
+- **[声学模型](../../02-物理科学模型/07-声学模型/README.md)** - 按学科领域分类的物理科学模型
+- **[流体力学模型](../../02-物理科学模型/08-流体力学模型/README.md)** - 按学科领域分类的物理科学模型
+
+### 数学科学模型 / Mathematical Science Models
+
+模型分类学为所有数学科学模型提供分类框架：
+
+- **[代数模型](../../03-数学科学模型/01-代数模型/README.md)** - 按学科领域分类的数学科学模型
+- **[几何模型](../../03-数学科学模型/02-几何模型/README.md)** - 按学科领域分类的数学科学模型
+- **[拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md)** - 按学科领域分类的数学科学模型
+
+### 计算机科学模型 / Computer Science Models
+
+模型分类学为所有计算机科学模型提供分类框架：
+
+- **[计算模型](../../04-计算机科学模型/01-计算模型/README.md)** - 按学科领域分类的计算机科学模型
+- **[算法模型](../../04-计算机科学模型/02-算法模型/README.md)** - 按学科领域分类的计算机科学模型
+- **[数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md)** - 按学科领域分类的计算机科学模型
+- **[人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md)** - 按学科领域分类的计算机科学模型
+
+### 生命科学模型 / Life Science Models
+
+模型分类学为所有生命科学模型提供分类框架：
+
+- **[分子生物学模型](../../05-生命科学模型/01-分子生物学模型/README.md)** - 按学科领域分类的生命科学模型
+- **[生态学模型](../../05-生命科学模型/02-生态学模型/README.md)** - 按学科领域分类的生命科学模型
+- **[进化论模型](../../05-生命科学模型/03-进化论模型/README.md)** - 按学科领域分类的生命科学模型
+- **[神经科学模型](../../05-生命科学模型/04-神经科学模型/README.md)** - 按学科领域分类的生命科学模型
+- **[基因组学模型](../../05-生命科学模型/05-基因组学模型/README.md)** - 按学科领域分类的生命科学模型
+
+### 社会科学模型 / Social Science Models
+
+模型分类学为所有社会科学模型提供分类框架：
+
+- **[社会网络模型](../../06-社会科学模型/01-社会网络模型/README.md)** - 按学科领域分类的社会科学模型
+- **[经济学模型](../../06-社会科学模型/02-经济学模型/README.md)** - 按学科领域分类的社会科学模型
+- **[心理学模型](../../06-社会科学模型/03-心理学模型/README.md)** - 按学科领域分类的社会科学模型
+- **[认知科学模型](../../06-社会科学模型/04-认知科学模型/README.md)** - 按学科领域分类的社会科学模型
+- **[语言学模型](../../06-社会科学模型/05-语言学模型/README.md)** - 按学科领域分类的社会科学模型
+
+### 工程科学模型 / Engineering Science Models
+
+模型分类学为所有工程科学模型提供分类框架：
+
+- **[优化模型](../../07-工程科学模型/01-优化模型/README.md)** - 按学科领域分类的工程科学模型
+- **[控制论模型](../../07-工程科学模型/02-控制论模型/README.md)** - 按学科领域分类的工程科学模型
+- **[信号处理模型](../../07-工程科学模型/03-信号处理模型/README.md)** - 按学科领域分类的工程科学模型
+- **[材料科学模型](../../07-工程科学模型/04-材料科学模型/README.md)** - 按学科领域分类的工程科学模型
+- **[机械工程模型](../../07-工程科学模型/05-机械工程模型/README.md)** - 按学科领域分类的工程科学模型
+- **[电子工程模型](../../07-工程科学模型/06-电子工程模型/README.md)** - 按学科领域分类的工程科学模型
+
+### 行业应用模型 / Industry Application Models
+
+模型分类学为所有行业应用模型提供分类框架：
+
+- **[物流供应链模型](../../08-行业应用模型/01-物流供应链模型/README.md)** - 按应用范围分类的行业应用模型
+- **[交通运输模型](../../08-行业应用模型/02-交通运输模型/README.md)** - 按应用范围分类的行业应用模型
+- **[电力能源模型](../../08-行业应用模型/03-电力能源模型/README.md)** - 按应用范围分类的行业应用模型
+- **[信息技术模型](../../08-行业应用模型/04-信息技术模型/README.md)** - 按应用范围分类的行业应用模型
+- **[人工智能行业模型](../../08-行业应用模型/05-人工智能行业模型/README.md)** - 按应用范围分类的行业应用模型
+- **[银行金融模型](../../08-行业应用模型/06-银行金融模型/README.md)** - 按应用范围分类的行业应用模型
+- **[经济供需模型](../../08-行业应用模型/07-经济供需模型/README.md)** - 按应用范围分类的行业应用模型
+- **[制造业模型](../../08-行业应用模型/08-制造业模型/README.md)** - 按应用范围分类的行业应用模型
+- **[医疗健康模型](../../08-行业应用模型/09-医疗健康模型/README.md)** - 按应用范围分类的行业应用模型
+- **[教育学习模型](../../08-行业应用模型/10-教育学习模型/README.md)** - 按应用范围分类的行业应用模型
 
 ---
 

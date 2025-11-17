@@ -4,6 +4,8 @@
 
 - [3.3 拓扑模型 / Topological Models](#33-拓扑模型--topological-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [拓扑模型框架图 / Framework Diagram of Topological Models](#拓扑模型框架图--framework-diagram-of-topological-models)
+  - [拓扑学分支关系图 / Relationship Diagram of Topology Branches](#拓扑学分支关系图--relationship-diagram-of-topology-branches)
   - [3.3.1 点集拓扑 / Point-Set Topology](#331-点集拓扑--point-set-topology)
     - [拓扑空间 / Topological Spaces](#拓扑空间--topological-spaces)
     - [连续映射 / Continuous Maps](#连续映射--continuous-maps)
@@ -32,9 +34,94 @@
     - [拓扑数据分析 / Topological Data Analysis](#拓扑数据分析--topological-data-analysis)
     - [拓扑量子场论 / Topological Quantum Field Theory](#拓扑量子场论--topological-quantum-field-theory)
     - [拓扑绝缘体 / Topological Insulators](#拓扑绝缘体--topological-insulators)
+  - [3.3.8 实现与应用 / Implementation and Applications](#338-实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Python实现示例 / Python Implementation Example](#python实现示例--python-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 拓扑模型框架图 / Framework Diagram of Topological Models
+
+```mermaid
+graph TB
+    A[拓扑模型] --> B[点集拓扑]
+    A --> C[代数拓扑]
+    A --> D[微分拓扑]
+    A --> E[纤维丛]
+    A --> F[示性类]
+    A --> G[低维拓扑]
+
+    B --> H[拓扑空间]
+    B --> I[连续映射]
+    B --> J[紧致性]
+
+    C --> K[同伦论]
+    C --> L[同调论]
+    C --> M[上同调论]
+
+    D --> N[流形]
+    D --> O[切丛]
+    D --> P[向量场]
+
+    E --> Q[主丛]
+    E --> R[向量丛]
+    E --> S[联络]
+
+    F --> T[陈类]
+    F --> U[庞特里亚金类]
+    F --> V[施蒂费尔-惠特尼类]
+
+    H --> W[拓扑理论]
+    K --> W
+    N --> W
+    Q --> W
+
+    W --> X[拓扑应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style W fill:#e8f5e9
+    style X fill:#e8f5e9
+```
+
+## 拓扑学分支关系图 / Relationship Diagram of Topology Branches
+
+```mermaid
+graph LR
+    A[拓扑学] --> B[点集拓扑]
+    A --> C[代数拓扑]
+    A --> D[微分拓扑]
+
+    B --> E[拓扑空间<br/>开集、闭集、连续映射]
+    C --> F[同伦论<br/>基本群、同伦群]
+    C --> G[同调论<br/>同调群、上同调群]
+    D --> H[流形<br/>切丛、向量场]
+
+    E --> I[拓扑基础]
+    F --> J[代数不变量]
+    G --> J
+    H --> K[微分结构]
+
+    I --> L[拓扑学体系]
+    J --> L
+    K --> L
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style L fill:#e8f5e9
+```
 
 ## 3.3.1 点集拓扑 / Point-Set Topology
 
@@ -253,6 +340,445 @@ $$\cdots \to H_n(A) \to H_n(X) \to H_n(X,A) \to H_{n-1}(A) \to \cdots$$
 **拓扑不变量**: 陈数、$Z_2$ 不变量等。
 
 ---
+
+## 3.3.8 实现与应用 / Implementation and Applications
+
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+use std::collections::{HashSet, HashMap};
+
+// 拓扑空间
+pub struct TopologicalSpace {
+    points: HashSet<i32>,
+    open_sets: Vec<HashSet<i32>>,
+}
+
+impl TopologicalSpace {
+    pub fn new(points: HashSet<i32>, open_sets: Vec<HashSet<i32>>) -> Self {
+        TopologicalSpace { points, open_sets }
+    }
+
+    pub fn is_open(&self, set: &HashSet<i32>) -> bool {
+        self.open_sets.contains(set)
+    }
+
+    pub fn is_closed(&self, set: &HashSet<i32>) -> bool {
+        let complement: HashSet<i32> = self.points.difference(set).cloned().collect();
+        self.is_open(&complement)
+    }
+
+    pub fn closure(&self, set: &HashSet<i32>) -> HashSet<i32> {
+        // 简化实现：返回包含set的最小闭集
+        let mut closure = set.clone();
+        for open_set in &self.open_sets {
+            if open_set.is_subset(&closure) {
+                closure.extend(open_set);
+            }
+        }
+        closure
+    }
+
+    pub fn interior(&self, set: &HashSet<i32>) -> HashSet<i32> {
+        // 简化实现：返回set中包含的最大开集
+        let mut interior = HashSet::new();
+        for open_set in &self.open_sets {
+            if open_set.is_subset(set) {
+                interior.extend(open_set);
+            }
+        }
+        interior
+    }
+}
+
+// 单纯复形（用于同调计算）
+pub struct SimplicialComplex {
+    simplices: Vec<Vec<i32>>,
+}
+
+impl SimplicialComplex {
+    pub fn new(simplices: Vec<Vec<i32>>) -> Self {
+        SimplicialComplex { simplices }
+    }
+
+    pub fn euler_characteristic(&self) -> i32 {
+        let mut chi = 0;
+        for dim in 0..=self.max_dimension() {
+            let count = self.count_simplices(dim);
+            chi += if dim % 2 == 0 { count } else { -count };
+        }
+        chi
+    }
+
+    fn max_dimension(&self) -> usize {
+        self.simplices.iter().map(|s| s.len()).max().unwrap_or(0) - 1
+    }
+
+    fn count_simplices(&self, dimension: usize) -> i32 {
+        self.simplices
+            .iter()
+            .filter(|s| s.len() == dimension + 1)
+            .count() as i32
+    }
+}
+
+// 连续映射
+pub struct ContinuousMap {
+    domain: HashSet<i32>,
+    codomain: HashSet<i32>,
+    mapping: HashMap<i32, i32>,
+}
+
+impl ContinuousMap {
+    pub fn new(domain: HashSet<i32>, codomain: HashSet<i32>, mapping: HashMap<i32, i32>) -> Self {
+        ContinuousMap {
+            domain,
+            codomain,
+            mapping,
+        }
+    }
+
+    pub fn is_continuous(&self, space: &TopologicalSpace) -> bool {
+        // 简化实现：检查开集的原像是开集
+        for open_set in &space.open_sets {
+            let preimage: HashSet<i32> = self.mapping
+                .iter()
+                .filter(|(_, &v)| open_set.contains(&v))
+                .map(|(&k, _)| k)
+                .collect();
+            if !preimage.is_empty() && !space.is_open(&preimage) {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_topological_space() {
+        let points: HashSet<i32> = [1, 2, 3].iter().cloned().collect();
+        let open_sets = vec![
+            HashSet::new(),
+            points.clone(),
+            [1].iter().cloned().collect(),
+        ];
+        let space = TopologicalSpace::new(points, open_sets);
+
+        let set: HashSet<i32> = [1].iter().cloned().collect();
+        assert!(space.is_open(&set));
+    }
+
+    #[test]
+    fn test_simplicial_complex() {
+        let simplices = vec![
+            vec![0], vec![1], vec![2],  // 0-单形
+            vec![0, 1], vec![1, 2], vec![0, 2],  // 1-单形
+            vec![0, 1, 2],  // 2-单形
+        ];
+        let complex = SimplicialComplex::new(simplices);
+        assert_eq!(complex.euler_characteristic(), 1); // 3 - 3 + 1 = 1
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module Topology where
+
+import Data.Set (Set)
+import qualified Data.Set as Set
+import Data.Map (Map)
+import qualified Data.Map as Map
+
+-- 拓扑空间
+data TopologicalSpace = TopologicalSpace
+    { points :: Set Int
+    , openSets :: [Set Int]
+    }
+
+-- 检查是否为开集
+isOpen :: TopologicalSpace -> Set Int -> Bool
+isOpen space set = set `elem` openSets space
+
+-- 检查是否为闭集
+isClosed :: TopologicalSpace -> Set Int -> Bool
+isClosed space set = isOpen space (Set.difference (points space) set)
+
+-- 闭包
+closure :: TopologicalSpace -> Set Int -> Set Int
+closure space set = Set.unions [s | s <- openSets space, Set.isSubsetOf s set]
+
+-- 内部
+interior :: TopologicalSpace -> Set Int -> Set Int
+interior space set = Set.unions [s | s <- openSets space, Set.isSubsetOf s set]
+
+-- 单纯复形
+data SimplicialComplex = SimplicialComplex
+    { simplices :: [[Int]]
+    }
+
+-- 欧拉示性数
+eulerCharacteristic :: SimplicialComplex -> Int
+eulerCharacteristic complex = sum [(-1)^dim * countSimplices complex dim
+                                  | dim <- [0..maxDimension complex]]
+
+maxDimension :: SimplicialComplex -> Int
+maxDimension complex = maximum (0 : map (subtract 1 . length) (simplices complex))
+
+countSimplices :: SimplicialComplex -> Int -> Int
+countSimplices complex dim = length [s | s <- simplices complex, length s == dim + 1]
+
+-- 连续映射
+data ContinuousMap = ContinuousMap
+    { domain :: Set Int
+    , codomain :: Set Int
+    , mapping :: Map Int Int
+    }
+
+-- 检查连续性（简化实现）
+isContinuous :: ContinuousMap -> TopologicalSpace -> Bool
+isContinuous map space = all (isOpen space) preimages
+    where
+        preimages = [Set.fromList [k | (k, v) <- Map.toList (mapping map), v `Set.member` openSet]
+                    | openSet <- openSets space]
+
+-- 示例使用
+example :: IO ()
+example = do
+    let points = Set.fromList [1, 2, 3]
+    let openSets = [Set.empty, points, Set.singleton 1]
+    let space = TopologicalSpace points openSets
+
+    let set = Set.singleton 1
+    print $ isOpen space set
+
+    let simplices = [[0], [1], [2], [0, 1], [1, 2], [0, 2], [0, 1, 2]]
+    let complex = SimplicialComplex simplices
+    print $ eulerCharacteristic complex
+```
+
+### Python实现示例 / Python Implementation Example
+
+```python
+from typing import Set, List, Dict
+from dataclasses import dataclass
+
+@dataclass
+class TopologicalSpace:
+    """拓扑空间"""
+    points: Set[int]
+    open_sets: List[Set[int]]
+
+    def is_open(self, set_: Set[int]) -> bool:
+        """检查是否为开集"""
+        return set_ in self.open_sets
+
+    def is_closed(self, set_: Set[int]) -> bool:
+        """检查是否为闭集"""
+        complement = self.points - set_
+        return self.is_open(complement)
+
+    def closure(self, set_: Set[int]) -> Set[int]:
+        """计算闭包"""
+        closure_set = set(set_)
+        for open_set in self.open_sets:
+            if open_set.issubset(closure_set):
+                closure_set.update(open_set)
+        return closure_set
+
+    def interior(self, set_: Set[int]) -> Set[int]:
+        """计算内部"""
+        interior_set = set()
+        for open_set in self.open_sets:
+            if open_set.issubset(set_):
+                interior_set.update(open_set)
+        return interior_set
+
+@dataclass
+class SimplicialComplex:
+    """单纯复形"""
+    simplices: List[List[int]]
+
+    def euler_characteristic(self) -> int:
+        """计算欧拉示性数"""
+        chi = 0
+        for dim in range(self.max_dimension() + 1):
+            count = self.count_simplices(dim)
+            chi += count if dim % 2 == 0 else -count
+        return chi
+
+    def max_dimension(self) -> int:
+        """最大维数"""
+        return max((len(s) - 1 for s in self.simplices), default=0)
+
+    def count_simplices(self, dimension: int) -> int:
+        """计算指定维数的单形数量"""
+        return sum(1 for s in self.simplices if len(s) == dimension + 1)
+
+@dataclass
+class ContinuousMap:
+    """连续映射"""
+    domain: Set[int]
+    codomain: Set[int]
+    mapping: Dict[int, int]
+
+    def is_continuous(self, space: TopologicalSpace) -> bool:
+        """检查是否为连续映射"""
+        for open_set in space.open_sets:
+            preimage = {k for k, v in self.mapping.items() if v in open_set}
+            if preimage and not space.is_open(preimage):
+                return False
+        return True
+
+# 使用示例
+if __name__ == "__main__":
+    # 拓扑空间示例
+    points = {1, 2, 3}
+    open_sets = [set(), points, {1}]
+    space = TopologicalSpace(points, open_sets)
+
+    print(f"Is {{1}} open? {space.is_open({1})}")
+    print(f"Is {{2, 3}} closed? {space.is_closed({2, 3})}")
+
+    # 单纯复形示例
+    simplices = [
+        [0], [1], [2],  # 0-单形
+        [0, 1], [1, 2], [0, 2],  # 1-单形
+        [0, 1, 2],  # 2-单形
+    ]
+    complex = SimplicialComplex(simplices)
+    print(f"Euler characteristic: {complex.euler_characteristic()}")
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using DataStructures
+
+# 拓扑空间结构
+struct TopologicalSpace
+    points::Set{Int}
+    open_sets::Vector{Set{Int}}
+end
+
+# 检查是否为开集
+function is_open(space::TopologicalSpace, set::Set{Int})::Bool
+    return set in space.open_sets
+end
+
+# 检查是否为闭集
+function is_closed(space::TopologicalSpace, set::Set{Int})::Bool
+    complement = setdiff(space.points, set)
+    return is_open(space, complement)
+end
+
+# 计算闭包
+function closure(space::TopologicalSpace, set::Set{Int})::Set{Int}
+    closure_set = copy(set)
+    for open_set in space.open_sets
+        if issubset(open_set, closure_set)
+            union!(closure_set, open_set)
+        end
+    end
+    return closure_set
+end
+
+# 计算内部
+function interior(space::TopologicalSpace, set::Set{Int})::Set{Int}
+    interior_set = Set{Int}()
+    for open_set in space.open_sets
+        if issubset(open_set, set)
+            union!(interior_set, open_set)
+        end
+    end
+    return interior_set
+end
+
+# 单纯复形结构
+struct SimplicialComplex
+    simplices::Vector{Vector{Int}}
+end
+
+# 计算欧拉示性数
+function euler_characteristic(complex::SimplicialComplex)::Int
+    chi = 0
+    for dim in 0:max_dimension(complex)
+        count = count_simplices(complex, dim)
+        chi += dim % 2 == 0 ? count : -count
+    end
+    return chi
+end
+
+# 最大维数
+function max_dimension(complex::SimplicialComplex)::Int
+    return isempty(complex.simplices) ? 0 : maximum(length(s) - 1 for s in complex.simplices)
+end
+
+# 计算指定维数的单形数量
+function count_simplices(complex::SimplicialComplex, dimension::Int)::Int
+    return count(s -> length(s) == dimension + 1, complex.simplices)
+end
+
+# 连续映射结构
+struct ContinuousMap
+    domain::Set{Int}
+    codomain::Set{Int}
+    mapping::Dict{Int, Int}
+end
+
+# 检查连续性
+function is_continuous(map::ContinuousMap, space::TopologicalSpace)::Bool
+    for open_set in space.open_sets
+        preimage = Set{Int}([k for (k, v) in map.mapping if v in open_set])
+        if !isempty(preimage) && !is_open(space, preimage)
+            return false
+        end
+    end
+    return true
+end
+
+# 使用示例
+points = Set([1, 2, 3])
+open_sets = [Set{Int}(), points, Set([1])]
+space = TopologicalSpace(points, open_sets)
+
+println("Is {1} open? ", is_open(space, Set([1])))
+println("Is {2, 3} closed? ", is_closed(space, Set([2, 3])))
+
+simplices = [
+    [0], [1], [2],  # 0-单形
+    [0, 1], [1, 2], [0, 2],  # 1-单形
+    [0, 1, 2],  # 2-单形
+]
+complex = SimplicialComplex(simplices)
+println("Euler characteristic: ", euler_characteristic(complex))
+```
+
+---
+
+## 相关模型 / Related Models
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../01-代数模型/README.md) - 同调代数，代数拓扑
+- [几何模型](../02-几何模型/README.md) - 拓扑几何，同伦论和同调论
+
+### 物理科学模型 / Physical Science Models
+
+- [量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md) - 拓扑量子场论，拓扑绝缘体
+- [相对论模型](../../02-物理科学模型/03-相对论模型/README.md) - 流形在广义相对论中的应用
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 相空间拓扑，辛几何
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 拓扑模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 拓扑的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 拓扑作为科学模型的理论基础
 
 ## 参考文献 / References
 

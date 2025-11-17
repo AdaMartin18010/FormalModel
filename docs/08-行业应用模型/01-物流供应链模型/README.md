@@ -11,6 +11,8 @@
 
 - [8.1 物流供应链模型 / Logistics \& Supply Chain Models](#81-物流供应链模型--logistics--supply-chain-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [物流供应链模型框架图 / Framework Diagram of Logistics \& Supply Chain Models](#物流供应链模型框架图--framework-diagram-of-logistics--supply-chain-models)
+  - [供应链网络流程图 / Flowchart of Supply Chain Network](#供应链网络流程图--flowchart-of-supply-chain-network)
   - [8.1.1 库存管理模型 / Inventory Management Models](#811-库存管理模型--inventory-management-models)
     - [经济订货量模型 / Economic Order Quantity](#经济订货量模型--economic-order-quantity)
     - [安全库存模型 / Safety Stock Models](#安全库存模型--safety-stock-models)
@@ -28,9 +30,93 @@
       - [电子商务 / E-commerce](#电子商务--e-commerce)
       - [制造业 / Manufacturing](#制造业--manufacturing)
       - [零售业 / Retail](#零售业--retail)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
+  - [评测协议与指标 / Evaluation Protocols \& Metrics](#评测协议与指标--evaluation-protocols--metrics)
+    - [范围与目标 / Scope \& Goals](#范围与目标--scope--goals)
+    - [数据与划分 / Data \& Splits](#数据与划分--data--splits)
+    - [通用指标 / Common Metrics](#通用指标--common-metrics)
+    - [任务级协议 / Task-level Protocols](#任务级协议--task-level-protocols)
+    - [复现实操 / Reproducibility](#复现实操--reproducibility)
+  - [8.1.5 算法实现 / Algorithm Implementation](#815-算法实现--algorithm-implementation)
+    - [库存管理算法 / Inventory Management Algorithms](#库存管理算法--inventory-management-algorithms)
+    - [运输优化算法 / Transportation Optimization Algorithms](#运输优化算法--transportation-optimization-algorithms)
+    - [供应链网络算法 / Supply Chain Network Algorithms](#供应链网络算法--supply-chain-network-algorithms)
 
 ---
+
+## 物流供应链模型框架图 / Framework Diagram of Logistics & Supply Chain Models
+
+```mermaid
+graph TB
+    A[物流供应链模型] --> B[库存管理]
+    A --> C[运输优化]
+    A --> D[供应链网络]
+
+    B --> E[经济订货量EOQ]
+    B --> F[安全库存]
+    B --> G[多级库存]
+
+    C --> H[车辆路径问题VRP]
+    C --> I[运输网络优化]
+
+    D --> J[供应商选择]
+    D --> K[需求预测]
+
+    E --> L[供应链理论]
+    H --> L
+    J --> L
+
+    L --> M[供应链应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style L fill:#e8f5e9
+    style M fill:#e8f5e9
+```
+
+## 供应链网络流程图 / Flowchart of Supply Chain Network
+
+```mermaid
+flowchart TD
+    Start([需求产生]) --> Forecast[需求预测<br/>时间序列<br/>机器学习]
+    Forecast --> Plan[生产计划<br/>MPS/MRP]
+
+    Plan --> Inventory{库存<br/>检查}
+    Inventory -->|充足| Ship[发货]
+    Inventory -->|不足| Order[采购订单]
+
+    Order --> Supplier[供应商选择<br/>成本<br/>质量<br/>交付]
+    Supplier --> Procure[采购执行]
+    Procure --> Receive[收货入库]
+
+    Receive --> Inventory
+    Ship --> Transport[运输优化<br/>VRP<br/>路径规划]
+
+    Transport --> Customer[客户交付]
+    Customer --> Feedback[反馈信息]
+    Feedback --> Forecast
+
+    Plan --> Capacity{产能<br/>检查}
+    Capacity -->|不足| Expand[产能扩展]
+    Capacity -->|充足| Produce[生产执行]
+
+    Produce --> Quality[质量控制<br/>SPC<br/>六西格玛]
+    Quality -->|合格| Inventory
+    Quality -->|不合格| Rework[返工/报废]
+
+    style Start fill:#e1f5ff
+    style Customer fill:#e1f5ff
+    style Forecast fill:#e8f5e9
+```
 
 ## 8.1.1 库存管理模型 / Inventory Management Models
 
@@ -124,23 +210,23 @@ impl InventoryModel {
             service_level,
         }
     }
-    
+
     pub fn economic_order_quantity(&self) -> f64 {
         (2.0 * self.demand_rate * self.order_cost / self.holding_cost).sqrt()
     }
-    
+
     pub fn total_cost(&self, order_quantity: f64) -> f64 {
         let ordering_cost = self.demand_rate / order_quantity * self.order_cost;
         let holding_cost = order_quantity / 2.0 * self.holding_cost;
         ordering_cost + holding_cost
     }
-    
+
     pub fn safety_stock(&self, demand_std: f64) -> f64 {
         // 简化的安全库存计算
         let z_score = 1.645; // 对应95%服务水平
         z_score * demand_std * self.lead_time.sqrt()
     }
-    
+
     pub fn reorder_point(&self, demand_std: f64) -> f64 {
         let average_demand = self.demand_rate * self.lead_time;
         let safety_stock = self.safety_stock(demand_std);
@@ -163,15 +249,15 @@ impl TransportationModel {
             vehicle_capacity: 1000.0,
         }
     }
-    
+
     pub fn add_distance(&mut self, from: String, to: String, distance: f64) {
         self.distances.insert((from, to), distance);
     }
-    
+
     pub fn add_demand(&mut self, location: String, demand: f64) {
         self.demands.insert(location, demand);
     }
-    
+
     pub fn calculate_total_distance(&self, route: &[String]) -> f64 {
         let mut total_distance = 0.0;
         for i in 0..route.len() - 1 {
@@ -180,16 +266,16 @@ impl TransportationModel {
         }
         total_distance
     }
-    
+
     pub fn nearest_neighbor_tsp(&self, start: &str, locations: &[String]) -> Vec<String> {
         let mut unvisited: Vec<String> = locations.iter().filter(|&x| x != start).cloned().collect();
         let mut route = vec![start.to_string()];
         let mut current = start;
-        
+
         while !unvisited.is_empty() {
             let mut nearest = &unvisited[0];
             let mut min_distance = f64::INFINITY;
-            
+
             for location in &unvisited {
                 let distance = self.distances.get(&(current.to_string(), location.clone())).unwrap_or(&f64::INFINITY);
                 if *distance < min_distance {
@@ -197,12 +283,12 @@ impl TransportationModel {
                     nearest = location;
                 }
             }
-            
+
             route.push(nearest.clone());
             unvisited.retain(|x| x != nearest);
             current = nearest;
         }
-        
+
         route.push(start.to_string());
         route
     }
@@ -229,40 +315,40 @@ impl SupplyChainModel {
             demands: HashMap::new(),
         }
     }
-    
+
     pub fn add_supplier(&mut self, supplier: String, capacity: f64) {
         self.suppliers.push(supplier.clone());
         self.capacities.insert(supplier, capacity);
     }
-    
+
     pub fn add_facility(&mut self, facility: String, capacity: f64) {
         self.facilities.push(facility.clone());
         self.capacities.insert(facility, capacity);
     }
-    
+
     pub fn add_customer(&mut self, customer: String, demand: f64) {
         self.customers.push(customer.clone());
         self.demands.insert(customer, demand);
     }
-    
+
     pub fn add_cost(&mut self, from: String, to: String, cost: f64) {
         self.costs.insert((from, to), cost);
     }
-    
+
     pub fn calculate_total_cost(&self, flows: &HashMap<(String, String), f64>) -> f64 {
         flows.iter().map(|((from, to), flow)| {
             self.costs.get(&(from.clone(), to.clone())).unwrap_or(&0.0) * flow
         }).sum()
     }
-    
+
     pub fn simple_optimization(&self) -> HashMap<(String, String), f64> {
         let mut flows = HashMap::new();
-        
+
         // 简化的优化：按成本最小分配
         for customer in &self.customers {
             let demand = self.demands.get(customer).unwrap_or(&0.0);
             let mut remaining_demand = *demand;
-            
+
             // 从供应商到设施
             for supplier in &self.suppliers {
                 if remaining_demand <= 0.0 { break; }
@@ -272,7 +358,7 @@ impl SupplyChainModel {
                 remaining_demand -= flow;
             }
         }
-        
+
         flows
     }
 }
@@ -285,39 +371,39 @@ fn main() {
     let total_cost = inventory.total_cost(eoq);
     let safety_stock = inventory.safety_stock(50.0);
     let reorder_point = inventory.reorder_point(50.0);
-    
+
     println!("库存管理示例:");
     println!("经济订货量: {:.2}", eoq);
     println!("总成本: {:.2}", total_cost);
     println!("安全库存: {:.2}", safety_stock);
     println!("再订货点: {:.2}", reorder_point);
-    
+
     // 运输优化示例
     let mut transport = TransportationModel::new();
     transport.add_distance("A".to_string(), "B".to_string(), 10.0);
     transport.add_distance("B".to_string(), "C".to_string(), 15.0);
     transport.add_distance("C".to_string(), "A".to_string(), 12.0);
-    
+
     let locations = vec!["A".to_string(), "B".to_string(), "C".to_string()];
     let route = transport.nearest_neighbor_tsp("A", &locations);
     let total_distance = transport.calculate_total_distance(&route);
-    
+
     println!("\n运输优化示例:");
     println!("最优路径: {:?}", route);
     println!("总距离: {:.2}", total_distance);
-    
+
     // 供应链网络示例
     let mut supply_chain = SupplyChainModel::new();
     supply_chain.add_supplier("S1".to_string(), 500.0);
     supply_chain.add_facility("F1".to_string(), 300.0);
     supply_chain.add_customer("C1".to_string(), 200.0);
-    
+
     supply_chain.add_cost("S1".to_string(), "F1".to_string(), 10.0);
     supply_chain.add_cost("F1".to_string(), "C1".to_string(), 5.0);
-    
+
     let flows = supply_chain.simple_optimization();
     let total_cost = supply_chain.calculate_total_cost(&flows);
-    
+
     println!("\n供应链网络示例:");
     println!("流量分配: {:?}", flows);
     println!("总成本: {:.2}", total_cost);
@@ -353,22 +439,22 @@ newInventoryModel demand order_cost holding_cost lead_time service_level = Inven
 }
 
 economicOrderQuantity :: InventoryModel -> Double
-economicOrderQuantity model = 
+economicOrderQuantity model =
     sqrt (2.0 * demandRate model * orderCost model / holdingCost model)
 
 totalCost :: InventoryModel -> Double -> Double
-totalCost model orderQuantity = 
+totalCost model orderQuantity =
     let orderingCost = demandRate model / orderQuantity * orderCost model
         holdingCost = orderQuantity / 2.0 * holdingCost model
     in orderingCost + holdingCost
 
 safetyStock :: InventoryModel -> Double -> Double
-safetyStock model demandStd = 
+safetyStock model demandStd =
     let zScore = 1.645 -- 对应95%服务水平
     in zScore * demandStd * sqrt (leadTime model)
 
 reorderPoint :: InventoryModel -> Double -> Double
-reorderPoint model demandStd = 
+reorderPoint model demandStd =
     let averageDemand = demandRate model * leadTime model
         safetyStock = safetyStock model demandStd
     in averageDemand + safetyStock
@@ -388,25 +474,25 @@ newTransportationModel = TransportationModel {
 }
 
 addDistance :: TransportationModel -> String -> String -> Double -> TransportationModel
-addDistance model from to distance = 
+addDistance model from to distance =
     model { distances = Map.insert (from, to) distance (distances model) }
 
 addDemand :: TransportationModel -> String -> Double -> TransportationModel
-addDemand model location demand = 
+addDemand model location demand =
     model { demands = Map.insert location demand (demands model) }
 
 calculateTotalDistance :: TransportationModel -> [String] -> Double
-calculateTotalDistance model route = 
-    sum [Map.findWithDefault 0.0 (route !! i, route !! (i + 1)) (distances model) | 
+calculateTotalDistance model route =
+    sum [Map.findWithDefault 0.0 (route !! i, route !! (i + 1)) (distances model) |
          i <- [0..length route - 2]]
 
 nearestNeighborTSP :: TransportationModel -> String -> [String] -> [String]
-nearestNeighborTSP model start locations = 
+nearestNeighborTSP model start locations =
     let unvisited = filter (/= start) locations
-        buildRoute current remaining = 
-            if null remaining 
+        buildRoute current remaining =
+            if null remaining
             then [current, start]
-            else let nearest = minimumBy (comparing (\loc -> 
+            else let nearest = minimumBy (comparing (\loc ->
                         Map.findWithDefault (1/0) (current, loc) (distances model))) remaining
                      newRemaining = filter (/= nearest) remaining
                  in current : buildRoute nearest newRemaining
@@ -433,44 +519,44 @@ newSupplyChainModel = SupplyChainModel {
 }
 
 addSupplier :: SupplyChainModel -> String -> Double -> SupplyChainModel
-addSupplier model supplier capacity = 
-    model { 
+addSupplier model supplier capacity =
+    model {
         suppliers = supplier : suppliers model,
         capacities = Map.insert supplier capacity (capacities model)
     }
 
 addFacility :: SupplyChainModel -> String -> Double -> SupplyChainModel
-addFacility model facility capacity = 
-    model { 
+addFacility model facility capacity =
+    model {
         facilities = facility : facilities model,
         capacities = Map.insert facility capacity (capacities model)
     }
 
 addCustomer :: SupplyChainModel -> String -> Double -> SupplyChainModel
-addCustomer model customer demand = 
-    model { 
+addCustomer model customer demand =
+    model {
         customers = customer : customers model,
         demands = Map.insert customer demand (demands model)
     }
 
 addCost :: SupplyChainModel -> String -> String -> Double -> SupplyChainModel
-addCost model from to cost = 
+addCost model from to cost =
     model { costs = Map.insert (from, to) cost (costs model) }
 
 calculateTotalCost :: SupplyChainModel -> Map (String, String) Double -> Double
-calculateTotalCost model flows = 
-    sum [Map.findWithDefault 0.0 (from, to) (costs model) * flow | 
+calculateTotalCost model flows =
+    sum [Map.findWithDefault 0.0 (from, to) (costs model) * flow |
          ((from, to), flow) <- Map.toList flows]
 
 simpleOptimization :: SupplyChainModel -> Map (String, String) Double
-simpleOptimization model = 
+simpleOptimization model =
     let customerDemands = Map.toList (demands model)
         supplierCapacities = Map.toList (capacities model)
         -- 简化的优化：按成本最小分配
-        allocateDemand customer demand = 
-            foldr (\(supplier, capacity) remaining -> 
-                if remaining <= 0.0 
-                then remaining 
+        allocateDemand customer demand =
+            foldr (\(supplier, capacity) remaining ->
+                if remaining <= 0.0
+                then remaining
                 else let flow = min remaining capacity
                      in remaining - flow) demand supplierCapacities
     in Map.fromList [(("S1", customer), demand) | (customer, demand) <- customerDemands]
@@ -484,29 +570,29 @@ example = do
         totalCost = totalCost inventory eoq
         safetyStock = safetyStock inventory 50.0
         reorderPoint = reorderPoint inventory 50.0
-    
+
     putStrLn "库存管理示例:"
     putStrLn $ "经济订货量: " ++ show eoq
     putStrLn $ "总成本: " ++ show totalCost
     putStrLn $ "安全库存: " ++ show safetyStock
     putStrLn $ "再订货点: " ++ show reorderPoint
-    
+
     -- 运输优化示例
     let transport = addDistance (addDistance (addDistance newTransportationModel "A" "B" 10.0) "B" "C" 15.0) "C" "A" 12.0
         locations = ["A", "B", "C"]
         route = nearestNeighborTSP transport "A" locations
         totalDistance = calculateTotalDistance transport route
-    
+
     putStrLn "\n运输优化示例:"
     putStrLn $ "最优路径: " ++ show route
     putStrLn $ "总距离: " ++ show totalDistance
-    
+
     -- 供应链网络示例
     let supplyChain = addSupplier (addFacility (addCustomer newSupplyChainModel "C1" 200.0) "F1" 300.0) "S1" 500.0
         supplyChainWithCosts = addCost (addCost supplyChain "S1" "F1" 10.0) "F1" "C1" 5.0
         flows = simpleOptimization supplyChainWithCosts
         totalCost = calculateTotalCost supplyChainWithCosts flows
-    
+
     putStrLn "\n供应链网络示例:"
     putStrLn $ "流量分配: " ++ show flows
     putStrLn $ "总成本: " ++ show totalCost
@@ -533,6 +619,41 @@ example = do
 - **需求管理**: 促销需求、季节性需求
 
 ---
+
+## 相关模型 / Related Models
+
+### 行业应用模型 / Industry Application Models
+
+- [交通运输模型](../02-交通运输模型/README.md) - 物流运输和交通优化
+- [制造业模型](../08-制造业模型/README.md) - 生产计划和供应链管理
+- [经济供需模型](../07-经济供需模型/README.md) - 供需平衡和需求预测
+
+### 工程科学模型 / Engineering Science Models
+
+- [优化模型](../../07-工程科学模型/01-优化模型/README.md) - 物流优化和供应链优化
+- [控制论模型](../../07-工程科学模型/02-控制论模型/README.md) - 供应链控制和库存控制
+
+### 社会科学模型 / Social Science Models
+
+- [经济学模型](../../06-社会科学模型/02-经济学模型/README.md) - 物流经济学和供应链经济学
+- [社会网络模型](../../06-社会科学模型/01-社会网络模型/README.md) - 供应链网络和社会网络
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 物流算法和优化算法
+- [数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md) - 物流数据结构和网络数据结构
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 智能物流和预测算法
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 线性规划和矩阵优化
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 网络几何和路径优化
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 物流供应链模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 物流供应链模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 物流供应链模型作为科学模型的理论基础
 
 ## 参考文献 / References
 
@@ -626,7 +747,7 @@ def multi_echelon_inventory_optimization(
     n_levels = len(demands)
     safety_stocks = []
     reorder_points = []
-    
+
     for i in range(n_levels):
         # 简化的安全库存计算
         safety_stock = safety_stock_calculation(
@@ -635,14 +756,14 @@ def multi_echelon_inventory_optimization(
             service_levels[i]
         )
         safety_stocks.append(safety_stock)
-        
+
         reorder_point = reorder_point_calculation(
             demands[i],
             lead_times[i],
             safety_stock
         )
         reorder_points.append(reorder_point)
-    
+
     return safety_stocks, reorder_points
 ```
 
@@ -656,37 +777,37 @@ import heapq
 
 class VehicleRoutingProblem:
     """车辆路径问题"""
-    
-    def __init__(self, distances: Dict[Tuple[str, str], float], 
+
+    def __init__(self, distances: Dict[Tuple[str, str], float],
                  demands: Dict[str, float], vehicle_capacity: float):
         self.distances = distances
         self.demands = demands
         self.vehicle_capacity = vehicle_capacity
         self.depot = 'depot'
-    
+
     def nearest_neighbor_heuristic(self) -> List[List[str]]:
         """最近邻启发式算法"""
         unvisited = set(self.demands.keys())
         routes = []
         current_route = [self.depot]
         current_load = 0
-        
+
         while unvisited:
             if not current_route:
                 current_route = [self.depot]
                 current_load = 0
-            
+
             current = current_route[-1]
             nearest = None
             min_distance = float('inf')
-            
+
             for customer in unvisited:
                 if current_load + self.demands[customer] <= self.vehicle_capacity:
                     distance = self.distances.get((current, customer), float('inf'))
                     if distance < min_distance:
                         min_distance = distance
                         nearest = customer
-            
+
             if nearest is None:
                 # 返回仓库，开始新路径
                 current_route.append(self.depot)
@@ -697,13 +818,13 @@ class VehicleRoutingProblem:
                 current_route.append(nearest)
                 current_load += self.demands[nearest]
                 unvisited.remove(nearest)
-        
+
         if current_route:
             current_route.append(self.depot)
             routes.append(current_route)
-        
+
         return routes
-    
+
     def calculate_total_distance(self, routes: List[List[str]]) -> float:
         """计算总距离"""
         total_distance = 0
@@ -722,10 +843,10 @@ def transportation_network_optimization(
     flows = {}
     remaining_supply = supply.copy()
     remaining_demand = demand.copy()
-    
+
     # 按成本排序的边
     sorted_edges = sorted(costs.items(), key=lambda x: x[1])
-    
+
     for (source, sink), cost in sorted_edges:
         if source in remaining_supply and sink in remaining_demand:
             flow = min(remaining_supply[source], remaining_demand[sink])
@@ -733,15 +854,15 @@ def transportation_network_optimization(
                 flows[(source, sink)] = flow
                 remaining_supply[source] -= flow
                 remaining_demand[sink] -= flow
-                
+
                 if remaining_supply[source] == 0:
                     del remaining_supply[source]
                 if remaining_demand[sink] == 0:
                     del remaining_demand[sink]
-    
+
     return flows
 
-def calculate_network_cost(flows: Dict[Tuple[str, str], float], 
+def calculate_network_cost(flows: Dict[Tuple[str, str], float],
                           costs: Dict[Tuple[str, str], float]) -> float:
     """计算网络总成本"""
     total_cost = 0
@@ -775,39 +896,39 @@ class Customer:
 
 class SupplyChainNetwork:
     """供应链网络"""
-    
+
     def __init__(self):
         self.suppliers: List[Supplier] = []
         self.customers: List[Customer] = []
         self.transportation_costs: Dict[Tuple[str, str], float] = {}
-    
+
     def add_supplier(self, supplier: Supplier):
         """添加供应商"""
         self.suppliers.append(supplier)
-    
+
     def add_customer(self, customer: Customer):
         """添加客户"""
         self.customers.append(customer)
-    
+
     def set_transportation_cost(self, from_id: str, to_id: str, cost: float):
         """设置运输成本"""
         self.transportation_costs[(from_id, to_id)] = cost
-    
+
     def supplier_selection_multi_criteria(self, weights: Dict[str, float]) -> List[Supplier]:
         """多准则供应商选择"""
         if not self.suppliers:
             return []
-        
+
         # 标准化评分
         costs = [s.cost for s in self.suppliers]
         qualities = [s.quality for s in self.suppliers]
         delivery_times = [s.delivery_time for s in self.suppliers]
-        
+
         # 标准化到0-1范围
         cost_normalized = [(max(costs) - c) / (max(costs) - min(costs)) for c in costs]
         quality_normalized = [(q - min(qualities)) / (max(qualities) - min(qualities)) for q in qualities]
         delivery_normalized = [(max(delivery_times) - d) / (max(delivery_times) - min(delivery_times)) for d in delivery_times]
-        
+
         # 计算综合评分
         scores = []
         for i in range(len(self.suppliers)):
@@ -815,61 +936,61 @@ class SupplyChainNetwork:
                     weights.get('quality', 0.33) * quality_normalized[i] +
                     weights.get('delivery', 0.34) * delivery_normalized[i])
             scores.append(score)
-        
+
         # 按评分排序
         sorted_suppliers = [s for _, s in sorted(zip(scores, self.suppliers), reverse=True)]
         return sorted_suppliers
-    
+
     def demand_forecasting_exponential_smoothing(
         self, historical_demand: List[float], alpha: float = 0.3
     ) -> List[float]:
         """指数平滑需求预测"""
         if not historical_demand:
             return []
-        
+
         forecasts = [historical_demand[0]]  # 初始预测
-        
+
         for i in range(1, len(historical_demand)):
             forecast = alpha * historical_demand[i-1] + (1 - alpha) * forecasts[i-1]
             forecasts.append(forecast)
-        
+
         # 预测下一个周期
         next_forecast = alpha * historical_demand[-1] + (1 - alpha) * forecasts[-1]
         forecasts.append(next_forecast)
-        
+
         return forecasts
-    
+
     def optimize_network_flow(self) -> Dict[Tuple[str, str], float]:
         """优化网络流量分配"""
         flows = {}
-        
+
         for customer in self.customers:
             remaining_demand = customer.demand
-            
+
             # 按成本排序的供应商
             available_suppliers = []
             for supplier in self.suppliers:
                 if supplier.capacity > 0:
                     cost = self.transportation_costs.get((supplier.id, customer.id), float('inf'))
                     available_suppliers.append((supplier, cost))
-            
+
             available_suppliers.sort(key=lambda x: x[1])
-            
+
             for supplier, cost in available_suppliers:
                 if remaining_demand <= 0:
                     break
-                
+
                 flow = min(remaining_demand, supplier.capacity)
                 flows[(supplier.id, customer.id)] = flow
                 remaining_demand -= flow
                 supplier.capacity -= flow
-        
+
         return flows
 
 def logistics_verification():
     """物流供应链模型验证"""
     print("=== 物流供应链模型验证 ===")
-    
+
     # 库存管理验证
     print("\n1. 库存管理验证:")
     inventory_model = InventoryModel(
@@ -879,17 +1000,17 @@ def logistics_verification():
         lead_time=5.0,
         service_level=0.95
     )
-    
+
     eoq = economic_order_quantity(inventory_model)
     total_cost = total_inventory_cost(inventory_model, eoq)
     safety_stock = safety_stock_calculation(100.0, 5.0, 0.95)
     reorder_point = reorder_point_calculation(1000.0/12, 5.0, safety_stock)
-    
+
     print(f"经济订货量: {eoq:.2f}")
     print(f"总成本: {total_cost:.2f}")
     print(f"安全库存: {safety_stock:.2f}")
     print(f"再订货点: {reorder_point:.2f}")
-    
+
     # 运输优化验证
     print("\n2. 运输优化验证:")
     distances = {
@@ -901,27 +1022,27 @@ def logistics_verification():
         ('B', 'C'): 10, ('C', 'B'): 10
     }
     demands = {'A': 50, 'B': 30, 'C': 40}
-    
+
     vrp = VehicleRoutingProblem(distances, demands, 100)
     routes = vrp.nearest_neighbor_heuristic()
     total_distance = vrp.calculate_total_distance(routes)
-    
+
     print(f"路径规划: {routes}")
     print(f"总距离: {total_distance}")
-    
+
     # 供应链网络验证
     print("\n3. 供应链网络验证:")
     network = SupplyChainNetwork()
-    
+
     # 添加供应商
     network.add_supplier(Supplier("S1", 200, 10, 0.9, 3))
     network.add_supplier(Supplier("S2", 150, 12, 0.95, 5))
     network.add_supplier(Supplier("S3", 180, 8, 0.85, 2))
-    
+
     # 添加客户
     network.add_customer(Customer("C1", 100, (0, 0)))
     network.add_customer(Customer("C2", 80, (10, 10)))
-    
+
     # 设置运输成本
     network.set_transportation_cost("S1", "C1", 5)
     network.set_transportation_cost("S1", "C2", 8)
@@ -929,21 +1050,21 @@ def logistics_verification():
     network.set_transportation_cost("S2", "C2", 7)
     network.set_transportation_cost("S3", "C1", 4)
     network.set_transportation_cost("S3", "C2", 9)
-    
+
     # 供应商选择
     weights = {'cost': 0.4, 'quality': 0.4, 'delivery': 0.2}
     selected_suppliers = network.supplier_selection_multi_criteria(weights)
     print(f"供应商排序: {[s.id for s in selected_suppliers]}")
-    
+
     # 需求预测
     historical_demand = [100, 110, 95, 105, 120, 115, 125, 130, 140, 135]
     forecasts = network.demand_forecasting_exponential_smoothing(historical_demand, 0.3)
     print(f"需求预测: {forecasts[-5:]}")
-    
+
     # 网络优化
     flows = network.optimize_network_flow()
     print(f"流量分配: {flows}")
-    
+
     print("\n验证完成!")
 
 if __name__ == "__main__":

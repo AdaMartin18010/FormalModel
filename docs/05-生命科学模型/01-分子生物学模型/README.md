@@ -4,6 +4,8 @@
 
 - [5.1 分子生物学模型 / Molecular Biology Models](#51-分子生物学模型--molecular-biology-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [分子生物学模型框架图 / Framework Diagram of Molecular Biology Models](#分子生物学模型框架图--framework-diagram-of-molecular-biology-models)
+  - [中心法则流程图 / Flowchart of Central Dogma](#中心法则流程图--flowchart-of-central-dogma)
   - [5.1.1 DNA复制模型 / DNA Replication Models](#511-dna复制模型--dna-replication-models)
     - [半保留复制 / Semiconservative Replication](#半保留复制--semiconservative-replication)
     - [复制起始模型 / Replication Initiation Model](#复制起始模型--replication-initiation-model)
@@ -41,9 +43,91 @@
       - [医学应用 / Medical Applications](#医学应用--medical-applications)
   - [5.1.9 算法实现 / Algorithm Implementation](#519-算法实现--algorithm-implementation)
     - [基因表达与Hill调控 / Gene Expression with Hill Regulation](#基因表达与hill调控--gene-expression-with-hill-regulation)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 分子生物学模型框架图 / Framework Diagram of Molecular Biology Models
+
+```mermaid
+graph TB
+    A[分子生物学模型] --> B[DNA复制]
+    A --> C[基因表达]
+    A --> D[蛋白质合成]
+    A --> E[酶动力学]
+    A --> F[信号转导]
+    A --> G[代谢网络]
+    A --> H[基因调控]
+
+    B --> I[半保留复制]
+    B --> J[复制起始]
+    B --> K[端粒复制]
+
+    C --> L[转录]
+    C --> M[mRNA降解]
+    C --> N[翻译]
+
+    D --> O[氨基酸序列]
+    D --> P[蛋白质折叠]
+    D --> Q[蛋白质降解]
+
+    E --> R[Michaelis-Menten]
+    E --> S[竞争性抑制]
+    E --> T[非竞争性抑制]
+
+    F --> U[受体激活]
+    F --> V[级联反应]
+    F --> W[G蛋白偶联]
+
+    G --> X[代谢通量]
+    G --> Y[代谢控制]
+    G --> Z[网络重构]
+
+    H --> AA[布尔网络]
+    H --> AB[微分方程]
+    H --> AC[随机模型]
+
+    I --> AD[分子生物学理论]
+    L --> AD
+    R --> AD
+    U --> AD
+
+    AD --> AE[生物应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style AD fill:#e8f5e9
+    style AE fill:#e8f5e9
+```
+
+## 中心法则流程图 / Flowchart of Central Dogma
+
+```mermaid
+flowchart LR
+    A[DNA] -->|转录| B[mRNA]
+    B -->|翻译| C[蛋白质]
+    A -->|复制| A
+
+    C -->|功能| D[细胞功能]
+    C -->|调控| A
+
+    B -->|调控| E[基因表达]
+    E -->|反馈| A
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e8f5e9
+    style D fill:#e8f5e9
+```
 
 ## 5.1.1 DNA复制模型 / DNA Replication Models
 
@@ -255,11 +339,11 @@ impl DNA {
         let length = sequence.len();
         Self { sequence, length }
     }
-    
+
     pub fn replicate(&self, error_rate: f64) -> (DNA, DNA) {
         let mut daughter1 = String::new();
         let mut daughter2 = String::new();
-        
+
         for base in self.sequence.chars() {
             let complementary = match base {
                 'A' => 'T',
@@ -268,7 +352,7 @@ impl DNA {
                 'G' => 'C',
                 _ => base,
             };
-            
+
             // 模拟复制错误
             let error = rand::random::<f64>();
             if error < error_rate {
@@ -281,10 +365,10 @@ impl DNA {
                 daughter2.push(complementary);
             }
         }
-        
+
         (DNA::new(daughter1), DNA::new(daughter2))
     }
-    
+
     pub fn calculate_gc_content(&self) -> f64 {
         let gc_count = self.sequence.chars()
             .filter(|&c| c == 'G' || c == 'C')
@@ -310,27 +394,27 @@ impl GeneExpression {
             proteolysis_rate: 0.01,
         }
     }
-    
+
     pub fn simulate_expression(&self, time_points: &Vec<f64>) -> (Vec<f64>, Vec<f64>) {
         let mut mrna_concentrations = Vec::new();
         let mut protein_concentrations = Vec::new();
-        
+
         let mut mrna = 0.0;
         let mut protein = 0.0;
-        
+
         for &t in time_points {
             // mRNA动力学
             let dmrna_dt = self.transcription_rate - self.degradation_rate * mrna;
             mrna += dmrna_dt * 0.1; // 时间步长
-            
+
             // 蛋白质动力学
             let dprotein_dt = self.translation_rate * mrna - self.proteolysis_rate * protein;
             protein += dprotein_dt * 0.1;
-            
+
             mrna_concentrations.push(mrna);
             protein_concentrations.push(protein);
         }
-        
+
         (mrna_concentrations, protein_concentrations)
     }
 }
@@ -350,16 +434,16 @@ impl EnzymeKinetics {
             enzyme_concentration,
         }
     }
-    
+
     pub fn michaelis_menten(&self, substrate_concentration: f64) -> f64 {
         self.vmax * substrate_concentration / (self.km + substrate_concentration)
     }
-    
+
     pub fn competitive_inhibition(&self, substrate: f64, inhibitor: f64, ki: f64) -> f64 {
         let km_apparent = self.km * (1.0 + inhibitor / ki);
         self.vmax * substrate / (km_apparent + substrate)
     }
-    
+
     pub fn non_competitive_inhibition(&self, substrate: f64, inhibitor: f64, ki: f64) -> f64 {
         let vmax_apparent = self.vmax / (1.0 + inhibitor / ki);
         vmax_apparent * substrate / (self.km + substrate)
@@ -390,16 +474,16 @@ impl MetabolicNetwork {
             stoichiometry: Vec::new(),
         }
     }
-    
+
     pub fn add_reaction(&mut self, reaction: Reaction) {
         self.reactions.push(reaction);
     }
-    
+
     pub fn flux_balance_analysis(&self) -> Vec<f64> {
         // 简化的通量平衡分析
         let n_reactions = self.reactions.len();
         let mut fluxes = vec![1.0; n_reactions];
-        
+
         // 迭代求解稳态约束
         for _ in 0..100 {
             for i in 0..n_reactions {
@@ -412,10 +496,10 @@ impl MetabolicNetwork {
                 fluxes[i] = (-net_flux / self.stoichiometry[i][i]).max(0.0);
             }
         }
-        
+
         fluxes
     }
-    
+
     pub fn calculate_growth_rate(&self, fluxes: &Vec<f64>) -> f64 {
         // 简化的生长率计算
         fluxes.iter().sum()
@@ -437,25 +521,25 @@ impl GeneRegulatoryNetwork {
             expression_levels: HashMap::new(),
         }
     }
-    
+
     pub fn add_gene(&mut self, gene: String) {
         self.genes.push(gene.clone());
         self.expression_levels.insert(gene, 0.5);
     }
-    
+
     pub fn add_interaction(&mut self, regulator: String, target: String, strength: f64) {
         self.interactions.insert((regulator, target), strength);
     }
-    
+
     pub fn update_expression(&mut self, time_steps: usize) -> Vec<HashMap<String, f64>> {
         let mut history = Vec::new();
-        
+
         for _ in 0..time_steps {
             let mut new_levels = self.expression_levels.clone();
-            
+
             for gene in &self.genes {
                 let mut regulation = 0.0;
-                
+
                 for (regulator, target) in self.interactions.keys() {
                     if target == gene {
                         if let Some(&strength) = self.interactions.get(&(regulator.clone(), target.clone())) {
@@ -465,16 +549,16 @@ impl GeneRegulatoryNetwork {
                         }
                     }
                 }
-                
+
                 let current_level = self.expression_levels.get(gene).unwrap_or(&0.5);
                 let new_level = (current_level + 0.1 * regulation).max(0.0).min(1.0);
                 new_levels.insert(gene.clone(), new_level);
             }
-            
+
             self.expression_levels = new_levels.clone();
             history.push(new_levels);
         }
-        
+
         history
     }
 }
@@ -484,37 +568,37 @@ fn main() {
     // DNA复制模型
     let dna = DNA::new("ATCGATCGATCG".to_string());
     let (daughter1, daughter2) = dna.replicate(0.001);
-    
+
     println!("Original DNA: {}", dna.sequence);
     println!("Daughter 1: {}", daughter1.sequence);
     println!("Daughter 2: {}", daughter2.sequence);
     println!("GC content: {:.3}", dna.calculate_gc_content());
-    
+
     // 基因表达模型
     let expression = GeneExpression::new();
     let time_points: Vec<f64> = (0..100).map(|x| x as f64 * 0.1).collect();
     let (mrna_levels, protein_levels) = expression.simulate_expression(&time_points);
-    
+
     println!("Final mRNA level: {:.3}", mrna_levels.last().unwrap());
     println!("Final protein level: {:.3}", protein_levels.last().unwrap());
-    
+
     // 酶动力学模型
     let enzyme = EnzymeKinetics::new(10.0, 1.0, 1.0);
     let substrate_concentration = 5.0;
     let reaction_rate = enzyme.michaelis_menten(substrate_concentration);
-    
+
     println!("Reaction rate: {:.3}", reaction_rate);
-    
+
     // 基因调控网络
     let mut network = GeneRegulatoryNetwork::new();
     network.add_gene("A".to_string());
     network.add_gene("B".to_string());
     network.add_gene("C".to_string());
-    
+
     network.add_interaction("A".to_string(), "B".to_string(), 0.5);
     network.add_interaction("B".to_string(), "C".to_string(), -0.3);
     network.add_interaction("C".to_string(), "A".to_string(), 0.2);
-    
+
     let history = network.update_expression(50);
     println!("Final expression levels: {:?}", history.last().unwrap());
 }
@@ -543,7 +627,7 @@ replicateDNA dna errorRate = (DNA daughter1 (length daughter1), DNA daughter2 (l
   where
     daughter1 = map replicateBase (sequence dna)
     daughter2 = map complementaryBase daughter1
-    
+
     replicateBase base
         | random < errorRate = randomMutation base
         | otherwise = base
@@ -554,7 +638,7 @@ replicateDNA dna errorRate = (DNA daughter1 (length daughter1), DNA daughter2 (l
         randomMutation 'C' = 'A'
         randomMutation 'G' = 'T'
         randomMutation x = x
-    
+
     complementaryBase 'A' = 'T'
     complementaryBase 'T' = 'A'
     complementaryBase 'C' = 'G'
@@ -604,7 +688,7 @@ michaelisMenten :: EnzymeKinetics -> Double -> Double
 michaelisMenten enzyme substrate = vmax enzyme * substrate / (km enzyme + substrate)
 
 competitiveInhibition :: EnzymeKinetics -> Double -> Double -> Double -> Double
-competitiveInhibition enzyme substrate inhibitor ki = 
+competitiveInhibition enzyme substrate inhibitor ki =
     vmax enzyme * substrate / (kmApparent + substrate)
   where
     kmApparent = km enzyme * (1.0 + inhibitor / ki)
@@ -640,13 +724,13 @@ fluxBalanceAnalysis :: MetabolicNetwork -> [Double]
 fluxBalanceAnalysis network = go 100 (replicate nReactions 1.0)
   where
     nReactions = length (reactions network)
-    
+
     go 0 fluxes = fluxes
     go iterations fluxes = go (iterations - 1) newFluxes
       where
         newFluxes = map updateFlux [0..nReactions-1]
         updateFlux i = max 0.0 (calculateNetFlux i fluxes)
-        calculateNetFlux i fluxes = 
+        calculateNetFlux i fluxes =
             sum [fromIntegral (stoichiometry network !! i !! j) * fluxes !! j | j <- [0..nReactions-1], j /= i]
 
 -- 基因调控网络
@@ -660,7 +744,7 @@ newGeneRegulatoryNetwork :: GeneRegulatoryNetwork
 newGeneRegulatoryNetwork = GeneRegulatoryNetwork [] Map.empty Map.empty
 
 addGene :: String -> GeneRegulatoryNetwork -> GeneRegulatoryNetwork
-addGene gene network = network { 
+addGene gene network = network {
     genes = gene : genes network,
     expressionLevels = Map.insert gene 0.5 (expressionLevels network)
 }
@@ -677,9 +761,9 @@ updateExpression network timeSteps = go timeSteps (expressionLevels network)
     go steps levels = levels : go (steps - 1) newLevels
       where
         newLevels = Map.fromList [(gene, updateGeneLevel gene levels) | gene <- genes network]
-        updateGeneLevel gene levels = 
+        updateGeneLevel gene levels =
             let currentLevel = Map.findWithDefault 0.5 gene levels
-                regulation = sum [strength * Map.findWithDefault 0.5 regulator levels 
+                regulation = sum [strength * Map.findWithDefault 0.5 regulator levels
                                 | ((regulator, target), strength) <- Map.toList (interactions network), target == gene]
                 newLevel = max 0.0 (min 1.0 (currentLevel + 0.1 * regulation))
             in newLevel
@@ -690,26 +774,26 @@ example = do
     -- DNA复制模型
     let dna = newDNA "ATCGATCGATCG"
         (daughter1, daughter2) = replicateDNA dna 0.001
-    
+
     putStrLn $ "Original DNA: " ++ sequence dna
     putStrLn $ "Daughter 1: " ++ sequence daughter1
     putStrLn $ "Daughter 2: " ++ sequence daughter2
     putStrLn $ "GC content: " ++ show (calculateGCContent dna)
-    
+
     -- 基因表达模型
     let expression = newGeneExpression
         timePoints = [0.0, 0.1..10.0]
         (mrnaLevels, proteinLevels) = simulateExpression expression timePoints
-    
+
     putStrLn $ "Final mRNA level: " ++ show (last mrnaLevels)
     putStrLn $ "Final protein level: " ++ show (last proteinLevels)
-    
+
     -- 酶动力学模型
     let enzyme = newEnzymeKinetics 10.0 1.0 1.0
         reactionRate = michaelisMenten enzyme 5.0
-    
+
     putStrLn $ "Reaction rate: " ++ show reactionRate
-    
+
     -- 基因调控网络
     let network = addInteraction "A" "B" 0.5 $
                   addInteraction "B" "C" (-0.3) $
@@ -717,9 +801,9 @@ example = do
                   addGene "C" $
                   addGene "B" $
                   addGene "A" newGeneRegulatoryNetwork
-        
+
         history = updateExpression network 50
-    
+
     putStrLn $ "Final expression levels: " ++ show (last history)
 ```
 
@@ -842,6 +926,36 @@ def molecular_biology_verification():
 if __name__ == "__main__":
     molecular_biology_verification()
 ```
+
+## 相关模型 / Related Models
+
+### 生命科学模型 / Life Science Models
+
+- [生态学模型](../02-生态学模型/README.md) - 分子生物学在生态系统中的应用
+- [进化论模型](../03-进化论模型/README.md) - 分子进化和基因变异
+- [神经科学模型](../04-神经科学模型/README.md) - 神经分子的信号转导
+- [基因组学模型](../05-基因组学模型/README.md) - 基因组分析和基因表达
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 基因调控网络的代数结构
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 蛋白质结构的几何分析
+
+### 物理科学模型 / Physical Science Models
+
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 生物热力学和能量代谢
+- [量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md) - 量子生物学和分子轨道
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 生物信息学算法
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 机器学习在生物学中的应用
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 分子生物学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 分子生物学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 分子生物学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

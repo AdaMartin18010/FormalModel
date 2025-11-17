@@ -11,6 +11,8 @@
 
 - [8.9 医疗健康模型 / Healthcare Models](#89-医疗健康模型--healthcare-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [医疗健康模型框架图 / Framework Diagram of Healthcare Models](#医疗健康模型框架图--framework-diagram-of-healthcare-models)
+  - [精准医疗诊疗流程 / Flowchart of Precision Medicine Diagnosis and Treatment](#精准医疗诊疗流程--flowchart-of-precision-medicine-diagnosis-and-treatment)
   - [8.9.1 疾病预测模型 / Disease Prediction Models](#891-疾病预测模型--disease-prediction-models)
     - [风险预测模型 / Risk Prediction Models](#风险预测模型--risk-prediction-models)
     - [机器学习预测模型 / Machine Learning Prediction Models](#机器学习预测模型--machine-learning-prediction-models)
@@ -49,6 +51,139 @@
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 医疗健康模型框架图 / Framework Diagram of Healthcare Models
+
+```mermaid
+graph TB
+    A[医疗健康模型] --> B[疾病预测模型]
+    A --> C[药物开发模型]
+    A --> D[医疗资源优化模型]
+    A --> E[流行病学模型]
+    A --> F[基因组学模型]
+    A --> G[医学影像模型]
+    A --> H[精准医疗模型]
+
+    B --> I[风险预测]
+    B --> J[机器学习预测]
+    B --> K[多变量预测]
+
+    C --> L[药代动力学]
+    C --> M[药效动力学]
+    C --> N[药物相互作用]
+
+    D --> O[排队论]
+    D --> P[床位分配]
+    D --> Q[手术调度]
+
+    E --> R[SIR模型]
+    E --> S[SEIR模型]
+    E --> T[空间传播]
+
+    F --> U[基因表达]
+    F --> V[变异检测]
+    F --> W[蛋白质结构]
+
+    G --> X[图像分割]
+    G --> Y[图像配准]
+    G --> Z[图像重建]
+
+    H --> AA[个性化治疗]
+    H --> AB[生物标志物]
+    H --> AC[药物基因组学]
+
+    I --> AD[医疗应用]
+    L --> AD
+    O --> AD
+    R --> AD
+    U --> AD
+    X --> AD
+    AA --> AD
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style F fill:#fff4e1
+    style G fill:#fff4e1
+    style H fill:#fff4e1
+    style AD fill:#e8f5e9
+```
+
+## 精准医疗诊疗流程 / Flowchart of Precision Medicine Diagnosis and Treatment
+
+```mermaid
+flowchart TD
+    Start([患者就诊]) --> PatientData[患者数据收集<br/>病史<br/>症状<br/>体征<br/>检查结果]
+
+    PatientData --> DiseasePrediction{疾病预测}
+    DiseasePrediction --> RiskAssessment[风险评估<br/>Cox模型<br/>Framingham评分<br/>Charlson指数]
+    DiseasePrediction --> MLPrediction[机器学习预测<br/>逻辑回归<br/>随机森林<br/>神经网络]
+
+    RiskAssessment --> Diagnosis{诊断}
+    MLPrediction --> Diagnosis
+
+    Diagnosis --> MedicalImaging{医学影像}
+    MedicalImaging --> ImageSegmentation[图像分割<br/>病灶识别<br/>区域分割<br/>体积测量]
+    MedicalImaging --> ImageRegistration[图像配准<br/>多模态融合<br/>时间序列对比]
+    MedicalImaging --> ImageReconstruction[图像重建<br/>3D重建<br/>可视化]
+
+    ImageSegmentation --> Genomics{基因组学}
+    ImageRegistration --> Genomics
+    ImageReconstruction --> Genomics
+
+    Genomics --> GeneExpression[基因表达分析<br/>差异表达<br/>通路分析<br/>功能注释]
+    Genomics --> VariantDetection[变异检测<br/>SNP检测<br/>CNV检测<br/>结构变异]
+    Genomics --> ProteinStructure[蛋白质结构预测<br/>结构建模<br/>功能预测<br/>药物靶点]
+
+    GeneExpression --> PrecisionMedicine{精准医疗}
+    VariantDetection --> PrecisionMedicine
+    ProteinStructure --> PrecisionMedicine
+
+    PrecisionMedicine --> Biomarker[生物标志物识别<br/>诊断标志物<br/>预后标志物<br/>治疗标志物]
+    PrecisionMedicine --> Pharmacogenomics[药物基因组学<br/>药物代谢<br/>药物反应<br/>个体化用药]
+
+    Biomarker --> TreatmentPlanning{治疗方案}
+    Pharmacogenomics --> TreatmentPlanning
+
+    TreatmentPlanning --> DrugDevelopment[药物开发<br/>药代动力学<br/>药效动力学<br/>药物相互作用]
+    TreatmentPlanning --> PersonalizedTreatment[个性化治疗<br/>治疗方案优化<br/>剂量调整<br/>疗效预测]
+
+    DrugDevelopment --> ResourceOptimization{资源优化}
+    PersonalizedTreatment --> ResourceOptimization
+
+    ResourceOptimization --> Queueing[排队论优化<br/>就诊流程<br/>等待时间<br/>服务效率]
+    ResourceOptimization --> BedAllocation[床位分配<br/>床位利用率<br/>患者分类<br/>优先级]
+    ResourceOptimization --> SurgeryScheduling[手术调度<br/>手术室分配<br/>时间安排<br/>资源协调]
+
+    Queueing --> Monitoring[治疗监测<br/>疗效评估<br/>副作用监测<br/>调整方案]
+    BedAllocation --> Monitoring
+    SurgeryScheduling --> Monitoring
+
+    Monitoring --> Outcome([治疗结果<br/>康复<br/>随访<br/>数据反馈])
+
+    Outcome --> Epidemiological{流行病学}
+    Epidemiological --> SIR[SIR模型<br/>疾病传播<br/>感染率<br/>恢复率]
+    Epidemiological --> SEIR[SEIR模型<br/>潜伏期<br/>传播动态<br/>防控策略]
+
+    SIR --> PublicHealth[公共卫生<br/>疫情监测<br/>防控措施<br/>资源调配]
+    SEIR --> PublicHealth
+
+    PublicHealth --> Feedback[数据反馈<br/>治疗效果<br/>流行病学数据<br/>模型优化]
+    Feedback --> PatientData
+
+    style Start fill:#e1f5ff
+    style Outcome fill:#e1f5ff
+    style DiseasePrediction fill:#e8f5e9
+    style Diagnosis fill:#e8f5e9
+    style MedicalImaging fill:#e8f5e9
+    style Genomics fill:#e8f5e9
+    style PrecisionMedicine fill:#e8f5e9
+    style TreatmentPlanning fill:#e8f5e9
+    style ResourceOptimization fill:#e8f5e9
+    style Epidemiological fill:#e8f5e9
+```
 
 ## 8.9.1 疾病预测模型 / Disease Prediction Models
 
@@ -292,28 +427,28 @@ impl DiseasePrediction {
             intercept: 0.0,
         }
     }
-    
+
     pub fn train(&mut self, features: &Array2<f64>, labels: &Array1<f64>) {
         // 简化的逻辑回归训练
         let n_features = features.ncols();
         self.coefficients = vec![0.0; n_features];
         self.intercept = 0.0;
-        
+
         // 梯度下降训练
         for _ in 0..1000 {
             let mut gradients = vec![0.0; n_features];
             let mut intercept_gradient = 0.0;
-            
+
             for i in 0..features.nrows() {
                 let prediction = self.predict_proba(&features.row(i).to_owned());
                 let error = prediction - labels[i];
-                
+
                 for j in 0..n_features {
                     gradients[j] += error * features[[i, j]];
                 }
                 intercept_gradient += error;
             }
-            
+
             // 更新参数
             for j in 0..n_features {
                 self.coefficients[j] -= 0.01 * gradients[j] / features.nrows() as f64;
@@ -321,7 +456,7 @@ impl DiseasePrediction {
             self.intercept -= 0.01 * intercept_gradient / features.nrows() as f64;
         }
     }
-    
+
     pub fn predict_proba(&self, features: &Array1<f64>) -> f64 {
         let mut score = self.intercept;
         for (i, &coef) in self.coefficients.iter().enumerate() {
@@ -329,17 +464,17 @@ impl DiseasePrediction {
         }
         1.0 / (1.0 + (-score).exp())
     }
-    
+
     pub fn predict_risk(&self, patient: &Patient) -> f64 {
         let mut features = Vec::new();
         features.push(patient.age);
         features.push(if patient.gender == "M" { 1.0 } else { 0.0 });
-        
+
         // 添加生物标志物
         for (_, value) in &patient.biomarkers {
             features.push(*value);
         }
-        
+
         let feature_array = Array1::from(features);
         self.predict_proba(&feature_array)
     }
@@ -361,19 +496,19 @@ impl PharmacokineticModel {
             half_life,
         }
     }
-    
+
     pub fn simulate_concentration(&self, dose: f64, time_points: &Vec<f64>) -> Vec<f64> {
         let k_elimination = self.clearance / self.volume;
-        
+
         time_points.iter().map(|&t| {
             dose / self.volume * (-k_elimination * t).exp()
         }).collect()
     }
-    
+
     pub fn calculate_auc(&self, dose: f64) -> f64 {
         dose / self.clearance
     }
-    
+
     pub fn calculate_steady_state(&self, dose: f64, interval: f64) -> f64 {
         let k_elimination = self.clearance / self.volume;
         let accumulation_factor = 1.0 / (1.0 - (-k_elimination * interval).exp());
@@ -398,34 +533,34 @@ impl EpidemiologicalModel {
             initial_infected,
         }
     }
-    
+
     pub fn simulate_sir(&self, days: usize) -> (Vec<f64>, Vec<f64>, Vec<f64>) {
         let mut s = vec![self.population - self.initial_infected];
         let mut i = vec![self.initial_infected];
         let mut r = vec![0.0];
-        
+
         let dt = 1.0;
-        
+
         for _ in 1..days {
             let current_s = s[s.len() - 1];
             let current_i = i[i.len() - 1];
             let current_r = r[r.len() - 1];
-            
+
             let new_infections = self.beta * current_s * current_i / self.population;
             let new_recoveries = self.gamma * current_i;
-            
+
             s.push(current_s - new_infections * dt);
             i.push(current_i + (new_infections - new_recoveries) * dt);
             r.push(current_r + new_recoveries * dt);
         }
-        
+
         (s, i, r)
     }
-    
+
     pub fn calculate_r0(&self) -> f64 {
         self.beta / self.gamma
     }
-    
+
     pub fn calculate_peak_infection(&self) -> f64 {
         let r0 = self.calculate_r0();
         if r0 > 1.0 {
@@ -451,11 +586,11 @@ impl MedicalResourceOptimization {
             service_rate,
         }
     }
-    
+
     pub fn calculate_utilization(&self) -> f64 {
         self.arrival_rate / (self.beds as f64 * self.service_rate)
     }
-    
+
     pub fn calculate_waiting_time(&self) -> f64 {
         let rho = self.calculate_utilization();
         if rho < 1.0 {
@@ -466,22 +601,22 @@ impl MedicalResourceOptimization {
             f64::INFINITY
         }
     }
-    
+
     fn calculate_idle_probability(&self) -> f64 {
         let rho = self.calculate_utilization();
         let mut sum = 0.0;
-        
+
         for n in 0..=self.beds {
             sum += (rho.powi(n as i32)) / factorial(n);
         }
-        
+
         1.0 / sum
     }
-    
+
     fn calculate_queue_length(&self, p0: f64) -> f64 {
         let rho = self.calculate_utilization();
         let c = self.beds as f64;
-        
+
         (rho.powi((c + 1) as i32) * p0) / (factorial(self.beds) * (1.0 - rho / c).powi(2))
     }
 }
@@ -494,7 +629,7 @@ fn factorial(n: usize) -> f64 {
 fn main() {
     // 疾病预测模型
     let mut prediction_model = DiseasePrediction::new("logistic".to_string());
-    
+
     let patient = Patient {
         id: "P001".to_string(),
         age: 65.0,
@@ -505,25 +640,25 @@ fn main() {
             ("blood_pressure".to_string(), 140.0),
         ]),
     };
-    
+
     let risk = prediction_model.predict_risk(&patient);
     println!("Patient risk: {:.3}", risk);
-    
+
     // 药代动力学模型
     let pk_model = PharmacokineticModel::new(50.0, 10.0);
     let time_points = vec![0.0, 1.0, 2.0, 4.0, 8.0, 12.0, 24.0];
     let concentrations = pk_model.simulate_concentration(100.0, &time_points);
-    
+
     println!("Concentrations: {:?}", concentrations);
     println!("AUC: {:.2}", pk_model.calculate_auc(100.0));
-    
+
     // 流行病学模型
     let epi_model = EpidemiologicalModel::new(10000.0, 0.3, 0.1, 100.0);
     let (s, i, r) = epi_model.simulate_sir(100);
-    
+
     println!("R0: {:.2}", epi_model.calculate_r0());
     println!("Peak infections: {:.0}", epi_model.calculate_peak_infection());
-    
+
     // 医疗资源优化
     let resource_model = MedicalResourceOptimization::new(10, 8.0, 1.0);
     println!("Utilization: {:.2}", resource_model.calculate_utilization());
@@ -563,7 +698,7 @@ newDiseasePrediction modelType = DiseasePrediction modelType [] 0.0
 predictRisk :: DiseasePrediction -> Patient -> Double
 predictRisk model patient = 1.0 / (1.0 + exp (-score))
   where
-    features = [age patient, if gender patient == "M" then 1.0 else 0.0] ++ 
+    features = [age patient, if gender patient == "M" then 1.0 else 0.0] ++
                map snd (Map.toList (biomarkers patient))
     score = intercept model + sum (zipWith (*) (coefficients model) features)
 
@@ -606,7 +741,7 @@ simulateSIR model days = go [susceptible0] [infected0] [recovered0] 1
     infected0 = initialInfected model
     recovered0 = 0.0
     dt = 1.0
-    
+
     go s i r day
         | day >= days = (reverse s, reverse i, reverse r)
         | otherwise = go (newS:s) (newI:i) (newR:r) (day + 1)
@@ -614,10 +749,10 @@ simulateSIR model days = go [susceptible0] [infected0] [recovered0] 1
         currentS = head s
         currentI = head i
         currentR = head r
-        
+
         newInfections = beta model * currentS * currentI / population model
         newRecoveries = gamma model * currentI
-        
+
         newS = currentS - newInfections * dt
         newI = currentI + (newInfections - newRecoveries) * dt
         newR = currentR + newRecoveries * dt
@@ -676,30 +811,30 @@ example :: IO ()
 example = do
     -- 疾病预测模型
     let predictionModel = newDiseasePrediction "logistic"
-        patient = Patient "P001" 65.0 "M" ["hypertension", "diabetes"] 
+        patient = Patient "P001" 65.0 "M" ["hypertension", "diabetes"]
                            (Map.fromList [("cholesterol", 240.0), ("blood_pressure", 140.0)])
         risk = predictRisk predictionModel patient
-    
+
     putStrLn $ "Patient risk: " ++ show risk
-    
+
     -- 药代动力学模型
     let pkModel = newPharmacokineticModel 50.0 10.0
         timePoints = [0.0, 1.0, 2.0, 4.0, 8.0, 12.0, 24.0]
         concentrations = simulateConcentration pkModel 100.0 timePoints
-    
+
     putStrLn $ "Concentrations: " ++ show concentrations
     putStrLn $ "AUC: " ++ show (calculateAUC pkModel 100.0)
-    
+
     -- 流行病学模型
     let epiModel = newEpidemiologicalModel 10000.0 0.3 0.1 100.0
         (s, i, r) = simulateSIR epiModel 100
-    
+
     putStrLn $ "R0: " ++ show (calculateR0 epiModel)
     putStrLn $ "Peak infections: " ++ show (calculatePeakInfection epiModel)
-    
+
     -- 医疗资源优化
     let resourceModel = newMedicalResourceOptimization 10 8.0 1.0
-    
+
     putStrLn $ "Utilization: " ++ show (calculateUtilization resourceModel)
     putStrLn $ "Waiting time: " ++ show (calculateWaitingTime resourceModel) ++ " hours"
 ```
@@ -792,82 +927,82 @@ class Patient:
 
 class DiseasePredictionModel:
     """疾病预测模型"""
-    
+
     def __init__(self, model_type: str = "logistic"):
         self.model_type = model_type
         self.coefficients = {}
         self.feature_names = []
-    
+
     def fit(self, X: np.ndarray, y: np.ndarray, feature_names: List[str]):
         """训练模型"""
         self.feature_names = feature_names
-        
+
         if self.model_type == "logistic":
             # 简化的逻辑回归训练
             n_features = X.shape[1]
             self.coefficients = np.random.randn(n_features) * 0.01
-            
+
             # 梯度下降训练
             learning_rate = 0.01
             n_iterations = 1000
-            
+
             for _ in range(n_iterations):
                 predictions = self.predict_proba(X)
                 errors = y - predictions
-                
+
                 for i in range(n_features):
                     gradient = np.mean(errors * X[:, i])
                     self.coefficients[i] += learning_rate * gradient
-    
+
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """预测概率"""
         if self.model_type == "logistic":
             z = np.dot(X, self.coefficients)
             return 1 / (1 + np.exp(-np.clip(z, -500, 500)))
         return np.zeros(X.shape[0])
-    
+
     def predict_risk(self, patient: Patient) -> float:
         """预测患者风险"""
         # 构建特征向量
         features = []
-        
+
         # 年龄特征
         features.append(patient.age / 100.0)  # 归一化
-        
+
         # 性别特征
         features.append(1.0 if patient.gender == "M" else 0.0)
-        
+
         # 疾病特征
         for condition in ["hypertension", "diabetes", "obesity"]:
             features.append(1.0 if condition in patient.conditions else 0.0)
-        
+
         # 测量值特征
         for measurement in ["cholesterol", "blood_pressure", "bmi"]:
             value = patient.measurements.get(measurement, 0.0)
             features.append(value / 300.0)  # 归一化
-        
+
         X = np.array([features])
         return self.predict_proba(X)[0]
 
 class CoxProportionalHazards:
     """Cox比例风险模型"""
-    
+
     def __init__(self):
         self.coefficients = None
         self.baseline_hazard = None
-    
+
     def fit(self, X: np.ndarray, times: np.ndarray, events: np.ndarray):
         """训练Cox模型"""
         n_features = X.shape[1]
         self.coefficients = np.random.randn(n_features) * 0.01
-        
+
         # 简化的训练过程
         learning_rate = 0.01
         n_iterations = 500
-        
+
         for _ in range(n_iterations):
             risk_scores = np.exp(np.dot(X, self.coefficients))
-            
+
             # 计算偏似然梯度
             for i in range(n_features):
                 gradient = 0
@@ -877,9 +1012,9 @@ class CoxProportionalHazards:
                         risk_set = times >= times[j]
                         if np.sum(risk_set) > 0:
                             gradient += X[j, i] - np.sum(X[risk_set, i] * risk_scores[risk_set]) / np.sum(risk_scores[risk_set])
-                
+
                 self.coefficients[i] += learning_rate * gradient
-    
+
     def predict_hazard_ratio(self, X: np.ndarray) -> np.ndarray:
         """预测风险比"""
         return np.exp(np.dot(X, self.coefficients))
@@ -888,32 +1023,32 @@ class CoxProportionalHazards:
 
 class PharmacokineticModel:
     """药代动力学模型"""
-    
+
     def __init__(self, volume: float, clearance: float):
         self.volume = volume
         self.clearance = clearance
         self.elimination_rate = clearance / volume
-    
+
     def simulate_concentration(self, dose: float, time_points: List[float]) -> List[float]:
         """模拟药物浓度"""
         concentrations = []
-        
+
         for t in time_points:
             # 一室模型
             concentration = (dose / self.volume) * np.exp(-self.elimination_rate * t)
             concentrations.append(concentration)
-        
+
         return concentrations
-    
+
     def calculate_auc(self, dose: float, time_limit: float = 24.0) -> float:
         """计算AUC"""
         # 解析解：AUC = dose / clearance
         return dose / self.clearance
-    
+
     def calculate_half_life(self) -> float:
         """计算半衰期"""
         return np.log(2) / self.elimination_rate
-    
+
     def calculate_steady_state_concentration(self, dose: float, dosing_interval: float) -> float:
         """计算稳态浓度"""
         # 多次给药后的稳态浓度
@@ -922,19 +1057,19 @@ class PharmacokineticModel:
 
 class PharmacodynamicModel:
     """药效动力学模型"""
-    
+
     def __init__(self, e0: float, emax: float, ec50: float, hill_coefficient: float = 1.0):
         self.e0 = e0  # 基线效应
         self.emax = emax  # 最大效应
         self.ec50 = ec50  # 半数有效浓度
         self.hill_coefficient = hill_coefficient
-    
+
     def calculate_effect(self, concentration: float) -> float:
         """计算药效"""
         # Emax模型
         effect = self.e0 + (self.emax * concentration) / (self.ec50 + concentration)
         return effect
-    
+
     def calculate_hill_effect(self, concentration: float) -> float:
         """计算Hill方程效应"""
         # Hill方程
@@ -946,8 +1081,8 @@ class PharmacodynamicModel:
 
 class SIRModel:
     """SIR流行病学模型"""
-    
-    def __init__(self, total_population: float, infection_rate: float, 
+
+    def __init__(self, total_population: float, infection_rate: float,
                  recovery_rate: float, initial_infected: float):
         self.N = total_population
         self.beta = infection_rate
@@ -955,32 +1090,32 @@ class SIRModel:
         self.I0 = initial_infected
         self.S0 = total_population - initial_infected
         self.R0 = 0
-    
+
     def sir_equations(self, y: np.ndarray, t: float) -> np.ndarray:
         """SIR微分方程"""
         S, I, R = y
-        
+
         dSdt = -self.beta * S * I / self.N
         dIdt = self.beta * S * I / self.N - self.gamma * I
         dRdt = self.gamma * I
-        
+
         return [dSdt, dIdt, dRdt]
-    
+
     def simulate(self, time_points: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """模拟SIR模型"""
         initial_conditions = [self.S0, self.I0, self.R0]
         solution = odeint(self.sir_equations, initial_conditions, time_points)
-        
+
         S = solution[:, 0]
         I = solution[:, 1]
         R = solution[:, 2]
-        
+
         return S, I, R
-    
+
     def calculate_r0(self) -> float:
         """计算基本再生数R0"""
         return self.beta / self.gamma
-    
+
     def calculate_peak_infection(self) -> float:
         """计算感染峰值"""
         r0 = self.calculate_r0()
@@ -991,8 +1126,8 @@ class SIRModel:
 
 class SEIRModel:
     """SEIR流行病学模型"""
-    
-    def __init__(self, total_population: float, infection_rate: float, 
+
+    def __init__(self, total_population: float, infection_rate: float,
                  incubation_rate: float, recovery_rate: float, initial_infected: float):
         self.N = total_population
         self.beta = infection_rate
@@ -1002,58 +1137,58 @@ class SEIRModel:
         self.E0 = 0
         self.S0 = total_population - initial_infected
         self.R0 = 0
-    
+
     def seir_equations(self, y: np.ndarray, t: float) -> np.ndarray:
         """SEIR微分方程"""
         S, E, I, R = y
-        
+
         dSdt = -self.beta * S * I / self.N
         dEdt = self.beta * S * I / self.N - self.sigma * E
         dIdt = self.sigma * E - self.gamma * I
         dRdt = self.gamma * I
-        
+
         return [dSdt, dEdt, dIdt, dRdt]
-    
+
     def simulate(self, time_points: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """模拟SEIR模型"""
         initial_conditions = [self.S0, self.E0, self.I0, self.R0]
         solution = odeint(self.seir_equations, initial_conditions, time_points)
-        
+
         S = solution[:, 0]
         E = solution[:, 1]
         I = solution[:, 2]
         R = solution[:, 3]
-        
+
         return S, E, I, R
 
 ### 医疗资源优化算法 / Healthcare Resource Optimization Algorithms
 
 class QueueingModel:
     """排队论模型"""
-    
-    def __init__(self, arrival_rate: float, service_rate: float, 
+
+    def __init__(self, arrival_rate: float, service_rate: float,
                  num_servers: int = 1):
         self.lambda_ = arrival_rate
         self.mu = service_rate
         self.s = num_servers
         self.rho = arrival_rate / (service_rate * num_servers)
-    
+
     def calculate_utilization(self) -> float:
         """计算利用率"""
         return self.rho
-    
+
     def calculate_waiting_time(self) -> float:
         """计算等待时间"""
         if self.rho >= 1:
             return float('inf')
-        
+
         if self.s == 1:
             # M/M/1队列
             return self.rho / (self.mu * (1 - self.rho))
         else:
             # M/M/s队列（简化计算）
             return self.rho / (self.mu * (1 - self.rho))
-    
+
     def calculate_queue_length(self) -> float:
         """计算队列长度"""
         waiting_time = self.calculate_waiting_time()
@@ -1063,25 +1198,25 @@ class QueueingModel:
 
 class BedAllocationModel:
     """床位分配模型"""
-    
-    def __init__(self, num_beds: int, arrival_rate: float, 
+
+    def __init__(self, num_beds: int, arrival_rate: float,
                  service_rate: float):
         self.num_beds = num_beds
         self.queue_model = QueueingModel(arrival_rate, service_rate, num_beds)
-    
+
     def calculate_bed_utilization(self) -> float:
         """计算床位利用率"""
         return self.queue_model.calculate_utilization()
-    
+
     def calculate_patient_waiting_time(self) -> float:
         """计算患者等待时间"""
         return self.queue_model.calculate_waiting_time()
-    
+
     def calculate_optimal_beds(self, target_utilization: float = 0.8) -> int:
         """计算最优床位数"""
         arrival_rate = self.queue_model.lambda_
         service_rate = self.queue_model.mu
-        
+
         # 简化的优化计算
         optimal_beds = int(np.ceil(arrival_rate / (service_rate * target_utilization)))
         return optimal_beds
@@ -1089,22 +1224,22 @@ class BedAllocationModel:
 def healthcare_verification():
     """医疗健康模型验证"""
     print("=== 医疗健康模型验证 ===")
-    
+
     # 疾病预测验证
     print("\n1. 疾病预测验证:")
-    
+
     # 创建预测模型
     prediction_model = DiseasePredictionModel("logistic")
-    
+
     # 模拟训练数据
     n_samples = 1000
     n_features = 6
     X_train = np.random.randn(n_samples, n_features)
     y_train = np.random.randint(0, 2, n_samples)
-    
+
     feature_names = ["age", "gender", "hypertension", "diabetes", "cholesterol", "blood_pressure"]
     prediction_model.fit(X_train, y_train, feature_names)
-    
+
     # 预测患者风险
     patient = Patient(
         id="P001",
@@ -1113,48 +1248,48 @@ def healthcare_verification():
         conditions=["hypertension", "diabetes"],
         measurements={"cholesterol": 240.0, "blood_pressure": 140.0, "bmi": 28.0}
     )
-    
+
     risk = prediction_model.predict_risk(patient)
     print(f"患者风险: {risk:.4f}")
-    
+
     # Cox模型验证
     cox_model = CoxProportionalHazards()
     X_cox = np.random.randn(100, 3)
     times = np.random.exponential(1.0, 100)
     events = np.random.randint(0, 2, 100)
-    
+
     cox_model.fit(X_cox, times, events)
     hazard_ratios = cox_model.predict_hazard_ratio(X_cox[:5])
     print(f"Cox模型风险比: {hazard_ratios}")
-    
+
     # 药物开发验证
     print("\n2. 药物开发验证:")
-    
+
     # 药代动力学模型
     pk_model = PharmacokineticModel(volume=50.0, clearance=10.0)
     time_points = [0.0, 1.0, 2.0, 4.0, 8.0, 12.0, 24.0]
     concentrations = pk_model.simulate_concentration(100.0, time_points)
-    
+
     auc = pk_model.calculate_auc(100.0)
     half_life = pk_model.calculate_half_life()
     steady_state = pk_model.calculate_steady_state_concentration(100.0, 12.0)
-    
+
     print(f"药物浓度: {[f'{c:.2f}' for c in concentrations]}")
     print(f"AUC: {auc:.2f}")
     print(f"半衰期: {half_life:.2f} 小时")
     print(f"稳态浓度: {steady_state:.2f}")
-    
+
     # 药效动力学模型
     pd_model = PharmacodynamicModel(e0=0.0, emax=100.0, ec50=10.0)
     effect = pd_model.calculate_effect(20.0)
     hill_effect = pd_model.calculate_hill_effect(20.0)
-    
+
     print(f"药效: {effect:.2f}")
     print(f"Hill药效: {hill_effect:.2f}")
-    
+
     # 流行病学验证
     print("\n3. 流行病学验证:")
-    
+
     # SIR模型
     sir_model = SIRModel(
         total_population=10000.0,
@@ -1162,18 +1297,18 @@ def healthcare_verification():
         recovery_rate=0.1,
         initial_infected=100.0
     )
-    
+
     time_points = np.linspace(0, 100, 101)
     S, I, R = sir_model.simulate(time_points)
-    
+
     r0 = sir_model.calculate_r0()
     peak_infection = sir_model.calculate_peak_infection()
-    
+
     print(f"基本再生数R0: {r0:.2f}")
     print(f"感染峰值: {peak_infection:.0f}")
     print(f"最终易感者: {S[-1]:.0f}")
     print(f"最终康复者: {R[-1]:.0f}")
-    
+
     # SEIR模型
     seir_model = SEIRModel(
         total_population=10000.0,
@@ -1182,38 +1317,95 @@ def healthcare_verification():
         recovery_rate=0.1,
         initial_infected=100.0
     )
-    
+
     S_eir, E_eir, I_eir, R_eir = seir_model.simulate(time_points)
     print(f"SEIR模型最终暴露者: {E_eir[-1]:.0f}")
-    
+
     # 医疗资源优化验证
     print("\n4. 医疗资源优化验证:")
-    
+
     # 排队论模型
     queue_model = QueueingModel(arrival_rate=8.0, service_rate=1.0, num_servers=10)
     utilization = queue_model.calculate_utilization()
     waiting_time = queue_model.calculate_waiting_time()
     queue_length = queue_model.calculate_queue_length()
-    
+
     print(f"系统利用率: {utilization:.4f}")
     print(f"平均等待时间: {waiting_time:.2f} 小时")
     print(f"平均队列长度: {queue_length:.2f}")
-    
+
     # 床位分配模型
     bed_model = BedAllocationModel(num_beds=10, arrival_rate=8.0, service_rate=1.0)
     bed_utilization = bed_model.calculate_bed_utilization()
     patient_waiting = bed_model.calculate_patient_waiting_time()
     optimal_beds = bed_model.calculate_optimal_beds()
-    
+
     print(f"床位利用率: {bed_utilization:.4f}")
     print(f"患者等待时间: {patient_waiting:.2f} 小时")
     print(f"最优床位数: {optimal_beds}")
-    
+
     print("\n验证完成!")
 
 if __name__ == "__main__":
     healthcare_verification()
 ```
+
+---
+
+## 相关模型 / Related Models
+
+### 行业应用模型 / Industry Application Models
+
+- **[物流供应链模型](../01-物流供应链模型/README.md)** - 医疗供应链管理、药品配送和医疗物资管理
+- **[交通运输模型](../02-交通运输模型/README.md)** - 医疗急救运输、医疗物流和患者转运
+- **[电力能源模型](../03-电力能源模型/README.md)** - 医疗设备电力供应、医院能源管理和医疗设施电力系统
+- **[信息技术模型](../04-信息技术模型/README.md)** - 医疗信息系统、电子病历、医疗数据管理和远程医疗都需要信息技术的支持
+- **[人工智能行业模型](../05-人工智能行业模型/README.md)** - 医学影像诊断、疾病预测、药物发现和个性化医疗都大量使用人工智能技术
+- **[银行金融模型](../06-银行金融模型/README.md)** - 医疗金融、健康保险和医疗投资
+- **[经济供需模型](../07-经济供需模型/README.md)** - 医疗资源供需、医疗服务定价和健康市场均衡
+- **[制造业模型](../08-制造业模型/README.md)** - 医疗器械制造、医疗设备生产和健康产品制造
+- **[教育学习模型](../10-教育学习模型/README.md)** - 医学教育、医疗培训和健康知识传播
+
+### 工程科学模型 / Engineering Science Models
+
+- **[优化模型](../../07-工程科学模型/01-优化模型/README.md)** - 医疗资源优化、手术调度优化、床位分配优化和药物剂量优化都是优化问题
+- **[控制论模型](../../07-工程科学模型/02-控制论模型/README.md)** - 医疗设备控制、生命支持系统控制和药物输注控制
+- **[信号处理模型](../../07-工程科学模型/03-信号处理模型/README.md)** - 医学信号处理、心电图分析、脑电图分析和医学影像信号处理
+
+### 计算机科学模型 / Computer Science Models
+
+- **[算法模型](../../04-计算机科学模型/02-算法模型/README.md)** - 医疗算法、图像处理算法、数据挖掘算法和优化算法在医疗健康中广泛应用
+- **[数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md)** - 医疗数据管理、病历数据结构和医学影像数据结构
+- **[人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md)** - 机器学习、深度学习和强化学习在医学诊断、疾病预测和药物发现中应用
+
+### 数学科学模型 / Mathematical Science Models
+
+- **[代数模型](../../03-数学科学模型/01-代数模型/README.md)** - 线性代数、矩阵运算在医学影像处理、数据分析和统计建模中应用广泛
+- **[几何模型](../../03-数学科学模型/02-几何模型/README.md)** - 医学几何、解剖结构建模和医学影像几何分析
+- **[拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md)** - 生物网络拓扑、蛋白质网络和基因调控网络分析
+
+### 生命科学模型 / Life Science Models
+
+- **[生物化学模型](../../05-生命科学模型/01-生物化学模型/README.md)** - 药物代谢、酶动力学和生物化学反应
+- **[分子生物学模型](../../05-生命科学模型/02-分子生物学模型/README.md)** - 基因表达、蛋白质结构和分子相互作用
+- **[细胞生物学模型](../../05-生命科学模型/03-细胞生物学模型/README.md)** - 细胞信号转导、细胞周期和细胞分化
+- **[生态学模型](../../05-生命科学模型/04-生态学模型/README.md)** - 疾病传播、宿主-病原体相互作用和生态系统健康
+- **[进化生物学模型](../../05-生命科学模型/05-进化生物学模型/README.md)** - 病原体进化、抗药性进化和适应性进化
+
+### 物理科学模型 / Physical Science Models
+
+- **[统计力学模型](../../02-物理科学模型/04-热力学模型/README.md)** - 生物系统统计力学、蛋白质折叠和分子动力学
+
+### 社会科学模型 / Social Science Models
+
+- **[社会网络模型](../../06-社会科学模型/01-社会网络模型/README.md)** - 疾病传播网络、医疗协作网络和患者社交网络分析
+- **[心理学模型](../../06-社会科学模型/03-心理学模型/README.md)** - 健康心理学、行为医学和心理治疗模型
+
+### 基础理论 / Basic Theory
+
+- **[模型分类学](../../01-基础理论/01-模型分类学/README.md)** - 医疗健康模型的分类和体系化需要模型分类学理论指导
+- **[形式化方法论](../../01-基础理论/02-形式化方法论/README.md)** - 医疗模型的形式化描述、验证和安全性分析需要形式化方法论
+- **[科学模型论](../../01-基础理论/03-科学模型论/README.md)** - 医疗健康模型的构建、验证和评价需要科学模型论指导
 
 ---
 

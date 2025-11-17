@@ -4,6 +4,8 @@
 
 - [5.5 基因组学模型 / Genomics Models](#55-基因组学模型--genomics-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [基因组学模型框架图 / Framework Diagram of Genomics Models](#基因组学模型框架图--framework-diagram-of-genomics-models)
+  - [基因组数据分析流程图 / Flowchart of Genomic Data Analysis](#基因组数据分析流程图--flowchart-of-genomic-data-analysis)
   - [5.5.1 序列分析模型 / Sequence Analysis Models](#551-序列分析模型--sequence-analysis-models)
     - [序列比对 / Sequence Alignment](#序列比对--sequence-alignment)
     - [序列相似性 / Sequence Similarity](#序列相似性--sequence-similarity)
@@ -31,9 +33,86 @@
       - [医学基因组学 / Medical Genomics](#医学基因组学--medical-genomics)
       - [农业基因组学 / Agricultural Genomics](#农业基因组学--agricultural-genomics)
       - [进化基因组学 / Evolutionary Genomics](#进化基因组学--evolutionary-genomics)
+  - [5.5.7 算法实现 / Algorithm Implementation](#557-算法实现--algorithm-implementation)
   - [参考文献 / References](#参考文献--references)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
 
 ---
+
+## 基因组学模型框架图 / Framework Diagram of Genomics Models
+
+```mermaid
+graph TB
+    A[基因组学模型] --> B[序列分析]
+    A --> C[基因表达]
+    A --> D[变异检测]
+    A --> E[功能注释]
+    A --> F[群体遗传学]
+
+    B --> G[序列比对]
+    B --> H[序列相似性]
+    B --> I[序列进化]
+
+    C --> J[转录调控]
+    C --> K[翻译调控]
+    C --> L[表达网络]
+
+    D --> M[SNV]
+    D --> N[结构变异]
+    D --> O[拷贝数变异]
+
+    E --> P[基因功能预测]
+    E --> Q[蛋白质结构]
+    E --> R[代谢通路]
+
+    F --> S[遗传多样性]
+    F --> T[选择压力]
+    F --> U[群体结构]
+
+    G --> V[基因组学理论]
+    J --> V
+    M --> V
+    P --> V
+
+    V --> W[基因组应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style V fill:#e8f5e9
+    style W fill:#e8f5e9
+```
+
+## 基因组数据分析流程图 / Flowchart of Genomic Data Analysis
+
+```mermaid
+flowchart TD
+    Start([开始]) --> RawData[原始数据<br/>测序reads]
+    RawData --> QC[质量控制<br/>质量过滤]
+    QC --> Alignment[序列比对<br/>参考基因组]
+    Alignment --> VariantCalling[变异检测<br/>SNV/Indel]
+    VariantCalling --> Annotation[功能注释<br/>基因/蛋白质]
+    Annotation --> Expression[表达分析<br/>转录组]
+    Expression --> Network[网络分析<br/>共表达网络]
+    Network --> Interpretation[结果解释<br/>生物学意义]
+    Interpretation --> End([结束])
+
+    VariantCalling --> Population[群体分析<br/>遗传多样性]
+    Population --> Interpretation
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style RawData fill:#fff4e1
+    style VariantCalling fill:#e8f5e9
+    style Interpretation fill:#e8f5e9
+```
 
 ## 5.5.1 序列分析模型 / Sequence Analysis Models
 
@@ -202,7 +281,7 @@ impl Alignment {
         let len1 = seq1.len();
         let len2 = seq2.len();
         let mut matrix = vec![vec![0.0; len2 + 1]; len1 + 1];
-        
+
         // 初始化第一行和第一列
         for i in 0..=len1 {
             matrix[i][0] = -(i as f64) * 2.0;
@@ -210,7 +289,7 @@ impl Alignment {
         for j in 0..=len2 {
             matrix[0][j] = -(j as f64) * 2.0;
         }
-        
+
         Self {
             seq1: seq1.to_string(),
             seq2: seq2.to_string(),
@@ -218,11 +297,11 @@ impl Alignment {
             matrix,
         }
     }
-    
+
     pub fn global_alignment(&mut self, match_score: f64, mismatch_score: f64, gap_score: f64) -> f64 {
         let seq1_chars: Vec<char> = self.seq1.chars().collect();
         let seq2_chars: Vec<char> = self.seq2.chars().collect();
-        
+
         for i in 1..=seq1_chars.len() {
             for j in 1..=seq2_chars.len() {
                 let match_score_current = if seq1_chars[i-1] == seq2_chars[j-1] {
@@ -230,28 +309,28 @@ impl Alignment {
                 } else {
                     mismatch_score
                 };
-                
+
                 self.matrix[i][j] = (self.matrix[i-1][j-1] + match_score_current)
                     .max(self.matrix[i-1][j] + gap_score)
                     .max(self.matrix[i][j-1] + gap_score);
             }
         }
-        
+
         self.score = self.matrix[seq1_chars.len()][seq2_chars.len()];
         self.score
     }
-    
+
     pub fn traceback(&self) -> (String, String) {
         let mut aligned_seq1 = String::new();
         let mut aligned_seq2 = String::new();
         let seq1_chars: Vec<char> = self.seq1.chars().collect();
         let seq2_chars: Vec<char> = self.seq2.chars().collect();
-        
+
         let mut i = seq1_chars.len();
         let mut j = seq2_chars.len();
-        
+
         while i > 0 || j > 0 {
-            if i > 0 && j > 0 && self.matrix[i][j] == self.matrix[i-1][j-1] + 
+            if i > 0 && j > 0 && self.matrix[i][j] == self.matrix[i-1][j-1] +
                 if seq1_chars[i-1] == seq2_chars[j-1] { 1.0 } else { -1.0 } {
                 aligned_seq1.insert(0, seq1_chars[i-1]);
                 aligned_seq2.insert(0, seq2_chars[j-1]);
@@ -267,7 +346,7 @@ impl Alignment {
                 j -= 1;
             }
         }
-        
+
         (aligned_seq1, aligned_seq2)
     }
 }
@@ -287,31 +366,31 @@ impl GeneExpression {
             conditions: Vec::new(),
         }
     }
-    
+
     pub fn add_expression(&mut self, level: f64, condition: String) {
         self.expression_levels.push(level);
         self.conditions.push(condition);
     }
-    
+
     pub fn calculate_fold_change(&self, control_condition: &str, treatment_condition: &str) -> Option<f64> {
         let control_idx = self.conditions.iter().position(|c| c == control_condition)?;
         let treatment_idx = self.conditions.iter().position(|c| c == treatment_condition)?;
-        
+
         let control_level = self.expression_levels[control_idx];
         let treatment_level = self.expression_levels[treatment_idx];
-        
+
         if control_level > 0.0 {
             Some(treatment_level / control_level)
         } else {
             None
         }
     }
-    
+
     pub fn calculate_correlation(&self, other: &GeneExpression) -> Option<f64> {
         if self.expression_levels.len() != other.expression_levels.len() {
             return None;
         }
-        
+
         let n = self.expression_levels.len() as f64;
         let sum_x: f64 = self.expression_levels.iter().sum();
         let sum_y: f64 = other.expression_levels.iter().sum();
@@ -321,10 +400,10 @@ impl GeneExpression {
             .sum();
         let sum_x2: f64 = self.expression_levels.iter().map(|x| x * x).sum();
         let sum_y2: f64 = other.expression_levels.iter().map(|y| y * y).sum();
-        
+
         let numerator = n * sum_xy - sum_x * sum_y;
         let denominator = ((n * sum_x2 - sum_x * sum_x) * (n * sum_y2 - sum_y * sum_y)).sqrt();
-        
+
         if denominator > 0.0 {
             Some(numerator / denominator)
         } else {
@@ -354,15 +433,15 @@ impl Variant {
             frequency: 0.0,
         }
     }
-    
+
     pub fn is_snv(&self) -> bool {
         self.reference.len() == 1 && self.alternate.len() == 1
     }
-    
+
     pub fn is_indel(&self) -> bool {
         self.reference.len() != self.alternate.len()
     }
-    
+
     pub fn calculate_quality_score(&mut self, depth: u32, alt_count: u32) {
         if depth > 0 {
             self.frequency = alt_count as f64 / depth as f64;
@@ -385,27 +464,27 @@ impl PopulationGenetics {
             genotypes: Vec::new(),
         }
     }
-    
+
     pub fn add_genotype(&mut self, genotype: String) {
         self.genotypes.push(genotype);
     }
-    
+
     pub fn calculate_allele_frequencies(&mut self) {
         let mut allele_counts: HashMap<String, u32> = HashMap::new();
         let mut total_alleles = 0;
-        
+
         for genotype in &self.genotypes {
             for allele in genotype.chars() {
                 *allele_counts.entry(allele.to_string()).or_insert(0) += 1;
                 total_alleles += 1;
             }
         }
-        
+
         for (allele, count) in allele_counts {
             self.allele_frequencies.insert(allele, count as f64 / total_alleles as f64);
         }
     }
-    
+
     pub fn calculate_heterozygosity(&self) -> f64 {
         let mut heterozygosity = 0.0;
         for frequency in self.allele_frequencies.values() {
@@ -413,10 +492,10 @@ impl PopulationGenetics {
         }
         1.0 - heterozygosity
     }
-    
+
     pub fn calculate_fst(&self, other: &PopulationGenetics) -> f64 {
         let h_s = (self.calculate_heterozygosity() + other.calculate_heterozygosity()) / 2.0;
-        
+
         // 计算总体杂合度
         let mut combined_frequencies: HashMap<String, f64> = HashMap::new();
         for (allele, freq) in &self.allele_frequencies {
@@ -425,13 +504,13 @@ impl PopulationGenetics {
         for (allele, freq) in &other.allele_frequencies {
             *combined_frequencies.entry(allele.clone()).or_insert(0.0) += freq / 2.0;
         }
-        
+
         let mut h_t = 0.0;
         for frequency in combined_frequencies.values() {
             h_t += frequency * frequency;
         }
         h_t = 1.0 - h_t;
-        
+
         if h_t > 0.0 {
             (h_t - h_s) / h_t
         } else {
@@ -446,29 +525,29 @@ fn main() {
     let mut alignment = Alignment::new("ATCG", "ATCC");
     let score = alignment.global_alignment(1.0, -1.0, -2.0);
     let (aligned1, aligned2) = alignment.traceback();
-    
+
     println!("Alignment score: {}", score);
     println!("Aligned sequences:");
     println!("{}", aligned1);
     println!("{}", aligned2);
-    
+
     // 基因表达示例
     let mut gene1 = GeneExpression::new("GENE001".to_string());
     gene1.add_expression(10.5, "control".to_string());
     gene1.add_expression(25.3, "treatment".to_string());
-    
+
     let mut gene2 = GeneExpression::new("GENE002".to_string());
     gene2.add_expression(8.2, "control".to_string());
     gene2.add_expression(18.7, "treatment".to_string());
-    
+
     if let Some(fold_change) = gene1.calculate_fold_change("control", "treatment") {
         println!("Fold change for GENE001: {:.2}", fold_change);
     }
-    
+
     if let Some(correlation) = gene1.calculate_correlation(&gene2) {
         println!("Correlation between GENE001 and GENE002: {:.3}", correlation);
     }
-    
+
     // 变异检测示例
     let mut variant = Variant::new(
         "chr1".to_string(),
@@ -477,24 +556,24 @@ fn main() {
         "T".to_string(),
     );
     variant.calculate_quality_score(100, 30);
-    
+
     println!("Variant: {:?}", variant);
     println!("Is SNV: {}", variant.is_snv());
     println!("Quality score: {:.2}", variant.quality);
-    
+
     // 群体遗传学示例
     let mut pop1 = PopulationGenetics::new();
     pop1.add_genotype("AA".to_string());
     pop1.add_genotype("AB".to_string());
     pop1.add_genotype("BB".to_string());
     pop1.calculate_allele_frequencies();
-    
+
     let mut pop2 = PopulationGenetics::new();
     pop2.add_genotype("AA".to_string());
     pop2.add_genotype("AA".to_string());
     pop2.add_genotype("AB".to_string());
     pop2.calculate_allele_frequencies();
-    
+
     println!("Population 1 heterozygosity: {:.3}", pop1.calculate_heterozygosity());
     println!("Population 2 heterozygosity: {:.3}", pop2.calculate_heterozygosity());
     println!("Fst between populations: {:.3}", pop1.calculate_fst(&pop2));
@@ -528,18 +607,18 @@ newAlignment s1 s2 = Alignment {
 }
 
 globalAlignment :: String -> String -> Double -> Double -> Double -> Double
-globalAlignment s1 s2 matchScore mismatchScore gapScore = 
+globalAlignment s1 s2 matchScore mismatchScore gapScore =
     let len1 = length s1
         len2 = length s2
         -- 初始化矩阵
-        initMatrix = [[if i == 0 || j == 0 
+        initMatrix = [[if i == 0 || j == 0
                       then -fromIntegral (i + j) * gapScore
                       else 0.0 | j <- [0..len2]] | i <- [0..len1]]
-        
+
         -- 填充矩阵
         fillMatrix i j matrix
             | i == 0 || j == 0 = matrix
-            | otherwise = 
+            | otherwise =
                 let matchScoreCurrent = if s1 !! (i-1) == s2 !! (j-1)
                                        then matchScore
                                        else mismatchScore
@@ -549,7 +628,7 @@ globalAlignment s1 s2 matchScore mismatchScore gapScore =
                     newValue = maximum [diag, up, left]
                     newRow = take j (matrix !! i) ++ [newValue] ++ drop (j+1) (matrix !! i)
                 in take i matrix ++ [newRow] ++ drop (i+1) matrix
-        
+
         finalMatrix = foldr (\i acc -> foldr (\j acc2 -> fillMatrix i j acc2) acc [1..len2]) initMatrix [1..len1]
     in finalMatrix !! len1 !! len2
 
@@ -574,20 +653,20 @@ addExpression gene level condition = gene {
 }
 
 calculateFoldChange :: GeneExpression -> String -> String -> Maybe Double
-calculateFoldChange gene control treatment = 
+calculateFoldChange gene control treatment =
     let controlIdx = findIndex (== control) (conditions gene)
         treatmentIdx = findIndex (== treatment) (conditions gene)
     in case (controlIdx, treatmentIdx) of
-        (Just cIdx, Just tIdx) -> 
+        (Just cIdx, Just tIdx) ->
             let controlLevel = expressionLevels gene !! cIdx
                 treatmentLevel = expressionLevels gene !! tIdx
-            in if controlLevel > 0.0 
+            in if controlLevel > 0.0
                then Just (treatmentLevel / controlLevel)
                else Nothing
         _ -> Nothing
 
 calculateCorrelation :: GeneExpression -> GeneExpression -> Maybe Double
-calculateCorrelation gene1 gene2 = 
+calculateCorrelation gene1 gene2 =
     if length (expressionLevels gene1) /= length (expressionLevels gene2)
     then Nothing
     else let n = fromIntegral (length (expressionLevels gene1))
@@ -598,7 +677,7 @@ calculateCorrelation gene1 gene2 =
              sumY2 = sum (map (^2) (expressionLevels gene2))
              numerator = n * sumXY - sumX * sumY
              denominator = sqrt ((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY))
-         in if denominator > 0.0 
+         in if denominator > 0.0
             then Just (numerator / denominator)
             else Nothing
 
@@ -629,7 +708,7 @@ isIndel :: Variant -> Bool
 isIndel variant = length (reference variant) /= length (alternate variant)
 
 calculateQualityScore :: Variant -> Integer -> Integer -> Variant
-calculateQualityScore variant depth altCount = 
+calculateQualityScore variant depth altCount =
     let freq = fromIntegral altCount / fromIntegral depth
         quality = -10.0 * logBase 10 (1.0 - freq)
     in variant {
@@ -655,27 +734,27 @@ addGenotype pop genotype = pop {
 }
 
 calculateAlleleFrequencies :: PopulationGenetics -> PopulationGenetics
-calculateAlleleFrequencies pop = 
-    let alleleCounts = foldr (\genotype acc -> 
-        foldr (\allele acc2 -> 
+calculateAlleleFrequencies pop =
+    let alleleCounts = foldr (\genotype acc ->
+        foldr (\allele acc2 ->
             Map.insertWith (+) [allele] 1 acc2) acc genotype) Map.empty (genotypes pop)
         totalAlleles = sum (Map.elems alleleCounts)
         frequencies = Map.map (\count -> fromIntegral count / fromIntegral totalAlleles) alleleCounts
     in pop { alleleFrequencies = frequencies }
 
 calculateHeterozygosity :: PopulationGenetics -> Double
-calculateHeterozygosity pop = 
+calculateHeterozygosity pop =
     let freqSum = sum (map (^2) (Map.elems (alleleFrequencies pop)))
     in 1.0 - freqSum
 
 calculateFst :: PopulationGenetics -> PopulationGenetics -> Double
-calculateFst pop1 pop2 = 
+calculateFst pop1 pop2 =
     let h1 = calculateHeterozygosity pop1
         h2 = calculateHeterozygosity pop2
         hS = (h1 + h2) / 2.0
-        
+
         -- 合并等位基因频率
-        combinedFreqs = Map.unionWith (\f1 f2 -> (f1 + f2) / 2.0) 
+        combinedFreqs = Map.unionWith (\f1 f2 -> (f1 + f2) / 2.0)
                         (alleleFrequencies pop1) (alleleFrequencies pop2)
         hT = 1.0 - sum (map (^2) (Map.elems combinedFreqs))
     in if hT > 0.0 then (hT - hS) / hT else 0.0
@@ -690,30 +769,30 @@ example = do
     -- 序列比对示例
     let score = globalAlignment "ATCG" "ATCC" 1.0 (-1.0) (-2.0)
     putStrLn $ "Alignment score: " ++ show score
-    
+
     -- 基因表达示例
     let gene1 = addExpression (addExpression (newGeneExpression "GENE001") 10.5 "control") 25.3 "treatment"
         gene2 = addExpression (addExpression (newGeneExpression "GENE002") 8.2 "control") 18.7 "treatment"
-    
+
     case calculateFoldChange gene1 "control" "treatment" of
         Just fc -> putStrLn $ "Fold change: " ++ show fc
         Nothing -> putStrLn "Could not calculate fold change"
-    
+
     case calculateCorrelation gene1 gene2 of
         Just corr -> putStrLn $ "Correlation: " ++ show corr
         Nothing -> putStrLn "Could not calculate correlation"
-    
+
     -- 变异检测示例
     let variant = calculateQualityScore (newVariant "chr1" 1000 "A" "T") 100 30
     putStrLn $ "Variant: " ++ show variant
     putStrLn $ "Is SNV: " ++ show (isSNV variant)
-    
+
     -- 群体遗传学示例
-    let pop1 = calculateAlleleFrequencies $ 
+    let pop1 = calculateAlleleFrequencies $
                addGenotype (addGenotype (addGenotype newPopulationGenetics "AA") "AB") "BB"
-        pop2 = calculateAlleleFrequencies $ 
+        pop2 = calculateAlleleFrequencies $
                addGenotype (addGenotype (addGenotype newPopulationGenetics "AA") "AA") "AB"
-    
+
     putStrLn $ "Population 1 heterozygosity: " ++ show (calculateHeterozygosity pop1)
     putStrLn $ "Population 2 heterozygosity: " ++ show (calculateHeterozygosity pop2)
     putStrLn $ "Fst: " ++ show (calculateFst pop1 pop2)
@@ -805,6 +884,38 @@ def genomics_verification():
 if __name__ == "__main__":
     genomics_verification()
 ```
+
+## 相关模型 / Related Models
+
+### 生命科学模型 / Life Science Models
+
+- [分子生物学模型](../01-分子生物学模型/README.md) - 基因组分析和基因表达
+- [生态学模型](../02-生态学模型/README.md) - 生态基因组学
+- [进化论模型](../03-进化论模型/README.md) - 进化基因组学
+- [神经科学模型](../04-神经科学模型/README.md) - 神经基因组学
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 序列代数和基因网络代数结构
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 蛋白质结构几何分析
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 基因网络拓扑结构
+
+### 物理科学模型 / Physical Science Models
+
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 生物信息热力学
+- [量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md) - 量子生物学和分子轨道
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 生物信息学算法（序列比对、动态规划）
+- [数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md) - 基因组数据结构
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 机器学习在基因组学中的应用
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 基因组学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 基因组学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 基因组学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

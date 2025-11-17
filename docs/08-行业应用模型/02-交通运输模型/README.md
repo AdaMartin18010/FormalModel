@@ -11,6 +11,8 @@
 
 - [8.2 交通运输模型 / Transportation Models](#82-交通运输模型--transportation-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [交通运输模型框架图 / Framework Diagram of Transportation Models](#交通运输模型框架图--framework-diagram-of-transportation-models)
+  - [交通流分析流程图 / Flowchart of Traffic Flow Analysis](#交通流分析流程图--flowchart-of-traffic-flow-analysis)
   - [8.2.1 交通流模型 / Traffic Flow Models](#821-交通流模型--traffic-flow-models)
     - [宏观交通流模型 / Macroscopic Traffic Flow Models](#宏观交通流模型--macroscopic-traffic-flow-models)
     - [微观交通流模型 / Microscopic Traffic Flow Models](#微观交通流模型--microscopic-traffic-flow-models)
@@ -34,9 +36,103 @@
       - [城市交通管理 / Urban Traffic Management](#城市交通管理--urban-traffic-management)
       - [智能交通系统 / Intelligent Transportation Systems](#智能交通系统--intelligent-transportation-systems)
       - [公共交通优化 / Public Transit Optimization](#公共交通优化--public-transit-optimization)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
+  - [评测协议与指标 / Evaluation Protocols \& Metrics](#评测协议与指标--evaluation-protocols--metrics)
+    - [范围与目标 / Scope \& Goals](#范围与目标--scope--goals)
+    - [数据与划分 / Data \& Splits](#数据与划分--data--splits)
+    - [通用指标 / Common Metrics](#通用指标--common-metrics)
+    - [任务级协议 / Task-level Protocols](#任务级协议--task-level-protocols)
+    - [复现实操 / Reproducibility](#复现实操--reproducibility)
+  - [8.2.6 算法实现 / Algorithm Implementation](#826-算法实现--algorithm-implementation)
+    - [交通流模型算法 / Traffic Flow Model Algorithms](#交通流模型算法--traffic-flow-model-algorithms)
+    - [路径规划算法 / Route Planning Algorithms](#路径规划算法--route-planning-algorithms)
+    - [公共交通算法 / Public Transit Algorithms](#公共交通算法--public-transit-algorithms)
+    - [智能交通系统算法 / Intelligent Transportation System Algorithms](#智能交通系统算法--intelligent-transportation-system-algorithms)
 
 ---
+
+## 交通运输模型框架图 / Framework Diagram of Transportation Models
+
+```mermaid
+graph TB
+    A[交通运输模型] --> B[交通流]
+    A --> C[路径规划]
+    A --> D[公共交通]
+    A --> E[智能交通]
+
+    B --> F[宏观模型]
+    B --> G[微观模型]
+    B --> H[中观模型]
+
+    C --> I[最短路径]
+    C --> J[多目标规划]
+    C --> K[动态规划]
+
+    D --> L[公交线路优化]
+    D --> M[时刻表优化]
+    D --> N[换乘优化]
+
+    E --> O[交通信号控制]
+    E --> P[智能调度]
+    E --> Q[实时优化]
+
+    F --> R[交通理论]
+    I --> R
+    L --> R
+    O --> R
+
+    R --> S[交通应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style R fill:#e8f5e9
+    style S fill:#e8f5e9
+```
+
+## 交通流分析流程图 / Flowchart of Traffic Flow Analysis
+
+```mermaid
+flowchart TD
+    Start([交通数据输入]) --> Model{模型选择}
+
+    Model -->|宏观| Macro[宏观模型<br/>流量q<br/>密度ρ<br/>速度v<br/>q = ρ·v]
+    Model -->|微观| Micro[微观模型<br/>跟车模型<br/>换道模型<br/>加速度模型]
+    Model -->|中观| Meso[中观模型<br/>元胞自动机<br/>气体动理学]
+
+    Macro --> Flow[交通流分析<br/>基本图<br/>流量-密度关系]
+    Micro --> Behavior[驾驶行为分析<br/>跟车距离<br/>换道决策]
+    Meso --> Dynamics[交通动力学<br/>相变<br/>拥堵形成]
+
+    Flow --> Optimize[优化策略]
+    Behavior --> Optimize
+    Dynamics --> Optimize
+
+    Optimize --> Route[路径规划<br/>最短路径<br/>多目标优化]
+    Optimize --> Signal[信号控制<br/>配时优化<br/>协调控制]
+    Optimize --> Demand[需求管理<br/>拥堵收费<br/>限行政策]
+
+    Route --> Result[优化结果]
+    Signal --> Result
+    Demand --> Result
+
+    Result --> Evaluate{效果<br/>评估}
+    Evaluate -->|满意| End([完成])
+    Evaluate -->|不满意| Adjust[参数调整]
+    Adjust --> Model
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Optimize fill:#e8f5e9
+```
 
 ## 8.2.1 交通流模型 / Traffic Flow Models
 
@@ -165,7 +261,7 @@ impl TrafficFlowModel {
             critical_density: jam_density / 2.0,
         }
     }
-    
+
     pub fn greenshields_speed(&self, density: f64) -> f64 {
         if density >= self.jam_density {
             0.0
@@ -173,15 +269,15 @@ impl TrafficFlowModel {
             self.free_flow_speed * (1.0 - density / self.jam_density)
         }
     }
-    
+
     pub fn flow_rate(&self, density: f64) -> f64 {
         density * self.greenshields_speed(density)
     }
-    
+
     pub fn optimal_density(&self) -> f64 {
         self.critical_density
     }
-    
+
     pub fn max_flow_rate(&self) -> f64 {
         self.flow_rate(self.critical_density)
     }
@@ -200,40 +296,40 @@ impl RoutePlanningModel {
             heuristic: HashMap::new(),
         }
     }
-    
+
     pub fn add_edge(&mut self, from: String, to: String, weight: f64) {
         self.graph.entry(from.clone()).or_insert_with(HashMap::new).insert(to.clone(), weight);
         self.graph.entry(to).or_insert_with(HashMap::new).insert(from, weight);
     }
-    
+
     pub fn add_heuristic(&mut self, node: String, h_value: f64) {
         self.heuristic.insert(node, h_value);
     }
-    
+
     pub fn dijkstra_shortest_path(&self, start: &str, end: &str) -> Option<(f64, Vec<String>)> {
         let mut distances: HashMap<String, f64> = HashMap::new();
         let mut previous: HashMap<String, String> = HashMap::new();
         let mut visited: HashSet<String> = HashSet::new();
-        
+
         // 初始化距离
         for node in self.graph.keys() {
             distances.insert(node.clone(), f64::INFINITY);
         }
         distances.insert(start.to_string(), 0.0);
-        
+
         while !visited.contains(end) {
             // 找到未访问节点中距离最小的
             let current = distances.iter()
                 .filter(|(node, _)| !visited.contains(*node))
                 .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(Ordering::Equal))
                 .map(|(node, _)| node.clone())?;
-            
+
             if current == end {
                 break;
             }
-            
+
             visited.insert(current.clone());
-            
+
             // 更新邻居距离
             if let Some(neighbors) = self.graph.get(&current) {
                 for (neighbor, weight) in neighbors {
@@ -247,7 +343,7 @@ impl RoutePlanningModel {
                 }
             }
         }
-        
+
         // 重建路径
         let mut path = Vec::new();
         let mut current = end.to_string();
@@ -257,26 +353,26 @@ impl RoutePlanningModel {
         }
         path.push(start.to_string());
         path.reverse();
-        
+
         Some((distances[end], path))
     }
-    
+
     pub fn a_star_search(&self, start: &str, end: &str) -> Option<(f64, Vec<String>)> {
         let mut open_set: BinaryHeap<AStarNode> = BinaryHeap::new();
         let mut g_score: HashMap<String, f64> = HashMap::new();
         let mut f_score: HashMap<String, f64> = HashMap::new();
         let mut came_from: HashMap<String, String> = HashMap::new();
-        
+
         g_score.insert(start.to_string(), 0.0);
         f_score.insert(start.to_string(), self.heuristic.get(start).unwrap_or(&0.0));
         open_set.push(AStarNode {
             node: start.to_string(),
             f_score: *f_score.get(start).unwrap_or(&0.0),
         });
-        
+
         while !open_set.is_empty() {
             let current = open_set.pop()?.node;
-            
+
             if current == end {
                 // 重建路径
                 let mut path = Vec::new();
@@ -289,11 +385,11 @@ impl RoutePlanningModel {
                 path.reverse();
                 return Some((g_score[end], path));
             }
-            
+
             if let Some(neighbors) = self.graph.get(&current) {
                 for (neighbor, weight) in neighbors {
                     let tentative_g_score = g_score.get(&current).unwrap_or(&f64::INFINITY) + weight;
-                    
+
                     if tentative_g_score < *g_score.get(neighbor).unwrap_or(&f64::INFINITY) {
                         came_from.insert(neighbor.clone(), current.clone());
                         g_score.insert(neighbor.clone(), tentative_g_score);
@@ -307,7 +403,7 @@ impl RoutePlanningModel {
                 }
             }
         }
-        
+
         None
     }
 }
@@ -345,16 +441,16 @@ impl PublicTransitModel {
             transfer_times: HashMap::new(),
         }
     }
-    
+
     pub fn add_route(&mut self, route_id: String, stops: Vec<String>, frequency: f64) {
         self.routes.insert(route_id.clone(), stops);
         self.frequencies.insert(route_id, frequency);
     }
-    
+
     pub fn add_transfer_time(&mut self, route1: String, route2: String, time: f64) {
         self.transfer_times.insert((route1, route2), time);
     }
-    
+
     pub fn calculate_wait_time(&self, route_id: &str) -> f64 {
         if let Some(frequency) = self.frequencies.get(route_id) {
             1.0 / (2.0 * frequency)
@@ -362,11 +458,11 @@ impl PublicTransitModel {
             f64::INFINITY
         }
     }
-    
+
     pub fn calculate_total_travel_time(&self, origin: &str, destination: &str) -> f64 {
         // 简化的旅行时间计算
         let mut total_time = 0.0;
-        
+
         // 找到包含起点和终点的路线
         for (route_id, stops) in &self.routes {
             if stops.contains(&origin.to_string()) && stops.contains(&destination.to_string()) {
@@ -376,10 +472,10 @@ impl PublicTransitModel {
                 break;
             }
         }
-        
+
         total_time
     }
-    
+
     fn calculate_travel_time(&self, route_id: &str, origin: &str, destination: &str) -> f64 {
         if let Some(stops) = self.routes.get(route_id) {
             if let (Some(origin_idx), Some(dest_idx)) = (
@@ -412,19 +508,19 @@ impl TrafficSignalModel {
             green_splits: HashMap::new(),
         }
     }
-    
+
     pub fn add_intersection(&mut self, intersection_id: String, approaches: Vec<String>) {
         self.intersections.insert(intersection_id.clone(), approaches);
     }
-    
+
     pub fn set_cycle_length(&mut self, intersection_id: String, cycle_length: f64) {
         self.cycle_lengths.insert(intersection_id, cycle_length);
     }
-    
+
     pub fn set_green_splits(&mut self, intersection_id: String, splits: Vec<f64>) {
         self.green_splits.insert(intersection_id, splits);
     }
-    
+
     pub fn calculate_delay(&self, intersection_id: &str, approach: &str) -> f64 {
         if let (Some(cycle_length), Some(splits)) = (
             self.cycle_lengths.get(intersection_id),
@@ -449,7 +545,7 @@ impl TrafficSignalModel {
             0.0
         }
     }
-    
+
     pub fn optimize_signal_timing(&mut self, intersection_id: &str, flows: &[f64]) -> Vec<f64> {
         if let Some(cycle_length) = self.cycle_lengths.get(intersection_id) {
             let total_flow: f64 = flows.iter().sum();
@@ -470,61 +566,61 @@ fn main() {
     let speed = traffic_flow.greenshields_speed(density);
     let flow = traffic_flow.flow_rate(density);
     let max_flow = traffic_flow.max_flow_rate();
-    
+
     println!("交通流模型示例:");
     println!("密度: {:.1} 车辆/公里", density);
     println!("速度: {:.1} 公里/小时", speed);
     println!("流量: {:.1} 车辆/小时", flow);
     println!("最大流量: {:.1} 车辆/小时", max_flow);
-    
+
     // 路径规划模型示例
     let mut route_planning = RoutePlanningModel::new();
     route_planning.add_edge("A".to_string(), "B".to_string(), 10.0);
     route_planning.add_edge("B".to_string(), "C".to_string(), 15.0);
     route_planning.add_edge("A".to_string(), "C".to_string(), 25.0);
-    
+
     route_planning.add_heuristic("A".to_string(), 0.0);
     route_planning.add_heuristic("B".to_string(), 10.0);
     route_planning.add_heuristic("C".to_string(), 15.0);
-    
+
     if let Some((distance, path)) = route_planning.dijkstra_shortest_path("A", "C") {
         println!("\n路径规划示例 (Dijkstra):");
         println!("最短距离: {:.1}", distance);
         println!("路径: {:?}", path);
     }
-    
+
     if let Some((distance, path)) = route_planning.a_star_search("A", "C") {
         println!("\n路径规划示例 (A*):");
         println!("最短距离: {:.1}", distance);
         println!("路径: {:?}", path);
     }
-    
+
     // 公共交通模型示例
     let mut transit = PublicTransitModel::new();
-    transit.add_route("R1".to_string(), 
-                     vec!["A".to_string(), "B".to_string(), "C".to_string()], 
+    transit.add_route("R1".to_string(),
+                     vec!["A".to_string(), "B".to_string(), "C".to_string()],
                      4.0); // 每小时4班
-    transit.add_route("R2".to_string(), 
-                     vec!["B".to_string(), "D".to_string(), "E".to_string()], 
+    transit.add_route("R2".to_string(),
+                     vec!["B".to_string(), "D".to_string(), "E".to_string()],
                      6.0); // 每小时6班
-    
+
     let wait_time = transit.calculate_wait_time("R1");
     let travel_time = transit.calculate_total_travel_time("A", "C");
-    
+
     println!("\n公共交通模型示例:");
     println!("等待时间: {:.1} 分钟", wait_time * 60.0);
     println!("总旅行时间: {:.1} 分钟", travel_time * 60.0);
-    
+
     // 交通信号模型示例
     let mut signal = TrafficSignalModel::new();
-    signal.add_intersection("I1".to_string(), 
+    signal.add_intersection("I1".to_string(),
                            vec!["North".to_string(), "South".to_string(), "East".to_string(), "West".to_string()]);
     signal.set_cycle_length("I1".to_string(), 90.0); // 90秒周期
-    
+
     let flows = vec![800.0, 600.0, 400.0, 300.0]; // 各方向流量
     let splits = signal.optimize_signal_timing("I1", &flows);
     let delay = signal.calculate_delay("I1", "North");
-    
+
     println!("\n交通信号模型示例:");
     println!("绿信比: {:?}", splits);
     println!("北向延误: {:.1} 秒", delay);
@@ -557,8 +653,8 @@ newTrafficFlowModel freeFlowSpeed jamDensity = TrafficFlowModel {
 }
 
 greenshieldsSpeed :: TrafficFlowModel -> Double -> Double
-greenshieldsSpeed model density = 
-    if density >= jamDensity model 
+greenshieldsSpeed model density =
+    if density >= jamDensity model
     then 0.0
     else freeFlowSpeed model * (1.0 - density / jamDensity model)
 
@@ -584,39 +680,39 @@ newRoutePlanningModel = RoutePlanningModel {
 }
 
 addEdge :: RoutePlanningModel -> String -> String -> Double -> RoutePlanningModel
-addEdge model from to weight = 
+addEdge model from to weight =
     let newGraph = Map.insertWith Map.union from (Map.singleton to weight) (graph model)
         finalGraph = Map.insertWith Map.union to (Map.singleton from weight) newGraph
     in model { graph = finalGraph }
 
 addHeuristic :: RoutePlanningModel -> String -> Double -> RoutePlanningModel
-addHeuristic model node hValue = 
+addHeuristic model node hValue =
     model { heuristic = Map.insert node hValue (heuristic model) }
 
 dijkstraShortestPath :: RoutePlanningModel -> String -> String -> Maybe (Double, [String])
-dijkstraShortestPath model start end = 
+dijkstraShortestPath model start end =
     let nodes = Map.keys (graph model)
         initialDistances = Map.fromList [(node, 1/0) | node <- nodes]
         distances = Map.insert start 0.0 initialDistances
     in dijkstraHelper model end distances Map.empty Set.empty
 
-dijkstraHelper :: RoutePlanningModel -> String -> Map String Double -> 
+dijkstraHelper :: RoutePlanningModel -> String -> Map String Double ->
                  Map String String -> Set.Set String -> Maybe (Double, [String])
 dijkstraHelper model end distances previous visited
     | Set.member end visited = Just (distances Map.! end, reconstructPath previous end)
-    | otherwise = 
+    | otherwise =
         let unvisited = Map.keys distances `Set.difference` visited
             current = minimumBy (comparing (\node -> distances Map.! node)) (Set.toList unvisited)
             newVisited = Set.insert current visited
-        in if current == end 
+        in if current == end
            then Just (distances Map.! end, reconstructPath previous end)
-           else dijkstraHelper model end (updateDistances model current distances) 
+           else dijkstraHelper model end (updateDistances model current distances)
                                     (updatePrevious model current distances previous) newVisited
 
 updateDistances :: RoutePlanningModel -> String -> Map String Double -> Map String Double
-updateDistances model current distances = 
+updateDistances model current distances =
     case Map.lookup current (graph model) of
-        Just neighbors -> foldr (\neighbor acc -> 
+        Just neighbors -> foldr (\neighbor acc ->
             let newDistance = distances Map.! current + (neighbors Map.! neighbor)
             in if newDistance < (distances Map.! neighbor)
                then Map.insert neighbor newDistance acc
@@ -624,9 +720,9 @@ updateDistances model current distances =
         Nothing -> distances
 
 updatePrevious :: RoutePlanningModel -> String -> Map String Double -> Map String String -> Map String String
-updatePrevious model current distances previous = 
+updatePrevious model current distances previous =
     case Map.lookup current (graph model) of
-        Just neighbors -> foldr (\neighbor acc -> 
+        Just neighbors -> foldr (\neighbor acc ->
             let newDistance = distances Map.! current + (neighbors Map.! neighbor)
             in if newDistance < (distances Map.! neighbor)
                then Map.insert neighbor current acc
@@ -634,7 +730,7 @@ updatePrevious model current distances previous =
         Nothing -> previous
 
 reconstructPath :: Map String String -> String -> [String]
-reconstructPath previous end = 
+reconstructPath previous end =
     let path = takeWhile (/= "") (iterate (\node -> Map.findWithDefault "" node previous) end)
     in reverse path
 
@@ -653,40 +749,40 @@ newPublicTransitModel = PublicTransitModel {
 }
 
 addRoute :: PublicTransitModel -> String -> [String] -> Double -> PublicTransitModel
-addRoute model routeId stops frequency = 
-    model { 
+addRoute model routeId stops frequency =
+    model {
         routes = Map.insert routeId stops (routes model),
         frequencies = Map.insert routeId frequency (frequencies model)
     }
 
 addTransferTime :: PublicTransitModel -> String -> String -> Double -> PublicTransitModel
-addTransferTime model route1 route2 time = 
+addTransferTime model route1 route2 time =
     model { transferTimes = Map.insert (route1, route2) time (transferTimes model) }
 
 calculateWaitTime :: PublicTransitModel -> String -> Double
-calculateWaitTime model routeId = 
+calculateWaitTime model routeId =
     case Map.lookup routeId (frequencies model) of
         Just frequency -> 1.0 / (2.0 * frequency)
         Nothing -> 1/0
 
 calculateTotalTravelTime :: PublicTransitModel -> String -> String -> Double
-calculateTotalTravelTime model origin destination = 
+calculateTotalTravelTime model origin destination =
     let routeEntries = Map.toList (routes model)
-        matchingRoutes = filter (\(_, stops) -> 
+        matchingRoutes = filter (\(_, stops) ->
             origin `elem` stops && destination `elem` stops) routeEntries
     in case matchingRoutes of
-        ((routeId, _):_) -> 
+        ((routeId, _):_) ->
             let waitTime = calculateWaitTime model routeId
                 travelTime = calculateTravelTime model routeId origin destination
             in waitTime + travelTime
         _ -> 1/0
 
 calculateTravelTime :: PublicTransitModel -> String -> String -> String -> Double
-calculateTravelTime model routeId origin destination = 
+calculateTravelTime model routeId origin destination =
     case Map.lookup routeId (routes model) of
-        Just stops -> 
+        Just stops ->
             case (findIndex (== origin) stops, findIndex (== destination) stops) of
-                (Just originIdx, Just destIdx) -> 
+                (Just originIdx, Just destIdx) ->
                     let stopCount = abs (destIdx - originIdx)
                     in fromIntegral stopCount * 2.0 -- 假设每站2分钟
                 _ -> 1/0
@@ -707,26 +803,26 @@ newTrafficSignalModel = TrafficSignalModel {
 }
 
 addIntersection :: TrafficSignalModel -> String -> [String] -> TrafficSignalModel
-addIntersection model intersectionId approaches = 
+addIntersection model intersectionId approaches =
     model { intersections = Map.insert intersectionId approaches (intersections model) }
 
 setCycleLength :: TrafficSignalModel -> String -> Double -> TrafficSignalModel
-setCycleLength model intersectionId cycleLength = 
+setCycleLength model intersectionId cycleLength =
     model { cycleLengths = Map.insert intersectionId cycleLength (cycleLengths model) }
 
 setGreenSplits :: TrafficSignalModel -> String -> [Double] -> TrafficSignalModel
-setGreenSplits model intersectionId splits = 
+setGreenSplits model intersectionId splits =
     model { greenSplits = Map.insert intersectionId splits (greenSplits model) }
 
 calculateDelay :: TrafficSignalModel -> String -> String -> Double
-calculateDelay model intersectionId approach = 
-    case (Map.lookup intersectionId (cycleLengths model), 
+calculateDelay model intersectionId approach =
+    case (Map.lookup intersectionId (cycleLengths model),
           Map.lookup intersectionId (greenSplits model),
           Map.lookup intersectionId (intersections model)) of
-        (Just cycleLength, Just splits, Just approaches) -> 
+        (Just cycleLength, Just splits, Just approaches) ->
             case findIndex (== approach) approaches of
-                Just approachIdx -> 
-                    if approachIdx < length splits 
+                Just approachIdx ->
+                    if approachIdx < length splits
                     then let greenTime = cycleLength * splits !! approachIdx
                              redTime = cycleLength - greenTime
                          in redTime * redTime / (2.0 * cycleLength)
@@ -735,9 +831,9 @@ calculateDelay model intersectionId approach =
         _ -> 0.0
 
 optimizeSignalTiming :: TrafficSignalModel -> String -> [Double] -> [Double]
-optimizeSignalTiming model intersectionId flows = 
+optimizeSignalTiming model intersectionId flows =
     case Map.lookup intersectionId (cycleLengths model) of
-        Just cycleLength -> 
+        Just cycleLength ->
             let totalFlow = sum flows
                 splits = map (/ totalFlow) flows
             in splits
@@ -756,39 +852,39 @@ example = do
         speed = greenshieldsSpeed trafficFlow density
         flow = flowRate trafficFlow density
         maxFlow = maxFlowRate trafficFlow
-    
+
     putStrLn "交通流模型示例:"
     putStrLn $ "密度: " ++ show density ++ " 车辆/公里"
     putStrLn $ "速度: " ++ show speed ++ " 公里/小时"
     putStrLn $ "流量: " ++ show flow ++ " 车辆/小时"
     putStrLn $ "最大流量: " ++ show maxFlow ++ " 车辆/小时"
-    
+
     -- 路径规划模型示例
     let routePlanning = addEdge (addEdge (addEdge newRoutePlanningModel "A" "B" 10.0) "B" "C" 15.0) "A" "C" 25.0
         routePlanningWithHeuristic = addHeuristic (addHeuristic (addHeuristic routePlanning "A" 0.0) "B" 10.0) "C" 15.0
-    
+
     case dijkstraShortestPath routePlanningWithHeuristic "A" "C" of
         Just (distance, path) -> do
             putStrLn "\n路径规划示例 (Dijkstra):"
             putStrLn $ "最短距离: " ++ show distance
             putStrLn $ "路径: " ++ show path
         Nothing -> putStrLn "未找到路径"
-    
+
     -- 公共交通模型示例
     let transit = addRoute (addRoute newPublicTransitModel "R1" ["A", "B", "C"] 4.0) "R2" ["B", "D", "E"] 6.0
         waitTime = calculateWaitTime transit "R1"
         travelTime = calculateTotalTravelTime transit "A" "C"
-    
+
     putStrLn "\n公共交通模型示例:"
     putStrLn $ "等待时间: " ++ show (waitTime * 60.0) ++ " 分钟"
     putStrLn $ "总旅行时间: " ++ show (travelTime * 60.0) ++ " 分钟"
-    
+
     -- 交通信号模型示例
     let signal = setCycleLength (addIntersection newTrafficSignalModel "I1" ["North", "South", "East", "West"]) "I1" 90.0
         flows = [800.0, 600.0, 400.0, 300.0]
         splits = optimizeSignalTiming signal "I1" flows
         delay = calculateDelay signal "I1" "North"
-    
+
     putStrLn "\n交通信号模型示例:"
     putStrLn $ "绿信比: " ++ show splits
     putStrLn $ "北向延误: " ++ show delay ++ " 秒"
@@ -815,6 +911,43 @@ example = do
 - **运营管理**: 车辆调度、人员排班、成本控制
 
 ---
+
+## 相关模型 / Related Models
+
+### 行业应用模型 / Industry Application Models
+
+- [物流供应链模型](../01-物流供应链模型/README.md) - 物流运输和交通优化
+- [制造业模型](../08-制造业模型/README.md) - 生产物流和运输管理
+- [经济供需模型](../07-经济供需模型/README.md) - 交通需求和供需平衡
+
+### 工程科学模型 / Engineering Science Models
+
+- [优化模型](../../07-工程科学模型/01-优化模型/README.md) - 交通优化和路径优化
+- [控制论模型](../../07-工程科学模型/02-控制论模型/README.md) - 交通控制和信号控制
+- [信号处理模型](../../07-工程科学模型/03-信号处理模型/README.md) - 交通信号处理
+
+### 物理科学模型 / Physical Science Models
+
+- [流体力学模型](../../02-物理科学模型/08-流体力学模型/README.md) - 交通流和流体动力学
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 车辆动力学和运动学
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 路径规划算法和交通算法
+- [数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md) - 交通数据结构和图数据结构
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 智能交通和交通预测
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 线性规划和网络优化
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 路径几何和网络几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 交通网络拓扑
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 交通运输模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 交通运输模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 交通运输模型作为科学模型的理论基础
 
 ## 参考文献 / References
 
@@ -909,11 +1042,11 @@ def lwr_model_simulation(
     """LWR模型数值模拟"""
     nx = len(initial_density)
     nt = int(total_time / dt)
-    
+
     # 初始化密度场
     density = np.zeros((nt, nx))
     density[0] = initial_density
-    
+
     # 时间推进
     for n in range(nt - 1):
         for i in range(nx):
@@ -927,13 +1060,13 @@ def lwr_model_simulation(
             else:
                 # 内部点
                 density[n+1, i] = density[n, i] - dt/dx * (greenshields_flow(model, density[n, i+1]) - greenshields_flow(model, density[n, i-1])) / 2
-    
+
     return density
 
 class IntelligentDriverModel:
     """智能驾驶模型"""
-    
-    def __init__(self, desired_speed: float, safe_time_headway: float, 
+
+    def __init__(self, desired_speed: float, safe_time_headway: float,
                  max_acceleration: float, comfortable_deceleration: float,
                  minimum_spacing: float, acceleration_exponent: float = 4):
         self.v0 = desired_speed
@@ -942,42 +1075,42 @@ class IntelligentDriverModel:
         self.b = comfortable_deceleration
         self.s0 = minimum_spacing
         self.delta = acceleration_exponent
-    
+
     def desired_gap(self, speed: float, speed_diff: float) -> float:
         """期望间距"""
         return self.s0 + speed * self.T + (speed * speed_diff) / (2 * np.sqrt(self.a * self.b))
-    
+
     def acceleration(self, speed: float, gap: float, speed_diff: float) -> float:
         """加速度计算"""
         desired_gap = self.desired_gap(speed, speed_diff)
         free_road_term = 1 - (speed / self.v0) ** self.delta
         interaction_term = (desired_gap / gap) ** 2
-        
+
         return self.a * (free_road_term - interaction_term)
-    
-    def simulate_car_following(self, lead_vehicle_trajectory: List[Tuple[float, float]], 
+
+    def simulate_car_following(self, lead_vehicle_trajectory: List[Tuple[float, float]],
                               initial_speed: float, initial_position: float,
                               dt: float) -> List[Tuple[float, float, float]]:
         """跟车模拟"""
         trajectory = []
         current_speed = initial_speed
         current_position = initial_position
-        
+
         for t, lead_pos in lead_vehicle_trajectory:
             # 计算间距和速度差
             gap = lead_pos - current_position
             speed_diff = 0  # 简化假设前车速度恒定
-            
+
             if gap > 0:
                 # 计算加速度
                 acc = self.acceleration(current_speed, gap, speed_diff)
-                
+
                 # 更新速度和位置
                 current_speed = max(0, current_speed + acc * dt)
                 current_position += current_speed * dt
-            
+
             trajectory.append((t, current_position, current_speed))
-        
+
         return trajectory
 ```
 
@@ -991,18 +1124,18 @@ from collections import defaultdict
 
 class Graph:
     """图结构"""
-    
+
     def __init__(self):
         self.edges = defaultdict(list)
         self.weights = {}
-    
+
     def add_edge(self, u: str, v: str, weight: float):
         """添加边"""
         self.edges[u].append(v)
         self.edges[v].append(u)
         self.weights[(u, v)] = weight
         self.weights[(v, u)] = weight
-    
+
     def get_neighbors(self, node: str) -> List[Tuple[str, float]]:
         """获取邻居节点"""
         neighbors = []
@@ -1018,29 +1151,29 @@ def dijkstra_shortest_path(graph: Graph, start: str, end: str) -> Optional[Tuple
     previous = {}
     pq = [(0, start)]
     visited = set()
-    
+
     while pq:
         current_distance, current = heapq.heappop(pq)
-        
+
         if current in visited:
             continue
-        
+
         visited.add(current)
-        
+
         if current == end:
             break
-        
+
         for neighbor, weight in graph.get_neighbors(current):
             distance = current_distance + weight
-            
+
             if distance < distances[neighbor]:
                 distances[neighbor] = distance
                 previous[neighbor] = current
                 heapq.heappush(pq, (distance, neighbor))
-    
+
     if distances[end] == float('inf'):
         return None
-    
+
     # 重建路径
     path = []
     current = end
@@ -1048,10 +1181,10 @@ def dijkstra_shortest_path(graph: Graph, start: str, end: str) -> Optional[Tuple
         path.append(current)
         current = previous.get(current)
     path.reverse()
-    
+
     return distances[end], path
 
-def a_star_shortest_path(graph: Graph, start: str, end: str, 
+def a_star_shortest_path(graph: Graph, start: str, end: str,
                         heuristic: Dict[str, float]) -> Optional[Tuple[float, List[str]]]:
     """A*最短路径算法"""
     distances = {node: float('inf') for node in graph.edges}
@@ -1059,30 +1192,30 @@ def a_star_shortest_path(graph: Graph, start: str, end: str,
     previous = {}
     pq = [(heuristic.get(start, 0), 0, start)]
     visited = set()
-    
+
     while pq:
         _, current_distance, current = heapq.heappop(pq)
-        
+
         if current in visited:
             continue
-        
+
         visited.add(current)
-        
+
         if current == end:
             break
-        
+
         for neighbor, weight in graph.get_neighbors(current):
             distance = current_distance + weight
-            
+
             if distance < distances[neighbor]:
                 distances[neighbor] = distance
                 previous[neighbor] = current
                 f_score = distance + heuristic.get(neighbor, 0)
                 heapq.heappush(pq, (f_score, distance, neighbor))
-    
+
     if distances[end] == float('inf'):
         return None
-    
+
     # 重建路径
     path = []
     current = end
@@ -1090,14 +1223,14 @@ def a_star_shortest_path(graph: Graph, start: str, end: str,
         path.append(current)
         current = previous.get(current)
     path.reverse()
-    
+
     return distances[end], path
 
 def floyd_warshall_all_pairs(graph: Graph) -> Dict[Tuple[str, str], float]:
     """Floyd-Warshall全对最短路径"""
     nodes = list(graph.edges.keys())
     n = len(nodes)
-    
+
     # 初始化距离矩阵
     distances = {}
     for i in nodes:
@@ -1106,14 +1239,14 @@ def floyd_warshall_all_pairs(graph: Graph) -> Dict[Tuple[str, str], float]:
                 distances[(i, j)] = 0
             else:
                 distances[(i, j)] = graph.weights.get((i, j), float('inf'))
-    
+
     # Floyd-Warshall算法
     for k in nodes:
         for i in nodes:
             for j in nodes:
                 if distances[(i, k)] + distances[(k, j)] < distances[(i, j)]:
                     distances[(i, j)] = distances[(i, k)] + distances[(k, j)]
-    
+
     return distances
 
 def multi_objective_route_planning(
@@ -1127,7 +1260,7 @@ def multi_objective_route_planning(
     # 计算每个目标的最短路径
     objective_paths = []
     objective_costs = []
-    
+
     for objective in objectives:
         # 创建加权图
         weighted_graph = Graph()
@@ -1135,7 +1268,7 @@ def multi_objective_route_planning(
             for neighbor, weight in graph.get_neighbors(node):
                 weighted_weight = objective(weight)
                 weighted_graph.add_edge(node, neighbor, weighted_weight)
-        
+
         # 计算最短路径
         result = dijkstra_shortest_path(weighted_graph, start, end)
         if result:
@@ -1144,10 +1277,10 @@ def multi_objective_route_planning(
             objective_costs.append(cost)
         else:
             return None
-    
+
     # 计算综合成本
     total_cost = sum(w * c for w, c in zip(weights, objective_costs))
-    
+
     # 返回第一个目标的最短路径（简化处理）
     return total_cost, objective_paths[0]
 ```
@@ -1176,11 +1309,11 @@ class TransitNetwork:
 
 class PublicTransitOptimizer:
     """公共交通优化器"""
-    
+
     def __init__(self, network: TransitNetwork):
         self.network = network
         self.stop_routes = self._build_stop_routes()
-    
+
     def _build_stop_routes(self) -> Dict[str, List[str]]:
         """构建站点-线路映射"""
         stop_routes = defaultdict(list)
@@ -1188,74 +1321,74 @@ class PublicTransitOptimizer:
             for stop in route.stops:
                 stop_routes[stop].append(route.route_id)
         return dict(stop_routes)
-    
+
     def calculate_wait_time(self, route_id: str) -> float:
         """计算等待时间"""
         route = next(r for r in self.network.routes if r.route_id == route_id)
         return route.headway / 2  # 平均等待时间
-    
+
     def calculate_travel_time(self, origin: str, destination: str) -> float:
         """计算旅行时间"""
         # 简化的旅行时间计算
         if origin == destination:
             return 0.0
-        
+
         # 查找直达线路
         for route in self.network.routes:
             if origin in route.stops and destination in route.stops:
                 origin_idx = route.stops.index(origin)
                 dest_idx = route.stops.index(destination)
-                
+
                 if origin_idx < dest_idx:
                     # 计算旅行时间
                     travel_time = sum(route.travel_times[origin_idx:dest_idx])
                     wait_time = self.calculate_wait_time(route.route_id)
                     return travel_time + wait_time
-        
+
         # 需要换乘的情况（简化处理）
         return float('inf')
-    
-    def optimize_headway(self, route_id: str, passenger_demand: float, 
+
+    def optimize_headway(self, route_id: str, passenger_demand: float,
                         vehicle_capacity: float) -> float:
         """优化发车间隔"""
         route = next(r for r in self.network.routes if r.route_id == route_id)
-        
+
         # 基于乘客需求的发车间隔优化
         # 目标：最小化等待时间，同时满足容量约束
         min_headway = 2.0  # 最小发车间隔（分钟）
         max_headway = 30.0  # 最大发车间隔（分钟）
-        
+
         # 简化的优化公式
-        optimal_headway = max(min_headway, 
-                            min(max_headway, 
+        optimal_headway = max(min_headway,
+                            min(max_headway,
                                 np.sqrt(2 * route.headway * passenger_demand / vehicle_capacity)))
-        
+
         return optimal_headway
-    
-    def optimize_route_coverage(self, population_centers: Dict[str, float], 
+
+    def optimize_route_coverage(self, population_centers: Dict[str, float],
                                max_routes: int) -> List[BusRoute]:
         """优化线路覆盖"""
         # 简化的贪心算法
         uncovered_centers = set(population_centers.keys())
         selected_routes = []
-        
+
         while len(selected_routes) < max_routes and uncovered_centers:
             best_route = None
             best_coverage = 0
-            
+
             # 评估每条线路的覆盖效果
             for route in self.network.routes:
                 coverage = len(set(route.stops) & uncovered_centers)
                 if coverage > best_coverage:
                     best_coverage = coverage
                     best_route = route
-            
+
             if best_route:
                 selected_routes.append(best_route)
                 uncovered_centers -= set(best_route.stops)
             else:
                 break
-        
+
         return selected_routes
 
 def calculate_transfer_penalty(transfer_time: float, base_penalty: float = 5.0) -> float:
@@ -1265,22 +1398,22 @@ def calculate_transfer_penalty(transfer_time: float, base_penalty: float = 5.0) 
 def optimize_transfer_times(network: TransitNetwork) -> Dict[Tuple[str, str], float]:
     """优化换乘时间"""
     optimized_transfers = {}
-    
+
     for route1 in network.routes:
         for route2 in network.routes:
             if route1.route_id != route2.route_id:
                 # 找到共同站点
                 common_stops = set(route1.stops) & set(route2.stops)
-                
+
                 for stop in common_stops:
                     # 计算最优换乘时间
                     route1_idx = route1.stops.index(stop)
                     route2_idx = route2.stops.index(stop)
-                    
+
                     # 简化的换乘时间优化
                     optimal_transfer = 2.0  # 最小换乘时间
                     optimized_transfers[(route1.route_id, route2.route_id)] = optimal_transfer
-    
+
     return optimized_transfers
 ```
 
@@ -1303,40 +1436,40 @@ class TrafficSignal:
 
 class TrafficSignalController:
     """交通信号控制器"""
-    
-    def __init__(self, intersection_id: str, phases: List[List[str]], 
+
+    def __init__(self, intersection_id: str, phases: List[List[str]],
                  cycle_length: float = 90.0):
         self.intersection_id = intersection_id
         self.phases = phases
         self.cycle_length = cycle_length
         self.n_phases = len(phases)
-    
-    def calculate_delay(self, flow_rate: float, green_time: float, 
+
+    def calculate_delay(self, flow_rate: float, green_time: float,
                        cycle_length: float) -> float:
         """计算延误"""
         if flow_rate <= 0:
             return 0.0
-        
+
         # Webster延误公式（简化版）
         saturation_flow = 1800  # 饱和流量（辆/小时）
         capacity = saturation_flow * green_time / cycle_length
-        
+
         if flow_rate >= capacity:
             return float('inf')  # 过饱和
-        
+
         # 均匀延误
         uniform_delay = 0.5 * cycle_length * (1 - green_time / cycle_length) ** 2 / (1 - flow_rate / capacity)
-        
+
         # 随机延误（简化）
         random_delay = 0.1 * uniform_delay
-        
+
         return uniform_delay + random_delay
-    
+
     def optimize_signal_timing(self, flows: List[float]) -> List[float]:
         """优化信号配时"""
         if len(flows) != self.n_phases:
             raise ValueError("流量数量与相位数量不匹配")
-        
+
         # 简化的优化：按流量比例分配绿灯时间
         total_flow = sum(flows)
         if total_flow == 0:
@@ -1345,21 +1478,21 @@ class TrafficSignalController:
         else:
             # 按流量比例分配
             green_times = [flow / total_flow * self.cycle_length for flow in flows]
-        
+
         # 确保最小绿灯时间
         min_green = 10.0
         for i in range(len(green_times)):
             green_times[i] = max(min_green, green_times[i])
-        
+
         # 调整总时间
         total_green = sum(green_times)
         if total_green > self.cycle_length:
             # 按比例缩减
             scale = self.cycle_length / total_green
             green_times = [g * scale for g in green_times]
-        
+
         return green_times
-    
+
     def calculate_total_delay(self, flows: List[float], green_times: List[float]) -> float:
         """计算总延误"""
         total_delay = 0.0
@@ -1367,65 +1500,65 @@ class TrafficSignalController:
             delay = self.calculate_delay(flow, green_time, self.cycle_length)
             if delay != float('inf'):
                 total_delay += delay * flow
-        
+
         return total_delay
 
 class TrafficPredictor:
     """交通预测器"""
-    
+
     def __init__(self, historical_data: List[float], window_size: int = 24):
         self.historical_data = historical_data
         self.window_size = window_size
-    
+
     def exponential_smoothing_forecast(self, alpha: float = 0.3) -> List[float]:
         """指数平滑预测"""
         if not self.historical_data:
             return []
-        
+
         forecasts = [self.historical_data[0]]
-        
+
         for i in range(1, len(self.historical_data)):
             forecast = alpha * self.historical_data[i-1] + (1 - alpha) * forecasts[i-1]
             forecasts.append(forecast)
-        
+
         # 预测下一个值
         next_forecast = alpha * self.historical_data[-1] + (1 - alpha) * forecasts[-1]
         forecasts.append(next_forecast)
-        
+
         return forecasts
-    
+
     def moving_average_forecast(self) -> List[float]:
         """移动平均预测"""
         if len(self.historical_data) < self.window_size:
             return self.historical_data
-        
+
         forecasts = []
         for i in range(self.window_size, len(self.historical_data)):
             avg = np.mean(self.historical_data[i-self.window_size:i])
             forecasts.append(avg)
-        
+
         # 预测下一个值
         next_forecast = np.mean(self.historical_data[-self.window_size:])
         forecasts.append(next_forecast)
-        
+
         return forecasts
-    
+
     def seasonal_decomposition(self, period: int = 24) -> Tuple[List[float], List[float], List[float]]:
         """季节性分解"""
         if len(self.historical_data) < 2 * period:
             return self.historical_data, [0] * len(self.historical_data), [0] * len(self.historical_data)
-        
+
         # 简化的季节性分解
         trend = []
         seasonal = []
         residual = []
-        
+
         # 计算趋势（移动平均）
         for i in range(len(self.historical_data)):
             start = max(0, i - period // 2)
             end = min(len(self.historical_data), i + period // 2 + 1)
             trend.append(np.mean(self.historical_data[start:end]))
-        
+
         # 计算季节性
         seasonal_pattern = []
         for i in range(period):
@@ -1437,19 +1570,19 @@ class TrafficPredictor:
                 seasonal_pattern.append(np.mean(pattern_values))
             else:
                 seasonal_pattern.append(0)
-        
+
         # 应用季节性模式
         for i in range(len(self.historical_data)):
             seasonal_idx = i % period
             seasonal.append(seasonal_pattern[seasonal_idx])
             residual.append(self.historical_data[i] - trend[i] - seasonal[i])
-        
+
         return trend, seasonal, residual
 
 def transportation_verification():
     """交通运输模型验证"""
     print("=== 交通运输模型验证 ===")
-    
+
     # 交通流模型验证
     print("\n1. 交通流模型验证:")
     traffic_model = TrafficFlowModel(
@@ -1457,17 +1590,17 @@ def transportation_verification():
         jam_density=120.0,
         capacity=1800.0
     )
-    
+
     density = 30.0
     speed = greenshields_speed(traffic_model, density)
     flow = greenshields_flow(traffic_model, density)
     max_flow = max_flow_rate(traffic_model)
-    
+
     print(f"密度: {density} 车辆/公里")
     print(f"速度: {speed:.2f} 公里/小时")
     print(f"流量: {flow:.2f} 车辆/小时")
     print(f"最大流量: {max_flow:.2f} 车辆/小时")
-    
+
     # 路径规划验证
     print("\n2. 路径规划验证:")
     graph = Graph()
@@ -1476,13 +1609,13 @@ def transportation_verification():
     graph.add_edge("A", "C", 25)
     graph.add_edge("B", "D", 20)
     graph.add_edge("C", "D", 10)
-    
+
     result = dijkstra_shortest_path(graph, "A", "D")
     if result:
         distance, path = result
         print(f"最短距离: {distance}")
         print(f"路径: {' -> '.join(path)}")
-    
+
     # 公共交通验证
     print("\n3. 公共交通验证:")
     routes = [
@@ -1491,36 +1624,36 @@ def transportation_verification():
     ]
     network = TransitNetwork(routes, {})
     optimizer = PublicTransitOptimizer(network)
-    
+
     wait_time = optimizer.calculate_wait_time("R1")
     travel_time = optimizer.calculate_travel_time("A", "C")
-    
+
     print(f"等待时间: {wait_time:.2f} 分钟")
     print(f"旅行时间: {travel_time:.2f} 分钟")
-    
+
     # 交通信号验证
     print("\n4. 交通信号验证:")
     phases = [["North", "South"], ["East", "West"]]
     controller = TrafficSignalController("I1", phases, 90.0)
-    
+
     flows = [800.0, 600.0]
     green_times = controller.optimize_signal_timing(flows)
     total_delay = controller.calculate_total_delay(flows, green_times)
-    
+
     print(f"绿灯时间: {green_times}")
     print(f"总延误: {total_delay:.2f} 秒")
-    
+
     # 交通预测验证
     print("\n5. 交通预测验证:")
     historical_data = [100, 110, 95, 105, 120, 115, 125, 130, 140, 135]
     predictor = TrafficPredictor(historical_data)
-    
+
     es_forecast = predictor.exponential_smoothing_forecast(0.3)
     ma_forecast = predictor.moving_average_forecast()
-    
+
     print(f"指数平滑预测: {es_forecast[-3:]}")
     print(f"移动平均预测: {ma_forecast[-3:]}")
-    
+
     print("\n验证完成!")
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@
 
 - [5.2 生态学模型 / Ecology Models](#52-生态学模型--ecology-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [生态学模型框架图 / Framework Diagram of Ecology Models](#生态学模型框架图--framework-diagram-of-ecology-models)
+  - [Lotka-Volterra捕食者-猎物关系图 / Relationship Diagram of Lotka-Volterra Predator-Prey](#lotka-volterra捕食者-猎物关系图--relationship-diagram-of-lotka-volterra-predator-prey)
   - [5.2.1 种群动力学模型 / Population Dynamics Models](#521-种群动力学模型--population-dynamics-models)
     - [单种群模型 / Single Population Model](#单种群模型--single-population-model)
     - [Lotka-Volterra模型 / Lotka-Volterra Model](#lotka-volterra模型--lotka-volterra-model)
@@ -35,9 +37,87 @@
       - [保护生物学 / Conservation Biology](#保护生物学--conservation-biology)
       - [农业生态学 / Agricultural Ecology](#农业生态学--agricultural-ecology)
       - [环境管理 / Environmental Management](#环境管理--environmental-management)
+  - [5.2.8 算法实现 / Algorithm Implementation](#528-算法实现--algorithm-implementation)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 生态学模型框架图 / Framework Diagram of Ecology Models
+
+```mermaid
+graph TB
+    A[生态学模型] --> B[种群动力学]
+    A --> C[生态系统]
+    A --> D[食物网]
+    A --> E[空间生态学]
+    A --> F[行为生态学]
+    A --> G[群落生态学]
+
+    B --> H[单种群模型]
+    B --> I[Lotka-Volterra]
+    B --> J[竞争模型]
+
+    C --> K[营养级模型]
+    C --> L[能量流动]
+    C --> M[物质循环]
+
+    D --> N[网络结构]
+    D --> O[稳定性分析]
+    D --> P[级联效应]
+
+    E --> Q[扩散模型]
+    E --> R[元种群]
+    E --> S[景观生态学]
+
+    F --> T[觅食理论]
+    F --> U[性选择]
+    F --> V[合作行为]
+
+    G --> W[物种共存]
+    G --> X[群落组装]
+    G --> Y[多样性-稳定性]
+
+    H --> Z[生态学理论]
+    I --> Z
+    K --> Z
+    N --> Z
+
+    Z --> AA[生态应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style Z fill:#e8f5e9
+    style AA fill:#e8f5e9
+```
+
+## Lotka-Volterra捕食者-猎物关系图 / Relationship Diagram of Lotka-Volterra Predator-Prey
+
+```mermaid
+graph LR
+    A[猎物种群 N] -->|增长 rN| A
+    A -->|被捕食 αNP| B[捕食者种群 P]
+    B -->|转化 βαNP| B
+    B -->|死亡 δP| C[死亡]
+
+    A -->|平衡点 N*| D[生态平衡]
+    B -->|平衡点 P*| D
+
+    D -->|周期振荡| E[种群动态]
+
+    style A fill:#e8f5e9
+    style B fill:#ffebee
+    style D fill:#e1f5ff
+    style E fill:#fff4e1
+```
 
 ## 5.2.1 种群动力学模型 / Population Dynamics Models
 
@@ -279,12 +359,12 @@ impl Population {
             carrying_capacity,
         }
     }
-    
+
     pub fn logistic_growth(&mut self, dt: f64) {
         let growth = self.growth_rate * self.size * (1.0 - self.size / self.carrying_capacity);
         self.size += growth * dt;
     }
-    
+
     pub fn exponential_growth(&mut self, dt: f64) {
         let growth = self.growth_rate * self.size;
         self.size += growth * dt;
@@ -310,29 +390,29 @@ impl LotkaVolterra {
             predator_death_rate: 0.1,
         }
     }
-    
+
     pub fn simulate_step(&mut self, dt: f64) {
         let prey_growth = self.prey.growth_rate * self.prey.size;
         let predation = self.predation_rate * self.prey.size * self.predator.size;
         let predator_growth = self.conversion_efficiency * predation;
         let predator_death = self.predator_death_rate * self.predator.size;
-        
+
         self.prey.size += (prey_growth - predation) * dt;
         self.predator.size += (predator_growth - predator_death) * dt;
-        
+
         // 确保种群数量非负
         self.prey.size = self.prey.size.max(0.0);
         self.predator.size = self.predator.size.max(0.0);
     }
-    
+
     pub fn simulate(&mut self, time_steps: usize, dt: f64) -> Vec<(f64, f64)> {
         let mut history = Vec::new();
-        
+
         for _ in 0..time_steps {
             self.simulate_step(dt);
             history.push((self.prey.size, self.predator.size));
         }
-        
+
         history
     }
 }
@@ -352,26 +432,26 @@ impl Ecosystem {
             energy_flow: HashMap::new(),
         }
     }
-    
+
     pub fn add_species(&mut self, name: String, population: Population) {
         self.species.insert(name.clone(), population);
         self.energy_flow.insert(name, 1000.0); // 初始能量
     }
-    
+
     pub fn add_interaction(&mut self, species1: String, species2: String, strength: f64) {
         self.interactions.insert((species1, species2), strength);
     }
-    
+
     pub fn simulate_ecosystem(&mut self, time_steps: usize) -> Vec<HashMap<String, f64>> {
         let mut history = Vec::new();
-        
+
         for _ in 0..time_steps {
             let mut new_populations = self.species.clone();
-            
+
             // 更新每个物种的种群数量
             for (name, population) in &mut new_populations {
                 let mut total_effect = 0.0;
-                
+
                 // 计算与其他物种的相互作用
                 for ((sp1, sp2), strength) in &self.interactions {
                     if sp1 == name {
@@ -384,37 +464,37 @@ impl Ecosystem {
                         }
                     }
                 }
-                
+
                 // 更新种群数量
                 let growth = population.growth_rate * population.size * (1.0 + total_effect);
                 population.size += growth * 0.1; // 时间步长
                 population.size = population.size.max(0.0);
             }
-            
+
             self.species = new_populations;
-            
+
             // 记录历史
             let current_state: HashMap<String, f64> = self.species.iter()
                 .map(|(name, pop)| (name.clone(), pop.size))
                 .collect();
             history.push(current_state);
         }
-        
+
         history
     }
-    
+
     pub fn calculate_diversity(&self) -> f64 {
         let total = self.species.values().map(|p| p.size).sum::<f64>();
         if total == 0.0 { return 0.0; }
-        
+
         let proportions: Vec<f64> = self.species.values()
             .map(|p| p.size / total)
             .filter(|&p| p > 0.0)
             .collect();
-        
+
         -proportions.iter().map(|p| p * p.ln()).sum::<f64>()
     }
-    
+
     pub fn calculate_stability(&self) -> f64 {
         // 简化的稳定性计算：基于种群数量的方差
         let populations: Vec<f64> = self.species.values().map(|p| p.size).collect();
@@ -422,7 +502,7 @@ impl Ecosystem {
         let variance = populations.iter()
             .map(|&x| (x - mean).powi(2))
             .sum::<f64>() / populations.len() as f64;
-        
+
         1.0 / (1.0 + variance) // 稳定性与方差成反比
     }
 }
@@ -443,11 +523,11 @@ impl FoodWeb {
             population_sizes: vec![100.0; n],
         }
     }
-    
+
     pub fn add_interaction(&mut self, predator: usize, prey: usize, strength: f64) {
         self.adjacency_matrix[predator][prey] = strength;
     }
-    
+
     pub fn calculate_connectance(&self) -> f64 {
         let n = self.species.len();
         let total_possible = n * (n - 1);
@@ -455,73 +535,73 @@ impl FoodWeb {
             .flatten()
             .filter(|&&x| x > 0.0)
             .count();
-        
+
         actual_connections as f64 / total_possible as f64
     }
-    
+
     pub fn calculate_trophic_levels(&self) -> Vec<f64> {
         let n = self.species.len();
         let mut trophic_levels = vec![1.0; n];
         let mut changed = true;
-        
+
         while changed {
             changed = false;
             for i in 0..n {
                 let mut new_level = 1.0;
                 let mut total_strength = 0.0;
-                
+
                 for j in 0..n {
                     if self.adjacency_matrix[i][j] > 0.0 {
                         new_level += trophic_levels[j] * self.adjacency_matrix[i][j];
                         total_strength += self.adjacency_matrix[i][j];
                     }
                 }
-                
+
                 if total_strength > 0.0 {
                     new_level /= total_strength;
                 }
-                
+
                 if (new_level - trophic_levels[i]).abs() > 0.01 {
                     trophic_levels[i] = new_level;
                     changed = true;
                 }
             }
         }
-        
+
         trophic_levels
     }
-    
+
     pub fn simulate_web(&mut self, time_steps: usize) -> Vec<Vec<f64>> {
         let mut history = Vec::new();
-        
+
         for _ in 0..time_steps {
             let mut new_populations = self.population_sizes.clone();
-            
+
             for i in 0..self.species.len() {
                 let mut growth = 0.1; // 基础增长率
-                
+
                 // 捕食效应
                 for j in 0..self.species.len() {
                     if self.adjacency_matrix[i][j] > 0.0 {
                         growth += 0.1 * self.adjacency_matrix[i][j] * self.population_sizes[j];
                     }
                 }
-                
+
                 // 被捕食效应
                 for j in 0..self.species.len() {
                     if self.adjacency_matrix[j][i] > 0.0 {
                         growth -= 0.05 * self.adjacency_matrix[j][i] * self.population_sizes[j];
                     }
                 }
-                
+
                 new_populations[i] += growth * self.population_sizes[i];
                 new_populations[i] = new_populations[i].max(0.0);
             }
-            
+
             self.population_sizes = new_populations;
             history.push(self.population_sizes.clone());
         }
-        
+
         history
     }
 }
@@ -534,36 +614,36 @@ fn main() {
         population.logistic_growth(0.1);
     }
     println!("Final population size: {:.2}", population.size);
-    
+
     // Lotka-Volterra模型
     let mut lv = LotkaVolterra::new(100.0, 10.0);
     let history = lv.simulate(1000, 0.01);
-    println!("Final prey: {:.2}, predator: {:.2}", 
+    println!("Final prey: {:.2}, predator: {:.2}",
              lv.prey.size, lv.predator.size);
-    
+
     // 生态系统模型
     let mut ecosystem = Ecosystem::new();
     ecosystem.add_species("Plants".to_string(), Population::new(100.0, 0.2, 500.0));
     ecosystem.add_species("Herbivores".to_string(), Population::new(50.0, 0.1, 200.0));
     ecosystem.add_species("Carnivores".to_string(), Population::new(10.0, 0.05, 50.0));
-    
+
     ecosystem.add_interaction("Herbivores".to_string(), "Plants".to_string(), -0.01);
     ecosystem.add_interaction("Carnivores".to_string(), "Herbivores".to_string(), -0.02);
-    
+
     let ecosystem_history = ecosystem.simulate_ecosystem(100);
     println!("Final diversity: {:.2}", ecosystem.calculate_diversity());
     println!("Final stability: {:.2}", ecosystem.calculate_stability());
-    
+
     // 食物网模型
     let species = vec!["Algae".to_string(), "Zooplankton".to_string(), "Fish".to_string()];
     let mut food_web = FoodWeb::new(species);
     food_web.add_interaction(1, 0, 0.1); // Zooplankton eats Algae
     food_web.add_interaction(2, 1, 0.1); // Fish eats Zooplankton
-    
+
     let trophic_levels = food_web.calculate_trophic_levels();
     println!("Trophic levels: {:?}", trophic_levels);
     println!("Connectance: {:.3}", food_web.calculate_connectance());
-    
+
     let web_history = food_web.simulate_web(100);
     println!("Final populations: {:?}", web_history.last().unwrap());
 }
@@ -633,7 +713,7 @@ simulateStep lv dt = lv {
     predation = predationRate lv * size (prey lv) * size (predator lv)
     predatorGrowth = conversionEfficiency lv * predation
     predatorDeath = predatorDeathRate lv * size (predator lv)
-    
+
     newPrey = (prey lv) { size = max 0.0 (size (prey lv) + (preyGrowth - predation) * dt) }
     newPredator = (predator lv) { size = max 0.0 (size (predator lv) + (predatorGrowth - predatorDeath) * dt) }
 
@@ -641,7 +721,7 @@ simulate :: LotkaVolterra -> Int -> Double -> [(Double, Double)]
 simulate lv timeSteps dt = go lv timeSteps []
   where
     go _ 0 history = reverse history
-    go current steps history = 
+    go current steps history =
         let newLv = simulateStep current dt
             state = (size (prey newLv), size (predator newLv))
         in go newLv (steps - 1) (state : history)
@@ -671,7 +751,7 @@ simulateEcosystem :: Ecosystem -> Int -> [Map String Double]
 simulateEcosystem eco timeSteps = go eco timeSteps []
   where
     go _ 0 history = reverse history
-    go current steps history = 
+    go current steps history =
         let newEco = updateEcosystem current
             state = Map.map size (species newEco)
         in go newEco (steps - 1) (state : history)
@@ -686,25 +766,25 @@ updateSpecies eco name pop = pop {
     size = newSize
 }
   where
-    totalEffect = sum [strength * size (species eco Map.! sp2) 
+    totalEffect = sum [strength * size (species eco Map.! sp2)
                       | ((sp1, sp2), strength) <- Map.toList (interactions eco), sp1 == name]
-                - sum [strength * size (species eco Map.! sp1) 
+                - sum [strength * size (species eco Map.! sp1)
                       | ((sp1, sp2), strength) <- Map.toList (interactions eco), sp2 == name]
-    
+
     growth = growthRate pop * size pop * (1.0 + totalEffect)
     newSize = max 0.0 (size pop + growth * 0.1)
 
 calculateDiversity :: Ecosystem -> Double
-calculateDiversity eco = 
+calculateDiversity eco =
     let populations = Map.elems $ Map.map size (species eco)
         total = sum populations
-    in if total == 0.0 
-       then 0.0 
+    in if total == 0.0
+       then 0.0
        else let proportions = [p / total | p <- populations, p > 0.0]
             in -sum [p * log p | p <- proportions]
 
 calculateStability :: Ecosystem -> Double
-calculateStability eco = 
+calculateStability eco =
     let populations = Map.elems $ Map.map size (species eco)
         mean = sum populations / fromIntegral (length populations)
         variance = sum [(p - mean) ^ 2 | p <- populations] / fromIntegral (length populations)
@@ -729,35 +809,35 @@ addInteraction predator prey strength web = web {
     adjacencyMatrix = updateMatrix (adjacencyMatrix web) predator prey strength
 }
   where
-    updateMatrix matrix i j value = 
-        take i matrix ++ 
-        [updateRow (matrix !! i) j value] ++ 
+    updateMatrix matrix i j value =
+        take i matrix ++
+        [updateRow (matrix !! i) j value] ++
         drop (i + 1) matrix
-    
-    updateRow row j value = 
+
+    updateRow row j value =
         take j row ++ [value] ++ drop (j + 1) row
 
 calculateConnectance :: FoodWeb -> Double
-calculateConnectance web = 
+calculateConnectance web =
     let n = length (webSpecies web)
         totalPossible = n * (n - 1)
-        actualConnections = length [1 | row <- adjacencyMatrix web, 
+        actualConnections = length [1 | row <- adjacencyMatrix web,
                                      value <- row, value > 0.0]
     in fromIntegral actualConnections / fromIntegral totalPossible
 
 calculateTrophicLevels :: FoodWeb -> [Double]
-calculateTrophicLevels web = 
+calculateTrophicLevels web =
     let n = length (webSpecies web)
         initial = replicate n 1.0
     in iterateTrophicLevels web initial
   where
-    iterateTrophicLevels web levels = 
+    iterateTrophicLevels web levels =
         let newLevels = map (\i -> calculateTrophicLevel web levels i) [0..length (webSpecies web) - 1]
         in if all (\i -> abs (newLevels !! i - levels !! i) < 0.01) [0..length levels - 1]
            then newLevels
            else iterateTrophicLevels web newLevels
-    
-    calculateTrophicLevel web levels i = 
+
+    calculateTrophicLevel web levels i =
         let row = adjacencyMatrix web !! i
             totalStrength = sum [row !! j | j <- [0..length row - 1], row !! j > 0.0]
         in if totalStrength > 0.0
@@ -768,7 +848,7 @@ simulateWeb :: FoodWeb -> Int -> [[Double]]
 simulateWeb web timeSteps = go web timeSteps []
   where
     go _ 0 history = reverse history
-    go current steps history = 
+    go current steps history =
         let newWeb = updateWeb current
         in go newWeb (steps - 1) (populationSizes newWeb : history)
 
@@ -777,7 +857,7 @@ updateWeb web = web {
     populationSizes = map (\i -> updatePopulation web i) [0..length (webSpecies web) - 1]
 }
   where
-    updatePopulation web i = 
+    updatePopulation web i =
         let currentSize = populationSizes web !! i
             growth = 0.1 + sum [0.1 * (adjacencyMatrix web !! i !! j) * (populationSizes web !! j) | j <- [0..length (webSpecies web) - 1], adjacencyMatrix web !! i !! j > 0.0]
                      - sum [0.05 * (adjacencyMatrix web !! j !! i) * (populationSizes web !! j) | j <- [0..length (webSpecies web) - 1], adjacencyMatrix web !! j !! i > 0.0]
@@ -790,13 +870,13 @@ example = do
     let pop = newPopulation 100.0 0.1 1000.0
         finalPop = foldl (\p _ -> logisticGrowth p 0.1) pop [1..100]
     putStrLn $ "Final population size: " ++ show (size finalPop)
-    
+
     -- Lotka-Volterra模型
     let lv = newLotkaVolterra 100.0 10.0
         history = simulate lv 1000 0.01
         finalState = last history
     putStrLn $ "Final prey: " ++ show (fst finalState) ++ ", predator: " ++ show (snd finalState)
-    
+
     -- 生态系统模型
     let eco = addInteraction "Carnivores" "Herbivores" (-0.02) $
               addInteraction "Herbivores" "Plants" (-0.01) $
@@ -804,27 +884,27 @@ example = do
               addSpecies "Herbivores" (newPopulation 50.0 0.1 200.0) $
               addSpecies "Plants" (newPopulation 100.0 0.2 500.0) $
               newEcosystem
-    
+
         ecoHistory = simulateEcosystem eco 100
         finalEco = last ecoHistory
-    
+
     putStrLn $ "Final ecosystem state: " ++ show finalEco
-    
+
     -- 食物网模型
     let species = ["Algae", "Zooplankton", "Fish"]
         foodWeb = addInteraction 2 1 0.1 $  -- Fish eats Zooplankton
                   addInteraction 1 0 0.1 $  -- Zooplankton eats Algae
                   newFoodWeb species
-    
+
         trophicLevels = calculateTrophicLevels foodWeb
         connectance = calculateConnectance foodWeb
-    
+
     putStrLn $ "Trophic levels: " ++ show trophicLevels
     putStrLn $ "Connectance: " ++ show connectance
-    
+
     let webHistory = simulateWeb foodWeb 100
         finalPopulations = head webHistory
-    
+
     putStrLn $ "Final populations: " ++ show finalPopulations
 ```
 
@@ -930,6 +1010,39 @@ def ecology_verification():
 if __name__ == "__main__":
     ecology_verification()
 ```
+
+## 相关模型 / Related Models
+
+### 生命科学模型 / Life Science Models
+
+- [分子生物学模型](../01-分子生物学模型/README.md) - 分子生态学和进化生态学
+- [进化论模型](../03-进化论模型/README.md) - 生态进化动力学
+- [神经科学模型](../04-神经科学模型/README.md) - 行为生态学和神经生态学
+- [基因组学模型](../05-基因组学模型/README.md) - 生态基因组学
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 生态网络代数结构
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 空间生态学几何分析
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 生态网络拓扑结构
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 种群动力学和扩散
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 生态系统能量流动
+- [流体力学模型](../../02-物理科学模型/08-流体力学模型/README.md) - 种群扩散和迁移
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 生态模拟算法
+- [数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md) - 生态网络数据结构
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 生态数据分析和预测
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 生态学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 生态学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 生态学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

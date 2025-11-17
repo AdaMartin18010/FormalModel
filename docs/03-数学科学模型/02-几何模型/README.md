@@ -4,6 +4,8 @@
 
 - [3.2 几何模型 / Geometric Models](#32-几何模型--geometric-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [几何模型框架图 / Framework Diagram of Geometric Models](#几何模型框架图--framework-diagram-of-geometric-models)
+  - [几何学分类关系图 / Relationship Diagram of Geometry Classification](#几何学分类关系图--relationship-diagram-of-geometry-classification)
   - [3.2.1 欧几里得几何 / Euclidean Geometry](#321-欧几里得几何--euclidean-geometry)
     - [公理系统 / Axiom System](#公理系统--axiom-system)
     - [基本定理 / Basic Theorems](#基本定理--basic-theorems)
@@ -16,7 +18,8 @@
     - [流形 / Manifolds](#流形--manifolds)
     - [切空间 / Tangent Spaces](#切空间--tangent-spaces)
     - [黎曼几何 / Riemannian Geometry](#黎曼几何--riemannian-geometry)
-    - [算法实现 / Algorithm Implementation](#算法实现--algorithm-implementation)
+      - [算法实现 / Algorithm Implementation](#算法实现--algorithm-implementation)
+    - [算法实现：曲率张量与测地线偏离 / Algorithms: Curvature Tensor and Geodesic Deviation](#算法实现曲率张量与测地线偏离--algorithms-curvature-tensor-and-geodesic-deviation)
   - [3.2.4 代数几何 / Algebraic Geometry](#324-代数几何--algebraic-geometry)
     - [代数曲线 / Algebraic Curves](#代数曲线--algebraic-curves)
     - [代数曲面 / Algebraic Surfaces](#代数曲面--algebraic-surfaces)
@@ -33,9 +36,93 @@
     - [计算机图形学 / Computer Graphics](#计算机图形学--computer-graphics)
     - [机器人学 / Robotics](#机器人学--robotics)
     - [地理信息系统 / Geographic Information Systems](#地理信息系统--geographic-information-systems)
+  - [3.2.8 实现与应用 / Implementation and Applications](#328-实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Python实现示例 / Python Implementation Example](#python实现示例--python-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 几何模型框架图 / Framework Diagram of Geometric Models
+
+```mermaid
+graph TB
+    A[几何模型] --> B[欧几里得几何]
+    A --> C[非欧几何]
+    A --> D[微分几何]
+    A --> E[代数几何]
+    A --> F[拓扑几何]
+    A --> G[计算几何]
+
+    B --> H[公理系统]
+    B --> I[坐标几何]
+    B --> J[基本定理]
+
+    C --> K[双曲几何]
+    C --> L[椭圆几何]
+    C --> M[球面几何]
+
+    D --> N[流形]
+    D --> O[切空间]
+    D --> P[黎曼几何]
+
+    E --> Q[代数曲线]
+    E --> R[代数曲面]
+    E --> S[概形理论]
+
+    H --> T[几何理论]
+    K --> T
+    N --> T
+    Q --> T
+
+    T --> U[几何应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style T fill:#e8f5e9
+    style U fill:#e8f5e9
+```
+
+## 几何学分类关系图 / Relationship Diagram of Geometry Classification
+
+```mermaid
+graph LR
+    A[几何学] --> B[欧几里得几何]
+    A --> C[非欧几何]
+    A --> D[微分几何]
+
+    B --> E[平行公理<br/>过直线外一点<br/>有且仅有一条平行线]
+    C --> F[双曲几何<br/>过直线外一点<br/>有多条平行线]
+    C --> G[椭圆几何<br/>过直线外一点<br/>没有平行线]
+
+    D --> H[流形理论]
+    D --> I[曲率]
+    D --> J[测地线]
+
+    E --> K[经典几何]
+    F --> L[非欧几何]
+    G --> L
+    H --> M[现代几何]
+
+    K --> N[几何学体系]
+    L --> N
+    M --> N
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style N fill:#e8f5e9
+```
 
 ## 3.2.1 欧几里得几何 / Euclidean Geometry
 
@@ -254,7 +341,7 @@ def riemann_tensor(g: Callable[[Array], Array],
     Gamma = christoffel_symbols(g, dg, x)
     g_ij = g(x)
     g_inv = inverse_metric(g_ij)
-    
+
     # 计算∂_k Γ^m_{jl} 和 ∂_l Γ^m_{jk}
     dGamma = np.zeros((n, n, n, n), dtype=float)  # dGamma[k,m,j,l]
     for k in range(n):
@@ -264,7 +351,7 @@ def riemann_tensor(g: Callable[[Array], Array],
                     # 简化：假设Γ^m_{jl}关于x^k的偏导
                     # 实际应用中需要数值微分或解析表达式
                     dGamma[k, m, j, l] = 0.0  # 占位符
-    
+
     R = np.zeros((n, n, n, n), dtype=float)  # R[i,j,k,l]
     for i in range(n):
         for j in range(n):
@@ -276,7 +363,7 @@ def riemann_tensor(g: Callable[[Array], Array],
                     for m in range(n):
                         term2 += Gamma[i, m, k] * Gamma[m, j, l] - Gamma[i, m, l] * Gamma[m, j, k]
                     R[i, j, k, l] = term1 + term2
-    
+
     return R
 
 def ricci_tensor(R: Array) -> Array:
@@ -298,13 +385,13 @@ def geodesic_deviation_equation(x: Array, v: Array, xi: Array, dxi: Array,
     """测地线偏离方程：d²ξ^a/dτ² + R^a_{bcd} v^b ξ^c v^d = 0"""
     n = x.size
     d2xi = np.zeros_like(xi)
-    
+
     for a in range(n):
         for b in range(n):
             for c in range(n):
                 for d in range(n):
                     d2xi[a] -= R[a, b, c, d] * v[b] * xi[c] * v[d]
-    
+
     return dxi, d2xi
 
 def geodesic_deviation_solver(x0: Array, v0: Array, xi0: Array, dxi0: Array,
@@ -313,26 +400,26 @@ def geodesic_deviation_solver(x0: Array, v0: Array, xi0: Array, dxi0: Array,
     x, v = x0.copy(), v0.copy()
     xi, dxi = xi0.copy(), dxi0.copy()
     deviations = [xi.copy()]
-    
+
     for _ in range(steps):
         # 推进测地线
         x, v = rk4_step(x, v, h, lambda x: christoffel_symbols(g_polar, dg_polar, x))
-        
+
         # 推进偏离方程
         R = R_fn(x)
         dxi_new, d2xi = geodesic_deviation_equation(x, v, xi, dxi, R)
-        
+
         # RK4步进偏离方程
         k1_xi, k1_dxi = dxi, d2xi
         k2_xi, k2_dxi = dxi + 0.5*h*k1_dxi, geodesic_deviation_equation(x, v, xi + 0.5*h*k1_xi, dxi + 0.5*h*k1_dxi, R)[1]
         k3_xi, k3_dxi = dxi + 0.5*h*k2_dxi, geodesic_deviation_equation(x, v, xi + 0.5*h*k2_xi, dxi + 0.5*h*k2_dxi, R)[1]
         k4_xi, k4_dxi = dxi + h*k3_dxi, geodesic_deviation_equation(x, v, xi + h*k3_xi, dxi + h*k3_dxi, R)[1]
-        
+
         xi += (h/6.0) * (k1_xi + 2*k2_xi + 2*k3_xi + k4_xi)
         dxi += (h/6.0) * (k1_dxi + 2*k2_dxi + 2*k3_dxi + k4_dxi)
-        
+
         deviations.append(xi.copy())
-    
+
     return deviations
 
 def curvature_verification(g: Callable[[Array], Array], x: Array) -> dict:
@@ -343,7 +430,7 @@ def curvature_verification(g: Callable[[Array], Array], x: Array) -> dict:
     g_ij = g(x)
     g_inv = inverse_metric(g_ij)
     R_scalar = scalar_curvature(R_ij, g_inv)
-    
+
     # 检查黎曼张量反对称性 R^i_{jkl} = -R^i_{jlk}
     antisymmetry_check = True
     for i in range(n):
@@ -352,10 +439,10 @@ def curvature_verification(g: Callable[[Array], Array], x: Array) -> dict:
                 for l in range(n):
                     if abs(R[i, j, k, l] + R[i, j, l, k]) > 1e-10:
                         antisymmetry_check = False
-    
+
     # 检查里奇张量对称性 R_{ij} = R_{ji}
     ricci_symmetry = np.allclose(R_ij, R_ij.T, atol=1e-10)
-    
+
     return {
         "riemann_tensor": R,
         "ricci_tensor": R_ij,
@@ -370,16 +457,16 @@ def geodesic_deviation_example():
     v0 = np.array([0.0, 1.0])      # 初始速度（角向）
     xi0 = np.array([0.1, 0.0])     # 初始偏离
     dxi0 = np.array([0.0, 0.1])    # 初始偏离速度
-    
+
     h = 0.01
     steps = 100
-    
-    deviations = geodesic_deviation_solver(x0, v0, xi0, dxi0, h, steps, 
+
+    deviations = geodesic_deviation_solver(x0, v0, xi0, dxi0, h, steps,
                                           lambda x: riemann_tensor(g_polar, dg_polar, x))
-    
+
     # 验证曲率
     curvature_check = curvature_verification(g_polar, x0)
-    
+
     return {
         "deviations": np.array(deviations),
         "curvature_verification": curvature_check
@@ -452,17 +539,17 @@ def geodesic_deviation_example():
 def graham_scan(points):
     # 找到最下最左的点
     start = min(points, key=lambda p: (p[1], p[0]))
-    
+
     # 按极角排序
     sorted_points = sorted(points, key=lambda p: angle(start, p))
-    
+
     # Graham扫描
     hull = [start, sorted_points[0], sorted_points[1]]
     for p in sorted_points[2:]:
         while len(hull) > 1 and not left_turn(hull[-2], hull[-1], p):
             hull.pop()
         hull.append(p)
-    
+
     return hull
 ```
 
@@ -519,6 +606,404 @@ $$
 **空间分析**: 缓冲区分析、叠加分析。
 
 ---
+
+## 3.2.8 实现与应用 / Implementation and Applications
+
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+#[derive(Debug, Clone, Copy)]
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+impl Point {
+    pub fn new(x: f64, y: f64) -> Self {
+        Point { x, y }
+    }
+
+    pub fn distance(&self, other: &Point) -> f64 {
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+        (dx * dx + dy * dy).sqrt()
+    }
+
+    pub fn cross_product(&self, p1: &Point, p2: &Point) -> f64 {
+        (p1.x - self.x) * (p2.y - self.y) - (p1.y - self.y) * (p2.x - self.x)
+    }
+}
+
+pub struct Polygon {
+    vertices: Vec<Point>,
+}
+
+impl Polygon {
+    pub fn new(vertices: Vec<Point>) -> Self {
+        Polygon { vertices }
+    }
+
+    pub fn area(&self) -> f64 {
+        if self.vertices.len() < 3 {
+            return 0.0;
+        }
+
+        let mut area = 0.0;
+        for i in 0..self.vertices.len() {
+            let j = (i + 1) % self.vertices.len();
+            area += self.vertices[i].x * self.vertices[j].y;
+            area -= self.vertices[j].x * self.vertices[i].y;
+        }
+        area.abs() / 2.0
+    }
+
+    pub fn convex_hull(&self) -> Vec<Point> {
+        if self.vertices.len() < 3 {
+            return self.vertices.clone();
+        }
+
+        let mut points = self.vertices.clone();
+        points.sort_by(|a, b| {
+            a.x.partial_cmp(&b.x)
+                .unwrap()
+                .then_with(|| a.y.partial_cmp(&b.y).unwrap())
+        });
+
+        let mut hull = Vec::new();
+
+        // 下凸包
+        for point in &points {
+            while hull.len() >= 2
+                && hull[hull.len() - 2].cross_product(&hull[hull.len() - 1], point) <= 0.0
+            {
+                hull.pop();
+            }
+            hull.push(*point);
+        }
+
+        // 上凸包
+        let upper_start = hull.len() + 1;
+        for point in points.iter().rev().skip(1) {
+            while hull.len() >= upper_start
+                && hull[hull.len() - 2].cross_product(&hull[hull.len() - 1], point) <= 0.0
+            {
+                hull.pop();
+            }
+            hull.push(*point);
+        }
+
+        hull.pop(); // 移除重复的起点
+        hull
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_point_distance() {
+        let p1 = Point::new(0.0, 0.0);
+        let p2 = Point::new(3.0, 4.0);
+        assert_eq!(p1.distance(&p2), 5.0);
+    }
+
+    #[test]
+    fn test_polygon_area() {
+        let square = Polygon::new(vec![
+            Point::new(0.0, 0.0),
+            Point::new(1.0, 0.0),
+            Point::new(1.0, 1.0),
+            Point::new(0.0, 1.0),
+        ]);
+        assert_eq!(square.area(), 1.0);
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module Geometry where
+
+-- 点类型
+data Point = Point { x :: Double, y :: Double } deriving (Show, Eq)
+
+-- 计算两点间距离
+distance :: Point -> Point -> Double
+distance (Point x1 y1) (Point x2 y2) =
+    sqrt ((x2 - x1)^2 + (y2 - y1)^2)
+
+-- 叉积（用于判断方向）
+crossProduct :: Point -> Point -> Point -> Double
+crossProduct (Point x0 y0) (Point x1 y1) (Point x2 y2) =
+    (x1 - x0) * (y2 - y0) - (y1 - y0) * (x2 - x0)
+
+-- 多边形类型
+type Polygon = [Point]
+
+-- 计算多边形面积（鞋带公式）
+polygonArea :: Polygon -> Double
+polygonArea [] = 0.0
+polygonArea [_] = 0.0
+polygonArea [_, _] = 0.0
+polygonArea points =
+    abs (shoelace points) / 2.0
+    where
+        shoelace ps = sum [x p1 * y p2 - x p2 * y p1 | (p1, p2) <- zip ps (tail ps ++ [head ps])]
+
+-- 凸包算法（Graham扫描）
+convexHull :: Polygon -> Polygon
+convexHull points
+    | length points < 3 = points
+    | otherwise = lowerHull ++ upperHull
+    where
+        sorted = sortBy compareXY points
+        lowerHull = buildHull sorted
+        upperHull = tail (reverse (buildHull (reverse sorted)))
+
+-- 比较函数
+compareXY :: Point -> Point -> Ordering
+compareXY (Point x1 y1) (Point x2 y2) =
+    compare x1 x2 `mappend` compare y1 y2
+
+-- 构建凸包
+buildHull :: Polygon -> Polygon
+buildHull = foldl addPoint []
+    where
+        addPoint hull p
+            | length hull < 2 = hull ++ [p]
+            | crossProduct (hull !! (length hull - 2)) (last hull) p <= 0 =
+                init hull ++ [p]
+            | otherwise = hull ++ [p]
+
+-- 示例使用
+example :: IO ()
+example = do
+    let points = [
+            Point 0.0 0.0,
+            Point 1.0 0.0,
+            Point 1.0 1.0,
+            Point 0.0 1.0
+        ]
+    let square = points
+    putStrLn $ "Square area: " ++ show (polygonArea square)
+    putStrLn $ "Convex hull: " ++ show (convexHull points)
+```
+
+### Python实现示例 / Python Implementation Example
+
+```python
+from typing import List, Tuple
+from dataclasses import dataclass
+import math
+
+@dataclass
+class Point:
+    """点"""
+    x: float
+    y: float
+
+    def distance(self, other: 'Point') -> float:
+        """计算两点间距离"""
+        dx = self.x - other.x
+        dy = self.y - other.y
+        return math.sqrt(dx * dx + dy * dy)
+
+    def cross_product(self, p1: 'Point', p2: 'Point') -> float:
+        """计算叉积（用于判断方向）"""
+        return (p1.x - self.x) * (p2.y - self.y) - (p1.y - self.y) * (p2.x - self.x)
+
+class Polygon:
+    """多边形"""
+    def __init__(self, vertices: List[Point]):
+        self.vertices = vertices
+
+    def area(self) -> float:
+        """计算多边形面积（鞋带公式）"""
+        if len(self.vertices) < 3:
+            return 0.0
+
+        area = 0.0
+        n = len(self.vertices)
+        for i in range(n):
+            j = (i + 1) % n
+            area += self.vertices[i].x * self.vertices[j].y
+            area -= self.vertices[j].x * self.vertices[i].y
+        return abs(area) / 2.0
+
+    def convex_hull(self) -> List[Point]:
+        """计算凸包（Graham扫描算法）"""
+        if len(self.vertices) < 3:
+            return self.vertices.copy()
+
+        # 排序：先按x坐标，再按y坐标
+        points = sorted(self.vertices, key=lambda p: (p.x, p.y))
+
+        def build_hull(hull_points: List[Point]) -> List[Point]:
+            hull = []
+            for point in hull_points:
+                while len(hull) >= 2:
+                    if hull[-2].cross_product(hull[-1], point) <= 0:
+                        hull.pop()
+                    else:
+                        break
+                hull.append(point)
+            return hull
+
+        # 下凸包
+        lower = build_hull(points)
+        # 上凸包
+        upper = build_hull(reversed(points))
+
+        # 合并并移除重复点
+        return lower[:-1] + upper[:-1]
+
+# 使用示例
+if __name__ == "__main__":
+    # 创建正方形
+    square = Polygon([
+        Point(0.0, 0.0),
+        Point(1.0, 0.0),
+        Point(1.0, 1.0),
+        Point(0.0, 1.0)
+    ])
+
+    print(f"Square area: {square.area()}")
+
+    # 测试凸包
+    points = [
+        Point(0.0, 0.0),
+        Point(1.0, 0.0),
+        Point(0.5, 0.5),
+        Point(1.0, 1.0),
+        Point(0.0, 1.0)
+    ]
+    polygon = Polygon(points)
+    hull = polygon.convex_hull()
+    print(f"Convex hull has {len(hull)} vertices")
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using DataStructures
+
+# 点结构
+struct Point
+    x::Float64
+    y::Float64
+end
+
+# 计算两点间距离
+function distance(p1::Point, p2::Point)::Float64
+    dx = p1.x - p2.x
+    dy = p1.y - p2.y
+    return sqrt(dx * dx + dy * dy)
+end
+
+# 叉积（用于判断方向）
+function cross_product(p0::Point, p1::Point, p2::Point)::Float64
+    return (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x)
+end
+
+# 多边形结构
+struct Polygon
+    vertices::Vector{Point}
+end
+
+# 计算多边形面积（鞋带公式）
+function area(polygon::Polygon)::Float64
+    if length(polygon.vertices) < 3
+        return 0.0
+    end
+
+    area_val = 0.0
+    n = length(polygon.vertices)
+    for i in 1:n
+        j = mod(i, n) + 1
+        area_val += polygon.vertices[i].x * polygon.vertices[j].y
+        area_val -= polygon.vertices[j].x * polygon.vertices[i].y
+    end
+    return abs(area_val) / 2.0
+end
+
+# 构建凸包辅助函数
+function build_hull(points::Vector{Point})::Vector{Point}
+    hull = Point[]
+    for point in points
+        while length(hull) >= 2
+            if cross_product(hull[end-1], hull[end], point) <= 0
+                pop!(hull)
+            else
+                break
+            end
+        end
+        push!(hull, point)
+    end
+    return hull
+end
+
+# 计算凸包（Graham扫描算法）
+function convex_hull(polygon::Polygon)::Vector{Point}
+    if length(polygon.vertices) < 3
+        return copy(polygon.vertices)
+    end
+
+    # 排序：先按x坐标，再按y坐标
+    points = sort(polygon.vertices, by=p -> (p.x, p.y))
+
+    # 下凸包
+    lower = build_hull(points)
+    # 上凸包
+    upper = build_hull(reverse(points))
+
+    # 合并并移除重复点
+    return vcat(lower[1:end-1], upper[1:end-1])
+end
+
+# 使用示例
+square = Polygon([
+    Point(0.0, 0.0),
+    Point(1.0, 0.0),
+    Point(1.0, 1.0),
+    Point(0.0, 1.0)
+])
+
+println("Square area: ", area(square))
+
+# 测试凸包
+points = [
+    Point(0.0, 0.0),
+    Point(1.0, 0.0),
+    Point(0.5, 0.5),
+    Point(1.0, 1.0),
+    Point(0.0, 1.0)
+]
+polygon = Polygon(points)
+hull = convex_hull(polygon)
+println("Convex hull has ", length(hull), " vertices")
+```
+
+---
+
+## 相关模型 / Related Models
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../01-代数模型/README.md) - 代数几何，代数曲线和曲面
+- [拓扑模型](../03-拓扑模型/README.md) - 拓扑几何，同伦论和同调论
+
+### 物理科学模型 / Physical Science Models
+
+- [相对论模型](../../02-物理科学模型/03-相对论模型/README.md) - 黎曼几何在广义相对论中的应用
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 几何在经典力学中的应用
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 几何模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 几何的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 几何作为科学模型的理论基础
 
 ## 参考文献 / References
 

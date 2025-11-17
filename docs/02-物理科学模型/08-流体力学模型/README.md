@@ -1,13 +1,15 @@
 # 流体力学模型 / Fluid Mechanics Models
 
-**版本**: 1.0.0  
-**最后更新**: 2025-08-25  
+**版本**: 1.0.0
+**最后更新**: 2025-08-25
 **状态**: 开发中
 
 ## 目录 / Table of Contents
 
 - [流体力学模型 / Fluid Mechanics Models](#流体力学模型--fluid-mechanics-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [流体力学模型框架图 / Framework Diagram of Fluid Mechanics Models](#流体力学模型框架图--framework-diagram-of-fluid-mechanics-models)
+  - [纳维-斯托克斯方程关系图 / Relationship Diagram of Navier-Stokes Equations](#纳维-斯托克斯方程关系图--relationship-diagram-of-navier-stokes-equations)
   - [1. 流体静力学 / Hydrostatics](#1-流体静力学--hydrostatics)
     - [1.1 帕斯卡定律 / Pascal's Law](#11-帕斯卡定律--pascals-law)
       - [形式化定义](#形式化定义)
@@ -19,6 +21,7 @@
   - [2. 连续性与动量 / Continuity and Momentum](#2-连续性与动量--continuity-and-momentum)
     - [2.1 连续性方程 / Continuity Equation](#21-连续性方程--continuity-equation)
     - [2.2 纳维-斯托克斯 / Navier–Stokes](#22-纳维-斯托克斯--navierstokes)
+      - [纳维-斯托克斯方程求解流程图 / Flowchart of Navier-Stokes Equation Solution](#纳维-斯托克斯方程求解流程图--flowchart-of-navier-stokes-equation-solution)
     - [2.3 雷诺数 / Reynolds Number](#23-雷诺数--reynolds-number)
     - [2.4 能量方程 / Energy Equation](#24-能量方程--energy-equation)
     - [2.5 可压缩流 / Compressible Flow](#25-可压缩流--compressible-flow)
@@ -34,7 +37,88 @@
     - [4.2 壁面摩擦](#42-壁面摩擦)
       - [Blasius相似解与阻力](#blasius相似解与阻力)
       - [边界层验证示例](#边界层验证示例)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [版本历史 / Version History](#版本历史--version-history)
+
+## 流体力学模型框架图 / Framework Diagram of Fluid Mechanics Models
+
+```mermaid
+graph TB
+    A[流体力学模型] --> B[流体静力学]
+    A --> C[连续性与动量]
+    A --> D[层流与湍流]
+    A --> E[边界层]
+
+    B --> F[帕斯卡定律]
+    B --> G[静水压力]
+    B --> H[浮力]
+
+    C --> I[连续性方程]
+    C --> J[纳维-斯托克斯方程]
+    C --> K[雷诺数]
+    C --> L[能量方程]
+
+    D --> M[层流解]
+    D --> N[湍流模型]
+    N --> O[RANS模型]
+    N --> P[k-ε模型]
+
+    E --> Q[普朗特边界层]
+    E --> R[壁面摩擦]
+
+    F --> S[流体力学理论]
+    I --> S
+    M --> S
+    Q --> S
+
+    S --> T[工程应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style S fill:#e8f5e9
+    style T fill:#e8f5e9
+```
+
+## 纳维-斯托克斯方程关系图 / Relationship Diagram of Navier-Stokes Equations
+
+```mermaid
+graph LR
+    A[纳维-斯托克斯方程] --> B[连续性方程]
+    A --> C[动量方程]
+    A --> D[能量方程]
+
+    B --> E[质量守恒<br/>∂ρ/∂t + ∇·ρu = 0]
+
+    C --> F[惯性项]
+    C --> G[压力项]
+    C --> H[粘性项]
+    C --> I[体积力项]
+
+    F --> J[ρ(∂u/∂t + u·∇u)]
+    G --> K[-∇p]
+    H --> L[μ∇²u]
+    I --> M[ρf]
+
+    J --> N[NS方程<br/>ρ(∂u/∂t + u·∇u) = -∇p + μ∇²u + ρf]
+    K --> N
+    L --> N
+    M --> N
+
+    D --> O[能量守恒]
+
+    N --> P[不可压缩流]
+    N --> Q[可压缩流]
+
+    style A fill:#e1f5ff
+    style N fill:#e8f5e9
+    style P fill:#fff4e1
+    style Q fill:#fff4e1
+```
 
 ## 1. 流体静力学 / Hydrostatics
 
@@ -94,6 +178,50 @@ def continuity_residual(rho: np.ndarray, u: np.ndarray, dx: float, dt: float) ->
 ```
 
 ### 2.2 纳维-斯托克斯 / Navier–Stokes
+
+#### 纳维-斯托克斯方程求解流程图 / Flowchart of Navier-Stokes Equation Solution
+
+```mermaid
+flowchart TD
+    Start([开始]) --> Input[输入: 初始条件<br/>u, p, ρ, μ, 边界条件]
+    Input --> CheckCompressible{可压缩流?}
+    CheckCompressible -->|是| CompressibleNS[可压缩NS方程<br/>+ 状态方程]
+    CheckCompressible -->|否| IncompressibleNS[不可压缩NS方程<br/>∇·u = 0]
+
+    CompressibleNS --> CalcRe[计算雷诺数<br/>Re = ρuL/μ]
+    IncompressibleNS --> CalcRe
+
+    CalcRe --> CheckFlow{Re < 2300?}
+    CheckFlow -->|是| Laminar[层流: 解析解/数值解]
+    CheckFlow -->|否| Turbulent[湍流: 湍流模型]
+
+    Laminar --> SetupNS[设置NS方程<br/>ρ(∂u/∂t + u·∇u) = -∇p + μ∇²u + ρf]
+    Turbulent --> SetupRANS[设置RANS方程<br/>+ 湍流模型]
+
+    SetupNS --> ChooseMethod{选择数值方法}
+    SetupRANS --> ChooseMethod
+
+    ChooseMethod -->|显式| Explicit[显式时间推进]
+    ChooseMethod -->|隐式| Implicit[隐式时间推进]
+    ChooseMethod -->|半隐式| SemiImplicit[半隐式方法]
+
+    Explicit --> SolveMomentum[求解动量方程]
+    Implicit --> SolveMomentum
+    SemiImplicit --> SolveMomentum
+
+    SolveMomentum --> SolvePressure[求解压力泊松方程]
+    SolvePressure --> CorrectVelocity[速度修正<br/>满足连续性]
+    CorrectVelocity --> CheckConvergence{收敛?}
+    CheckConvergence -->|否| SolveMomentum
+    CheckConvergence -->|是| Output[输出: u, p, 流场]
+    Output --> End([结束])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Output fill:#e8f5e9
+    style Laminar fill:#fff4e1
+    style Turbulent fill:#ffebee
+```
 
 - 不可压形式: $\rho(\partial_t \vec{u} + (\vec{u}\cdot\nabla)\vec{u}) = -\nabla p + \mu \nabla^2 \vec{u} + \rho \vec{f}$
 
@@ -315,6 +443,21 @@ def boundary_layer_sanity_checks(nu: float = 1.5e-5, U: float = 1.0,
     # 趋势：厚度随x增大；C_f随Re_x增大而减小
     return (d2 > d1) and (cf2 < cf1)
 ```
+
+## 相关模型 / Related Models
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../01-经典力学模型/README.md) - 连续介质中的力学问题
+- [声学模型](../07-声学模型/README.md) - 声波在流体中的传播
+- [热力学模型](../04-热力学模型/README.md) - 流体的热力学性质
+- [相对论模型](../03-相对论模型/README.md) - 相对论流体力学
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 流体力学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 流体力学的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 流体力学作为科学模型的理论基础
 
 ## 版本历史 / Version History
 

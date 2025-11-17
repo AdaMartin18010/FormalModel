@@ -4,6 +4,8 @@
 
 - [6.3 心理学模型 / Psychological Models](#63-心理学模型--psychological-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [心理学模型框架图 / Framework Diagram of Psychological Models](#心理学模型框架图--framework-diagram-of-psychological-models)
+  - [记忆模型流程图 / Flowchart of Memory Models](#记忆模型流程图--flowchart-of-memory-models)
   - [6.3.1 认知模型 / Cognitive Models](#631-认知模型--cognitive-models)
     - [信息处理模型 / Information Processing Models](#信息处理模型--information-processing-models)
     - [记忆模型 / Memory Models](#记忆模型--memory-models)
@@ -31,9 +33,91 @@
       - [临床心理学 / Clinical Psychology](#临床心理学--clinical-psychology)
       - [教育心理学 / Educational Psychology](#教育心理学--educational-psychology)
       - [组织心理学 / Organizational Psychology](#组织心理学--organizational-psychology)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 心理学模型框架图 / Framework Diagram of Psychological Models
+
+```mermaid
+graph TB
+    A[心理学模型] --> B[认知模型]
+    A --> C[学习模型]
+    A --> D[人格模型]
+    A --> E[情绪模型]
+    A --> F[发展心理学]
+
+    B --> G[信息处理]
+    B --> H[记忆模型]
+    B --> I[注意力]
+
+    C --> J[经典条件反射]
+    C --> K[操作性条件反射]
+    C --> L[社会学习]
+
+    D --> M[五因素模型]
+    D --> N[类型理论]
+    D --> O[特质理论]
+
+    E --> P[情绪维度]
+    E --> Q[情绪认知]
+    E --> R[情绪调节]
+
+    F --> S[认知发展]
+    F --> T[社会性发展]
+    F --> U[道德发展]
+
+    G --> V[心理学理论]
+    J --> V
+    M --> V
+    P --> V
+
+    V --> W[心理应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style V fill:#e8f5e9
+    style W fill:#e8f5e9
+```
+
+## 记忆模型流程图 / Flowchart of Memory Models
+
+```mermaid
+flowchart TD
+    Start([信息输入]) --> Sensory[感觉记忆<br/>Sensory Memory]
+    Sensory --> Attention{注意选择}
+    Attention -->|是| STM[短时记忆<br/>STM<br/>7±2项]
+    Attention -->|否| Forget1[遗忘]
+
+    STM --> Rehearsal{复述}
+    Rehearsal -->|维持性复述| STM
+    Rehearsal -->|精细复述| LTM[长时记忆<br/>LTM]
+
+    LTM --> Encoding[编码]
+    Encoding --> Storage[存储]
+    Storage --> Retrieval[提取]
+
+    Retrieval --> Success{成功提取?}
+    Success -->|是| Recall[回忆]
+    Success -->|否| Forgetting[遗忘曲线<br/>R = e^(-t/S)]
+
+    Recall --> Use[使用]
+    Use --> Reinforcement[强化]
+    Reinforcement --> LTM
+
+    style Start fill:#e1f5ff
+    style LTM fill:#e8f5e9
+    style Recall fill:#e8f5e9
+```
 
 ## 6.3.1 认知模型 / Cognitive Models
 
@@ -193,19 +277,19 @@ impl CognitiveModel {
             processing_speed: 1.0,
         }
     }
-    
+
     pub fn calculate_reaction_time(&self, stimulus_complexity: f64) -> f64 {
         // Hick-Hyman Law
         let information_content = stimulus_complexity.log2();
         self.processing_speed * information_content + 0.1
     }
-    
+
     pub fn calculate_memory_retention(&self, time_elapsed: f64, initial_strength: f64) -> f64 {
         // Ebbinghaus forgetting curve
         let decay_rate = 0.1;
         initial_strength * (-decay_rate * time_elapsed).exp()
     }
-    
+
     pub fn calculate_attention_allocation(&self, stimuli: &[f64]) -> Vec<f64> {
         let total_salience: f64 = stimuli.iter().sum();
         stimuli.iter().map(|&s| s / total_salience).collect()
@@ -227,20 +311,20 @@ impl LearningModel {
             generalization_sigma: 1.0,
         }
     }
-    
+
     pub fn classical_conditioning(&self, cs_strength: f64, us_strength: f64) -> f64 {
         let alpha = 0.1;
         let beta = 0.1;
         let lambda = us_strength;
         alpha * beta * (lambda - cs_strength)
     }
-    
+
     pub fn operant_conditioning(&self, response_strength: f64, reinforcement: f64) -> f64 {
         let theta = 0.5;
         let probability = 1.0 / (1.0 + (-(response_strength - theta)).exp());
         probability * reinforcement
     }
-    
+
     pub fn extinction(&self, initial_strength: f64, time: f64) -> f64 {
         initial_strength * (-self.extinction_rate * time).exp()
     }
@@ -265,7 +349,7 @@ impl PersonalityModel {
             neuroticism: 0.5,
         }
     }
-    
+
     pub fn calculate_big_five(&self) -> Vec<f64> {
         vec![
             self.openness,
@@ -275,7 +359,7 @@ impl PersonalityModel {
             self.neuroticism,
         ]
     }
-    
+
     pub fn calculate_personality_compatibility(&self, other: &PersonalityModel) -> f64 {
         let differences = vec![
             (self.openness - other.openness).abs(),
@@ -284,7 +368,7 @@ impl PersonalityModel {
             (self.agreeableness - other.agreeableness).abs(),
             (self.neuroticism - other.neuroticism).abs(),
         ];
-        
+
         let avg_difference: f64 = differences.iter().sum::<f64>() / differences.len() as f64;
         1.0 - avg_difference
     }
@@ -305,21 +389,21 @@ impl EmotionModel {
             dominance: 0.5,
         }
     }
-    
+
     pub fn update_emotion(&mut self, event_valence: f64, event_arousal: f64) {
         let learning_rate = 0.1;
         self.valence += learning_rate * (event_valence - self.valence);
         self.arousal += learning_rate * (event_arousal - self.arousal);
-        
+
         // 限制在有效范围内
         self.valence = self.valence.max(-1.0).min(1.0);
         self.arousal = self.arousal.max(0.0).min(1.0);
     }
-    
+
     pub fn calculate_emotion_intensity(&self) -> f64 {
         (self.valence.abs() + self.arousal) / 2.0
     }
-    
+
     pub fn get_emotion_category(&self) -> String {
         match (self.valence, self.arousal) {
             (v, a) if v > 0.5 && a > 0.5 => "兴奋".to_string(),
@@ -348,21 +432,21 @@ impl DevelopmentalModel {
             moral_level: age / 30.0,      // 简化的道德发展
         }
     }
-    
+
     pub fn update_development(&mut self, time_delta: f64, experiences: &[f64]) {
         let experience_factor = experiences.iter().sum::<f64>() / experiences.len() as f64;
-        
+
         self.age += time_delta;
         self.cognitive_level += 0.01 * experience_factor * time_delta;
         self.social_level += 0.008 * experience_factor * time_delta;
         self.moral_level += 0.006 * experience_factor * time_delta;
-        
+
         // 限制发展水平
         self.cognitive_level = self.cognitive_level.min(1.0);
         self.social_level = self.social_level.min(1.0);
         self.moral_level = self.moral_level.min(1.0);
     }
-    
+
     pub fn get_developmental_stage(&self) -> String {
         match self.age {
             age if age < 2.0 => "婴儿期".to_string(),
@@ -382,50 +466,50 @@ fn main() {
     let reaction_time = cognitive.calculate_reaction_time(8.0);
     let memory_retention = cognitive.calculate_memory_retention(24.0, 1.0);
     let attention = cognitive.calculate_attention_allocation(&[0.3, 0.5, 0.2]);
-    
+
     println!("认知模型示例:");
     println!("反应时间: {:.3}秒", reaction_time);
     println!("记忆保持: {:.3}", memory_retention);
     println!("注意力分配: {:?}", attention);
-    
+
     // 学习模型示例
     let mut learning = LearningModel::new();
     let conditioning = learning.classical_conditioning(0.3, 1.0);
     let operant = learning.operant_conditioning(0.6, 0.8);
     let extinction = learning.extinction(0.8, 10.0);
-    
+
     println!("\n学习模型示例:");
     println!("经典条件反射: {:.3}", conditioning);
     println!("操作性条件反射: {:.3}", operant);
     println!("消退: {:.3}", extinction);
-    
+
     // 人格模型示例
     let mut person1 = PersonalityModel::new();
     person1.openness = 0.8;
     person1.extraversion = 0.7;
-    
+
     let mut person2 = PersonalityModel::new();
     person2.openness = 0.6;
     person2.extraversion = 0.5;
-    
+
     let compatibility = person1.calculate_personality_compatibility(&person2);
-    
+
     println!("\n人格模型示例:");
     println!("五因素模型: {:?}", person1.calculate_big_five());
     println!("人格相容性: {:.3}", compatibility);
-    
+
     // 情绪模型示例
     let mut emotion = EmotionModel::new();
     emotion.update_emotion(0.8, 0.9);
-    
+
     println!("\n情绪模型示例:");
     println!("情绪强度: {:.3}", emotion.calculate_emotion_intensity());
     println!("情绪类别: {}", emotion.get_emotion_category());
-    
+
     // 发展模型示例
     let mut development = DevelopmentalModel::new(12.0);
     development.update_development(1.0, &[0.5, 0.7, 0.3]);
-    
+
     println!("\n发展模型示例:");
     println!("发展阶段: {}", development.get_developmental_stage());
     println!("认知水平: {:.3}", development.cognitive_level);
@@ -458,17 +542,17 @@ newCognitiveModel = CognitiveModel {
 }
 
 calculateReactionTime :: CognitiveModel -> Double -> Double
-calculateReactionTime model stimulusComplexity = 
+calculateReactionTime model stimulusComplexity =
     let informationContent = logBase 2 stimulusComplexity
     in processingSpeed model * informationContent + 0.1
 
 calculateMemoryRetention :: CognitiveModel -> Double -> Double -> Double
-calculateMemoryRetention model timeElapsed initialStrength = 
+calculateMemoryRetention model timeElapsed initialStrength =
     let decayRate = 0.1
     in initialStrength * exp (-decayRate * timeElapsed)
 
 calculateAttentionAllocation :: CognitiveModel -> [Double] -> [Double]
-calculateAttentionAllocation model stimuli = 
+calculateAttentionAllocation model stimuli =
     let totalSalience = sum stimuli
     in map (/ totalSalience) stimuli
 
@@ -487,20 +571,20 @@ newLearningModel = LearningModel {
 }
 
 classicalConditioning :: LearningModel -> Double -> Double -> Double
-classicalConditioning model csStrength usStrength = 
+classicalConditioning model csStrength usStrength =
     let alpha = 0.1
         beta = 0.1
         lambda = usStrength
     in alpha * beta * (lambda - csStrength)
 
 operantConditioning :: LearningModel -> Double -> Double -> Double
-operantConditioning model responseStrength reinforcement = 
+operantConditioning model responseStrength reinforcement =
     let theta = 0.5
         probability = 1.0 / (1.0 + exp (-(responseStrength - theta)))
     in probability * reinforcement
 
 extinction :: LearningModel -> Double -> Double -> Double
-extinction model initialStrength time = 
+extinction model initialStrength time =
     initialStrength * exp (-extinctionRate model * time)
 
 -- 人格模型
@@ -531,7 +615,7 @@ calculateBigFive model = [
 ]
 
 calculatePersonalityCompatibility :: PersonalityModel -> PersonalityModel -> Double
-calculatePersonalityCompatibility person1 person2 = 
+calculatePersonalityCompatibility person1 person2 =
     let differences = [
             abs (openness person1 - openness person2),
             abs (conscientiousness person1 - conscientiousness person2),
@@ -557,7 +641,7 @@ newEmotionModel = EmotionModel {
 }
 
 updateEmotion :: EmotionModel -> Double -> Double -> EmotionModel
-updateEmotion model eventValence eventArousal = 
+updateEmotion model eventValence eventArousal =
     let learningRate = 0.1
         newValence = valence model + learningRate * (eventValence - valence model)
         newArousal = arousal model + learningRate * (eventArousal - arousal model)
@@ -569,11 +653,11 @@ updateEmotion model eventValence eventArousal =
     }
 
 calculateEmotionIntensity :: EmotionModel -> Double
-calculateEmotionIntensity model = 
+calculateEmotionIntensity model =
     (abs (valence model) + arousal model) / 2.0
 
 getEmotionCategory :: EmotionModel -> String
-getEmotionCategory model = 
+getEmotionCategory model =
     case (valence model, arousal model) of
         (v, a) | v > 0.5 && a > 0.5 -> "兴奋"
         (v, a) | v > 0.5 && a <= 0.5 -> "满足"
@@ -598,7 +682,7 @@ newDevelopmentalModel age = DevelopmentalModel {
 }
 
 updateDevelopment :: DevelopmentalModel -> Double -> [Double] -> DevelopmentalModel
-updateDevelopment model timeDelta experiences = 
+updateDevelopment model timeDelta experiences =
     let experienceFactor = sum experiences / fromIntegral (length experiences)
         newAge = age model + timeDelta
         newCognitiveLevel = min 1.0 (cognitiveLevel model + 0.01 * experienceFactor * timeDelta)
@@ -612,7 +696,7 @@ updateDevelopment model timeDelta experiences =
     }
 
 getDevelopmentalStage :: DevelopmentalModel -> String
-getDevelopmentalStage model = 
+getDevelopmentalStage model =
     case age model of
         age | age < 2.0 -> "婴儿期"
         age | age < 6.0 -> "幼儿期"
@@ -629,45 +713,45 @@ example = do
         reactionTime = calculateReactionTime cognitive 8.0
         memoryRetention = calculateMemoryRetention cognitive 24.0 1.0
         attention = calculateAttentionAllocation cognitive [0.3, 0.5, 0.2]
-    
+
     putStrLn "认知模型示例:"
     putStrLn $ "反应时间: " ++ show reactionTime ++ "秒"
     putStrLn $ "记忆保持: " ++ show memoryRetention
     putStrLn $ "注意力分配: " ++ show attention
-    
+
     -- 学习模型示例
     let learning = newLearningModel
         conditioning = classicalConditioning learning 0.3 1.0
         operant = operantConditioning learning 0.6 0.8
         extinction = extinction learning 0.8 10.0
-    
+
     putStrLn "\n学习模型示例:"
     putStrLn $ "经典条件反射: " ++ show conditioning
     putStrLn $ "操作性条件反射: " ++ show operant
     putStrLn $ "消退: " ++ show extinction
-    
+
     -- 人格模型示例
     let person1 = newPersonalityModel { openness = 0.8, extraversion = 0.7 }
         person2 = newPersonalityModel { openness = 0.6, extraversion = 0.5 }
         compatibility = calculatePersonalityCompatibility person1 person2
-    
+
     putStrLn "\n人格模型示例:"
     putStrLn $ "五因素模型: " ++ show (calculateBigFive person1)
     putStrLn $ "人格相容性: " ++ show compatibility
-    
+
     -- 情绪模型示例
     let emotion = updateEmotion newEmotionModel 0.8 0.9
         intensity = calculateEmotionIntensity emotion
         category = getEmotionCategory emotion
-    
+
     putStrLn "\n情绪模型示例:"
     putStrLn $ "情绪强度: " ++ show intensity
     putStrLn $ "情绪类别: " ++ category
-    
+
     -- 发展模型示例
     let development = updateDevelopment (newDevelopmentalModel 12.0) 1.0 [0.5, 0.7, 0.3]
         stage = getDevelopmentalStage development
-    
+
     putStrLn "\n发展模型示例:"
     putStrLn $ "发展阶段: " ++ stage
     putStrLn $ "认知水平: " ++ show (cognitiveLevel development)
@@ -696,6 +780,36 @@ example = do
 - **组织发展**: 团队建设、领导力发展
 
 ---
+
+## 相关模型 / Related Models
+
+### 社会科学模型 / Social Science Models
+
+- [社会网络模型](../01-社会网络模型/README.md) - 社会心理学和网络心理学
+- [经济学模型](../02-经济学模型/README.md) - 行为经济学和决策心理学
+- [认知科学模型](../04-认知科学模型/README.md) - 认知心理学和认知科学
+- [语言学模型](../05-语言学模型/README.md) - 心理语言学和语言心理学
+
+### 生命科学模型 / Life Science Models
+
+- [神经科学模型](../../05-生命科学模型/04-神经科学模型/README.md) - 认知神经科学和神经心理学
+- [分子生物学模型](../../05-生命科学模型/01-分子生物学模型/README.md) - 行为遗传学和分子心理学
+
+### 计算机科学模型 / Computer Science Models
+
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 认知建模和计算心理学
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 认知算法和心理算法
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 心理测量学和心理统计
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 心理空间和认知几何
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 心理学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 心理学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 心理学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

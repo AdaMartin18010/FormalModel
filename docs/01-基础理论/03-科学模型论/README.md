@@ -4,6 +4,8 @@
 
 - [1.3 科学模型论 / Scientific Model Theory](#13-科学模型论--scientific-model-theory)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [科学模型论框架图 / Framework Diagram of Scientific Model Theory](#科学模型论框架图--framework-diagram-of-scientific-model-theory)
+  - [科学模型构建与评价流程 / Flowchart of Scientific Model Construction and Evaluation](#科学模型构建与评价流程--flowchart-of-scientific-model-construction-and-evaluation)
   - [1.3.1 科学模型基础 / Scientific Model Fundamentals](#131-科学模型基础--scientific-model-fundamentals)
     - [科学模型定义 / Scientific Model Definition](#科学模型定义--scientific-model-definition)
       - [科学模型的形式化定义 / Formal Definition of Scientific Model](#科学模型的形式化定义--formal-definition-of-scientific-model)
@@ -41,8 +43,131 @@
     - [模型与理论关系 / Model-Theory Relationship](#模型与理论关系--model-theory-relationship)
     - [科学解释 / Scientific Explanation](#科学解释--scientific-explanation)
   - [参考文献 / References](#参考文献--references)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
 
 ---
+
+## 科学模型论框架图 / Framework Diagram of Scientific Model Theory
+
+```mermaid
+graph TB
+    A[科学模型论] --> B[科学模型基础]
+    A --> C[科学模型构建]
+    A --> D[科学模型评价]
+    A --> E[科学模型发展]
+    A --> F[跨学科模型]
+    A --> G[科学模型哲学]
+
+    B --> H[模型定义]
+    B --> I[模型特征]
+    B --> J[模型分类]
+
+    C --> K[观察与数据收集]
+    C --> L[假设形成]
+    C --> M[模型形式化]
+    C --> N[模型验证]
+
+    D --> O[准确性]
+    D --> P[简洁性]
+    D --> Q[预测能力]
+    D --> R[解释能力]
+
+    E --> S[模型演化]
+    E --> T[范式转换]
+    E --> U[模型融合]
+
+    F --> V[物理-生物模型]
+    F --> W[数学-经济模型]
+    F --> X[计算机-认知模型]
+
+    G --> Y[实在论与反实在论]
+    G --> Z[模型与理论关系]
+    G --> AA[科学解释]
+
+    H --> AB[科学应用]
+    K --> AB
+    O --> AB
+    S --> AB
+    V --> AB
+    Y --> AB
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style F fill:#fff4e1
+    style G fill:#fff4e1
+    style AB fill:#e8f5e9
+```
+
+## 科学模型构建与评价流程 / Flowchart of Scientific Model Construction and Evaluation
+
+```mermaid
+flowchart TD
+    Start([科学问题]) --> Observation[观察与数据收集<br/>实验观察<br/>数据采集<br/>数据整理<br/>数据验证]
+
+    Observation --> HypothesisFormation{假设形成}
+    HypothesisFormation --> Hypothesis[科学假设<br/>假设提出<br/>假设分析<br/>假设验证<br/>假设修正]
+
+    Hypothesis --> ModelFormalization[模型形式化<br/>数学建模<br/>逻辑建模<br/>计算建模<br/>形式化描述]
+
+    ModelFormalization --> ModelConstruction[模型构建<br/>结构设计<br/>参数确定<br/>关系建立<br/>约束条件]
+
+    ModelConstruction --> ModelValidation{模型验证}
+    ModelValidation --> EmpiricalValidation[经验验证<br/>实验验证<br/>数据拟合<br/>预测检验]
+    ModelValidation --> TheoreticalValidation[理论验证<br/>逻辑一致性<br/>理论兼容性<br/>公理验证]
+
+    EmpiricalValidation --> ModelEvaluation{模型评价}
+    TheoreticalValidation --> ModelEvaluation
+
+    ModelEvaluation --> Accuracy[准确性评价<br/>预测准确性<br/>描述准确性<br/>误差分析]
+    ModelEvaluation --> Simplicity[简洁性评价<br/>模型复杂度<br/>参数数量<br/>结构简洁性]
+    ModelEvaluation --> PredictivePower[预测能力评价<br/>预测范围<br/>预测精度<br/>预测可靠性]
+    ModelEvaluation --> ExplanatoryPower[解释能力评价<br/>现象解释<br/>机制解释<br/>因果解释]
+
+    Accuracy --> EvaluationResult{评价结果}
+    Simplicity --> EvaluationResult
+    PredictivePower --> EvaluationResult
+    ExplanatoryPower --> EvaluationResult
+
+    EvaluationResult -->|优秀| ModelAcceptance[模型接受<br/>模型应用<br/>模型推广<br/>模型文档化]
+    EvaluationResult -->|良好| ModelRefinement[模型改进<br/>参数优化<br/>结构优化<br/>功能扩展]
+    EvaluationResult -->|不足| ModelRevision[模型修正<br/>假设修正<br/>结构修正<br/>方法修正]
+
+    ModelRefinement --> ModelValidation
+    ModelRevision --> HypothesisFormation
+
+    ModelAcceptance --> ModelDevelopment{模型发展}
+    ModelDevelopment --> ModelEvolution[模型演化<br/>版本迭代<br/>功能扩展<br/>性能提升]
+    ModelDevelopment --> ParadigmShift[范式转换<br/>理论突破<br/>方法创新<br/>视角转换]
+    ModelDevelopment --> ModelIntegration[模型融合<br/>多模型集成<br/>跨学科融合<br/>系统整合]
+
+    ModelEvolution --> Interdisciplinary[跨学科应用<br/>物理-生物模型<br/>数学-经济模型<br/>计算机-认知模型]
+
+    ParadigmShift --> Interdisciplinary
+    ModelIntegration --> Interdisciplinary
+
+    Interdisciplinary --> Philosophy[科学模型哲学<br/>实在论分析<br/>理论关系分析<br/>科学解释]
+
+    Philosophy --> Output([科学模型输出<br/>完整模型<br/>评价报告<br/>应用指南])
+
+    style Start fill:#e1f5ff
+    style Output fill:#e1f5ff
+    style HypothesisFormation fill:#e8f5e9
+    style ModelValidation fill:#e8f5e9
+    style ModelEvaluation fill:#e8f5e9
+    style EvaluationResult fill:#e8f5e9
+    style ModelDevelopment fill:#e8f5e9
+```
 
 ## 1.3.1 科学模型基础 / Scientific Model Fundamentals
 
@@ -483,6 +608,91 @@ $$\frac{P(E|C) = r}{C} \therefore E$$
 3. Giere, R. N. (1988). Explaining Science: A Cognitive Approach. University of Chicago Press.
 4. Cartwright, N. (1983). How the Laws of Physics Lie. Oxford University Press.
 5. Morgan, M. S., & Morrison, M. (1999). Models as Mediators. Cambridge University Press.
+
+---
+
+## 相关模型 / Related Models
+
+### 基础理论 / Basic Theory
+
+- **[模型分类学](../01-模型分类学/README.md)** - 科学模型论需要模型分类学来提供模型的分类框架和分类原则
+- **[形式化方法论](../02-形式化方法论/README.md)** - 科学模型论需要形式化方法论来提供模型构建、验证和评价的形式化工具
+
+### 物理科学模型 / Physical Science Models
+
+科学模型论为所有物理科学模型提供理论基础和评价标准：
+
+- **[经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md)** - 科学模型论为经典力学模型提供构建、验证和评价的理论基础
+- **[量子力学模型](../../02-物理科学模型/02-量子力学模型/README.md)** - 科学模型论为量子力学模型提供模型解释和评价标准
+- **[相对论模型](../../02-物理科学模型/03-相对论模型/README.md)** - 科学模型论为相对论模型提供模型构建和范式转换理论
+- **[热力学模型](../../02-物理科学模型/04-热力学模型/README.md)** - 科学模型论为热力学模型提供模型评价和解释能力标准
+- **[电磁学模型](../../02-物理科学模型/05-电磁学模型/README.md)** - 科学模型论为电磁学模型提供模型构建和验证理论
+- **[光学模型](../../02-物理科学模型/06-光学模型/README.md)** - 科学模型论为光学模型提供模型评价标准
+- **[声学模型](../../02-物理科学模型/07-声学模型/README.md)** - 科学模型论为声学模型提供模型构建理论
+- **[流体力学模型](../../02-物理科学模型/08-流体力学模型/README.md)** - 科学模型论为流体力学模型提供模型评价和预测能力标准
+
+### 数学科学模型 / Mathematical Science Models
+
+科学模型论为所有数学科学模型提供理论基础：
+
+- **[代数模型](../../03-数学科学模型/01-代数模型/README.md)** - 科学模型论为代数模型提供模型构建和简洁性评价标准
+- **[几何模型](../../03-数学科学模型/02-几何模型/README.md)** - 科学模型论为几何模型提供模型解释能力和准确性评价
+- **[拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md)** - 科学模型论为拓扑模型提供模型构建和抽象程度评价
+
+### 计算机科学模型 / Computer Science Models
+
+科学模型论为所有计算机科学模型提供理论基础：
+
+- **[计算模型](../../04-计算机科学模型/01-计算模型/README.md)** - 科学模型论为计算模型提供模型构建和预测能力评价
+- **[算法模型](../../04-计算机科学模型/02-算法模型/README.md)** - 科学模型论为算法模型提供模型准确性和简洁性评价标准
+- **[数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md)** - 科学模型论为数据结构模型提供模型构建和评价理论
+- **[人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md)** - 科学模型论为AI模型提供模型解释能力和预测能力评价标准
+
+### 生命科学模型 / Life Science Models
+
+科学模型论为所有生命科学模型提供理论基础：
+
+- **[分子生物学模型](../../05-生命科学模型/01-分子生物学模型/README.md)** - 科学模型论为分子生物学模型提供模型构建和解释能力评价
+- **[生态学模型](../../05-生命科学模型/02-生态学模型/README.md)** - 科学模型论为生态学模型提供模型预测能力和准确性评价标准
+- **[进化论模型](../../05-生命科学模型/03-进化论模型/README.md)** - 科学模型论为进化论模型提供模型演化和范式转换理论
+- **[神经科学模型](../../05-生命科学模型/04-神经科学模型/README.md)** - 科学模型论为神经科学模型提供模型构建和解释能力评价
+- **[基因组学模型](../../05-生命科学模型/05-基因组学模型/README.md)** - 科学模型论为基因组学模型提供模型预测能力和准确性评价标准
+
+### 社会科学模型 / Social Science Models
+
+科学模型论为所有社会科学模型提供理论基础：
+
+- **[社会网络模型](../../06-社会科学模型/01-社会网络模型/README.md)** - 科学模型论为社会网络模型提供模型构建和解释能力评价
+- **[经济学模型](../../06-社会科学模型/02-经济学模型/README.md)** - 科学模型论为经济学模型提供模型预测能力和准确性评价标准
+- **[心理学模型](../../06-社会科学模型/03-心理学模型/README.md)** - 科学模型论为心理学模型提供模型构建和解释能力评价
+- **[认知科学模型](../../06-社会科学模型/04-认知科学模型/README.md)** - 科学模型论为认知科学模型提供模型构建和解释能力评价标准
+- **[语言学模型](../../06-社会科学模型/05-语言学模型/README.md)** - 科学模型论为语言学模型提供模型解释能力和准确性评价
+
+### 工程科学模型 / Engineering Science Models
+
+科学模型论为所有工程科学模型提供理论基础：
+
+- **[优化模型](../../07-工程科学模型/01-优化模型/README.md)** - 科学模型论为优化模型提供模型准确性和预测能力评价标准
+- **[控制论模型](../../07-工程科学模型/02-控制论模型/README.md)** - 科学模型论为控制论模型提供模型构建和预测能力评价
+- **[信号处理模型](../../07-工程科学模型/03-信号处理模型/README.md)** - 科学模型论为信号处理模型提供模型准确性和简洁性评价标准
+- **[材料科学模型](../../07-工程科学模型/04-材料科学模型/README.md)** - 科学模型论为材料科学模型提供模型预测能力和解释能力评价
+- **[机械工程模型](../../07-工程科学模型/05-机械工程模型/README.md)** - 科学模型论为机械工程模型提供模型准确性和预测能力评价标准
+- **[电子工程模型](../../07-工程科学模型/06-电子工程模型/README.md)** - 科学模型论为电子工程模型提供模型构建和准确性评价
+
+### 行业应用模型 / Industry Application Models
+
+科学模型论为所有行业应用模型提供理论基础：
+
+- **[物流供应链模型](../../08-行业应用模型/01-物流供应链模型/README.md)** - 科学模型论为物流供应链模型提供模型构建和预测能力评价标准
+- **[交通运输模型](../../08-行业应用模型/02-交通运输模型/README.md)** - 科学模型论为交通运输模型提供模型准确性和预测能力评价
+- **[电力能源模型](../../08-行业应用模型/03-电力能源模型/README.md)** - 科学模型论为电力能源模型提供模型构建和准确性评价标准
+- **[信息技术模型](../../08-行业应用模型/04-信息技术模型/README.md)** - 科学模型论为信息技术模型提供模型构建和评价理论
+- **[人工智能行业模型](../../08-行业应用模型/05-人工智能行业模型/README.md)** - 科学模型论为AI行业模型提供模型解释能力和预测能力评价标准
+- **[银行金融模型](../../08-行业应用模型/06-银行金融模型/README.md)** - 科学模型论为银行金融模型提供模型准确性和预测能力评价
+- **[经济供需模型](../../08-行业应用模型/07-经济供需模型/README.md)** - 科学模型论为经济供需模型提供模型构建和解释能力评价标准
+- **[制造业模型](../../08-行业应用模型/08-制造业模型/README.md)** - 科学模型论为制造业模型提供模型预测能力和准确性评价
+- **[医疗健康模型](../../08-行业应用模型/09-医疗健康模型/README.md)** - 科学模型论为医疗健康模型提供模型构建和准确性评价标准
+- **[教育学习模型](../../08-行业应用模型/10-教育学习模型/README.md)** - 科学模型论为教育学习模型提供模型构建和评价理论
 
 ---
 

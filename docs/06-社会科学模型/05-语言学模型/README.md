@@ -4,6 +4,8 @@
 
 - [6.5 语言学模型 / Linguistic Models](#65-语言学模型--linguistic-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [语言学模型框架图 / Framework Diagram of Linguistic Models](#语言学模型框架图--framework-diagram-of-linguistic-models)
+  - [语言处理流程图 / Flowchart of Language Processing](#语言处理流程图--flowchart-of-language-processing)
   - [6.5.1 语音学模型 / Phonological Models](#651-语音学模型--phonological-models)
     - [音位模型 / Phoneme Models](#音位模型--phoneme-models)
     - [音节结构 / Syllable Structure](#音节结构--syllable-structure)
@@ -31,9 +33,90 @@
       - [自然语言处理 / Natural Language Processing](#自然语言处理--natural-language-processing)
       - [机器翻译 / Machine Translation](#机器翻译--machine-translation)
       - [语音识别 / Speech Recognition](#语音识别--speech-recognition)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 语言学模型框架图 / Framework Diagram of Linguistic Models
+
+```mermaid
+graph TB
+    A[语言学模型] --> B[语音学]
+    A --> C[形态学]
+    A --> D[句法学]
+    A --> E[语义学]
+    A --> F[语料库语言学]
+
+    B --> G[音位模型]
+    B --> H[音节结构]
+    B --> I[音变规则]
+
+    C --> J[词素分析]
+    C --> K[构词规则]
+    C --> L[屈折变化]
+
+    D --> M[短语结构]
+    D --> N[依存语法]
+    D --> O[转换语法]
+
+    E --> P[词义模型]
+    E --> Q[组合语义]
+    E --> R[语用学]
+
+    F --> S[频率分析]
+    F --> T[共现分析]
+    F --> U[语料库统计]
+
+    G --> V[语言学理论]
+    J --> V
+    M --> V
+    P --> V
+
+    V --> W[语言应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style V fill:#e8f5e9
+    style W fill:#e8f5e9
+```
+
+## 语言处理流程图 / Flowchart of Language Processing
+
+```mermaid
+flowchart TD
+    Start([语言输入]) --> Phon[语音识别<br/>Phonetics]
+    Phon --> Phoneme[音位识别<br/>Phonemes]
+    Phoneme --> Morph[形态分析<br/>Morphology<br/>词素分解]
+
+    Morph --> Lex[词汇识别<br/>Lexicon]
+    Lex --> Syntax[句法分析<br/>Syntax<br/>短语结构<br/>依存关系]
+
+    Syntax --> Sem[语义理解<br/>Semantics<br/>词义<br/>组合语义]
+    Sem --> Prag[语用推理<br/>Pragmatics<br/>指代消解<br/>会话含义]
+
+    Prag --> Meaning[意义理解]
+    Meaning --> Gen[语言生成]
+
+    Gen --> PhonGen[语音生成]
+    PhonGen --> Output([语言输出])
+
+    Syntax --> Parse{解析成功?}
+    Parse -->|否| Reanalyze[重新分析]
+    Reanalyze --> Syntax
+
+    style Start fill:#e1f5ff
+    style Meaning fill:#e8f5e9
+    style Output fill:#e1f5ff
+```
 
 ## 6.5.1 语音学模型 / Phonological Models
 
@@ -198,13 +281,13 @@ impl PhonologicalModel {
         features.insert("a".to_string(), vec![-1, 1, 1, -1, 0]);   // 元音
         features.insert("i".to_string(), vec![-1, 1, 1, 1, 0]);
         features.insert("u".to_string(), vec![-1, 1, 1, -1, 0]);
-        
+
         Self {
             phoneme_features: features,
             syllable_templates: vec!["CV".to_string(), "CVC".to_string(), "V".to_string()],
         }
     }
-    
+
     pub fn phoneme_distance(&self, p1: &str, p2: &str) -> i32 {
         if let (Some(f1), Some(f2)) = (self.phoneme_features.get(p1), self.phoneme_features.get(p2)) {
             f1.iter().zip(f2.iter()).map(|(a, b)| (a - b).abs()).sum()
@@ -212,13 +295,13 @@ impl PhonologicalModel {
             -1
         }
     }
-    
+
     pub fn phoneme_similarity(&self, p1: &str, p2: &str) -> f64 {
         if let (Some(f1), Some(f2)) = (self.phoneme_features.get(p1), self.phoneme_features.get(p2)) {
             let dot_product: i32 = f1.iter().zip(f2.iter()).map(|(a, b)| a * b).sum();
             let norm1: f64 = (f1.iter().map(|x| x * x).sum::<i32>() as f64).sqrt();
             let norm2: f64 = (f2.iter().map(|x| x * x).sum::<i32>() as f64).sqrt();
-            
+
             if norm1 > 0.0 && norm2 > 0.0 {
                 dot_product as f64 / (norm1 * norm2)
             } else {
@@ -228,7 +311,7 @@ impl PhonologicalModel {
             0.0
         }
     }
-    
+
     pub fn analyze_syllable(&self, syllable: &str) -> String {
         let mut structure = String::new();
         for c in syllable.chars() {
@@ -258,29 +341,29 @@ impl MorphologicalModel {
         morphemes.insert("run".to_string(), "VERB".to_string());
         morphemes.insert("walk".to_string(), "VERB".to_string());
         morphemes.insert("fast".to_string(), "ADJ".to_string());
-        
+
         let mut affixes = HashMap::new();
         affixes.insert("-ing".to_string(), "PRESENT_PARTICIPLE".to_string());
         affixes.insert("-ed".to_string(), "PAST_TENSE".to_string());
         affixes.insert("-er".to_string(), "COMPARATIVE".to_string());
-        
+
         let rules = vec![
             ("VERB + -ing".to_string(), "PRESENT_PARTICIPLE".to_string()),
             ("VERB + -ed".to_string(), "PAST_TENSE".to_string()),
             ("ADJ + -er".to_string(), "COMPARATIVE".to_string()),
         ];
-        
+
         Self {
             morphemes,
             affixes,
             word_formation_rules: rules,
         }
     }
-    
+
     pub fn analyze_morphemes(&self, word: &str) -> Vec<String> {
         let mut morphemes = Vec::new();
         let mut current = word;
-        
+
         // 简化的词素分析
         for (affix, _) in &self.affixes {
             if current.ends_with(affix) {
@@ -292,14 +375,14 @@ impl MorphologicalModel {
                 }
             }
         }
-        
+
         if morphemes.is_empty() && self.morphemes.contains_key(current) {
             morphemes.push(current.to_string());
         }
-        
+
         morphemes
     }
-    
+
     pub fn apply_word_formation(&self, base: &str, affix: &str) -> Option<String> {
         if let Some(base_type) = self.morphemes.get(base) {
             for (rule_pattern, result_type) in &self.word_formation_rules {
@@ -325,26 +408,26 @@ impl SyntacticModel {
             ("NP".to_string(), vec!["Det".to_string(), "N".to_string()]),
             ("VP".to_string(), vec!["V".to_string(), "NP".to_string()]),
         ];
-        
+
         let dependency_patterns = vec![
             ("nsubj".to_string(), "VERB".to_string(), "NOUN".to_string()),
             ("dobj".to_string(), "VERB".to_string(), "NOUN".to_string()),
             ("amod".to_string(), "NOUN".to_string(), "ADJ".to_string()),
         ];
-        
+
         Self {
             phrase_structure_rules: phrase_rules,
             dependency_patterns,
         }
     }
-    
+
     pub fn parse_phrase_structure(&self, sentence: &[String]) -> f64 {
         // 简化的短语结构分析评分
         let mut score = 1.0;
         for i in 0..sentence.len() - 1 {
             let current_pos = self.get_pos_tag(&sentence[i]);
             let next_pos = self.get_pos_tag(&sentence[i + 1]);
-            
+
             // 检查是否符合短语结构规则
             for (rule_head, rule_body) in &self.phrase_structure_rules {
                 if rule_body.contains(&current_pos) && rule_body.contains(&next_pos) {
@@ -354,16 +437,16 @@ impl SyntacticModel {
         }
         score
     }
-    
+
     pub fn analyze_dependencies(&self, sentence: &[String]) -> Vec<(String, String, String)> {
         let mut dependencies = Vec::new();
-        
+
         for i in 0..sentence.len() {
             for j in 0..sentence.len() {
                 if i != j {
                     let pos1 = self.get_pos_tag(&sentence[i]);
                     let pos2 = self.get_pos_tag(&sentence[j]);
-                    
+
                     for (dep_type, head_pos, dep_pos) in &self.dependency_patterns {
                         if &pos1 == head_pos && &pos2 == dep_pos {
                             dependencies.push((dep_type.clone(), sentence[i].clone(), sentence[j].clone()));
@@ -372,10 +455,10 @@ impl SyntacticModel {
                 }
             }
         }
-        
+
         dependencies
     }
-    
+
     fn get_pos_tag(&self, word: &str) -> String {
         // 简化的词性标注
         if word.ends_with("ing") {
@@ -405,24 +488,24 @@ impl SemanticModel {
         vectors.insert("dog".to_string(), vec![0.2, 0.7, 0.3, 0.8]);
         vectors.insert("run".to_string(), vec![0.8, 0.1, 0.9, 0.3]);
         vectors.insert("walk".to_string(), vec![0.7, 0.2, 0.8, 0.4]);
-        
+
         let mut relations = HashMap::new();
         relations.insert("cat".to_string(), vec!["animal".to_string(), "pet".to_string()]);
         relations.insert("dog".to_string(), vec!["animal".to_string(), "pet".to_string()]);
         relations.insert("run".to_string(), vec!["move".to_string(), "fast".to_string()]);
-        
+
         Self {
             word_vectors: vectors,
             semantic_relations: relations,
         }
     }
-    
+
     pub fn semantic_similarity(&self, word1: &str, word2: &str) -> f64 {
         if let (Some(vec1), Some(vec2)) = (self.word_vectors.get(word1), self.word_vectors.get(word2)) {
             let dot_product: f64 = vec1.iter().zip(vec2.iter()).map(|(a, b)| a * b).sum();
             let norm1: f64 = vec1.iter().map(|x| x * x).sum::<f64>().sqrt();
             let norm2: f64 = vec2.iter().map(|x| x * x).sum::<f64>().sqrt();
-            
+
             if norm1 > 0.0 && norm2 > 0.0 {
                 dot_product / (norm1 * norm2)
             } else {
@@ -432,15 +515,15 @@ impl SemanticModel {
             0.0
         }
     }
-    
+
     pub fn find_semantic_relations(&self, word: &str) -> Vec<String> {
         self.semantic_relations.get(word).cloned().unwrap_or_default()
     }
-    
+
     pub fn calculate_semantic_density(&self, text: &[String]) -> f64 {
         let mut total_similarity = 0.0;
         let mut pair_count = 0;
-        
+
         for i in 0..text.len() {
             for j in i + 1..text.len() {
                 let similarity = self.semantic_similarity(&text[i], &text[j]);
@@ -448,7 +531,7 @@ impl SemanticModel {
                 pair_count += 1;
             }
         }
-        
+
         if pair_count > 0 {
             total_similarity / pair_count as f64
         } else {
@@ -472,13 +555,13 @@ impl CorpusModel {
             total_words: 0,
         }
     }
-    
+
     pub fn add_text(&mut self, text: &[String]) {
         for word in text {
             *self.word_frequencies.entry(word.clone()).or_insert(0) += 1;
             self.total_words += 1;
         }
-        
+
         // 计算共现矩阵（简化版本）
         for i in 0..text.len() {
             for j in i + 1..text.len() {
@@ -487,7 +570,7 @@ impl CorpusModel {
             }
         }
     }
-    
+
     pub fn word_frequency(&self, word: &str) -> f64 {
         if self.total_words > 0 {
             *self.word_frequencies.get(word).unwrap_or(&0) as f64 / self.total_words as f64
@@ -495,21 +578,21 @@ impl CorpusModel {
             0.0
         }
     }
-    
+
     pub fn co_occurrence_frequency(&self, word1: &str, word2: &str) -> f64 {
         let key1 = (word1.to_string(), word2.to_string());
         let key2 = (word2.to_string(), word1.to_string());
-        
-        let count = self.co_occurrence_matrix.get(&key1).unwrap_or(&0) + 
+
+        let count = self.co_occurrence_matrix.get(&key1).unwrap_or(&0) +
                    self.co_occurrence_matrix.get(&key2).unwrap_or(&0);
-        
+
         if self.total_words > 0 {
             count as f64 / self.total_words as f64
         } else {
             0.0
         }
     }
-    
+
     pub fn vocabulary_richness(&self) -> f64 {
         if self.total_words > 0 {
             self.word_frequencies.len() as f64 / self.total_words as f64
@@ -517,12 +600,12 @@ impl CorpusModel {
             0.0
         }
     }
-    
+
     pub fn mutual_information(&self, word1: &str, word2: &str) -> f64 {
         let p_w1 = self.word_frequency(word1);
         let p_w2 = self.word_frequency(word2);
         let p_w1w2 = self.co_occurrence_frequency(word1, word2);
-        
+
         if p_w1 > 0.0 && p_w2 > 0.0 && p_w1w2 > 0.0 {
             (p_w1w2 / (p_w1 * p_w2)).ln()
         } else {
@@ -538,53 +621,53 @@ fn main() {
     let distance = phonological.phoneme_distance("p", "b");
     let similarity = phonological.phoneme_similarity("p", "b");
     let syllable_structure = phonological.analyze_syllable("pat");
-    
+
     println!("语音学模型示例:");
     println!("音位距离: {}", distance);
     println!("音位相似度: {:.3}", similarity);
     println!("音节结构: {}", syllable_structure);
-    
+
     // 形态学模型示例
     let morphological = MorphologicalModel::new();
     let morphemes = morphological.analyze_morphemes("running");
     let new_word = morphological.apply_word_formation("run", "ing");
-    
+
     println!("\n形态学模型示例:");
     println!("词素分析: {:?}", morphemes);
     println!("构词结果: {:?}", new_word);
-    
+
     // 句法学模型示例
     let syntactic = SyntacticModel::new();
     let sentence = vec!["the".to_string(), "cat".to_string(), "runs".to_string()];
     let phrase_score = syntactic.parse_phrase_structure(&sentence);
     let dependencies = syntactic.analyze_dependencies(&sentence);
-    
+
     println!("\n句法学模型示例:");
     println!("短语结构得分: {:.3}", phrase_score);
     println!("依存关系: {:?}", dependencies);
-    
+
     // 语义学模型示例
     let semantic = SemanticModel::new();
     let similarity = semantic.semantic_similarity("cat", "dog");
     let relations = semantic.find_semantic_relations("cat");
     let density = semantic.calculate_semantic_density(&sentence);
-    
+
     println!("\n语义学模型示例:");
     println!("语义相似度: {:.3}", similarity);
     println!("语义关系: {:?}", relations);
     println!("语义密度: {:.3}", density);
-    
+
     // 语料库模型示例
     let mut corpus = CorpusModel::new();
-    let text = vec!["the".to_string(), "cat".to_string(), "runs".to_string(), 
+    let text = vec!["the".to_string(), "cat".to_string(), "runs".to_string(),
                     "the".to_string(), "dog".to_string(), "walks".to_string()];
     corpus.add_text(&text);
-    
+
     let frequency = corpus.word_frequency("the");
     let co_occurrence = corpus.co_occurrence_frequency("cat", "runs");
     let richness = corpus.vocabulary_richness();
     let mi = corpus.mutual_information("cat", "runs");
-    
+
     println!("\n语料库模型示例:");
     println!("词频: {:.3}", frequency);
     println!("共现频率: {:.3}", co_occurrence);
@@ -610,7 +693,7 @@ data PhonologicalModel = PhonologicalModel {
 } deriving Show
 
 newPhonologicalModel :: PhonologicalModel
-newPhonologicalModel = 
+newPhonologicalModel =
     let features = Map.fromList [
             ("p", [1, -1, -1, -1, -1]),
             ("b", [1, -1, -1, -1, 1]),
@@ -626,26 +709,26 @@ newPhonologicalModel =
     }
 
 phonemeDistance :: PhonologicalModel -> String -> String -> Int
-phonemeDistance model p1 p2 = 
+phonemeDistance model p1 p2 =
     case (Map.lookup p1 (phonemeFeatures model), Map.lookup p2 (phonemeFeatures model)) of
         (Just f1, Just f2) -> sum (zipWith (\a b -> abs (a - b)) f1 f2)
         _ -> -1
 
 phonemeSimilarity :: PhonologicalModel -> String -> String -> Double
-phonemeSimilarity model p1 p2 = 
+phonemeSimilarity model p1 p2 =
     case (Map.lookup p1 (phonemeFeatures model), Map.lookup p2 (phonemeFeatures model)) of
-        (Just f1, Just f2) -> 
+        (Just f1, Just f2) ->
             let dotProduct = sum (zipWith (*) f1 f2)
                 norm1 = sqrt (fromIntegral (sum (map (^2) f1)))
                 norm2 = sqrt (fromIntegral (sum (map (^2) f2)))
-            in if norm1 > 0.0 && norm2 > 0.0 
+            in if norm1 > 0.0 && norm2 > 0.0
                then fromIntegral dotProduct / (norm1 * norm2)
                else 0.0
         _ -> 0.0
 
 analyzeSyllable :: PhonologicalModel -> String -> String
-analyzeSyllable model syllable = 
-    let structure = map (\c -> 
+analyzeSyllable model syllable =
+    let structure = map (\c ->
         case Map.lookup [c] (phonemeFeatures model) of
             Just features -> if head features == 1 then 'C' else 'V'
             Nothing -> '?') syllable
@@ -659,7 +742,7 @@ data MorphologicalModel = MorphologicalModel {
 } deriving Show
 
 newMorphologicalModel :: MorphologicalModel
-newMorphologicalModel = 
+newMorphologicalModel =
     let morphemes = Map.fromList [
             ("run", "VERB"),
             ("walk", "VERB"),
@@ -682,10 +765,10 @@ newMorphologicalModel =
     }
 
 analyzeMorphemes :: MorphologicalModel -> String -> [String]
-analyzeMorphemes model word = 
-    let findAffix w = 
-            foldr (\affix acc -> 
-                if w `endsWith` affix 
+analyzeMorphemes model word =
+    let findAffix w =
+            foldr (\affix acc ->
+                if w `endsWith` affix
                 then let stem = take (length w - length affix) w
                      in if Map.member stem (morphemes model)
                         then [stem, affix]
@@ -697,9 +780,9 @@ analyzeMorphemes model word =
        else result
 
 applyWordFormation :: MorphologicalModel -> String -> String -> Maybe String
-applyWordFormation model base affix = 
+applyWordFormation model base affix =
     case Map.lookup base (morphemes model) of
-        Just baseType -> 
+        Just baseType ->
             let rule = baseType ++ " + " ++ affix
             in if any (\(pattern, _) -> pattern == rule) (wordFormationRules model)
                then Just (base ++ affix)
@@ -713,7 +796,7 @@ data SyntacticModel = SyntacticModel {
 } deriving Show
 
 newSyntacticModel :: SyntacticModel
-newSyntacticModel = 
+newSyntacticModel =
     let phraseRules = [
             ("S", ["NP", "VP"]),
             ("NP", ["Det", "N"]),
@@ -730,25 +813,25 @@ newSyntacticModel =
     }
 
 parsePhraseStructure :: SyntacticModel -> [String] -> Double
-parsePhraseStructure model sentence = 
-    let score = foldr (\i acc -> 
+parsePhraseStructure model sentence =
+    let score = foldr (\i acc ->
         let currentPos = getPosTag (sentence !! i)
-            nextPos = if i + 1 < length sentence 
+            nextPos = if i + 1 < length sentence
                      then getPosTag (sentence !! (i + 1))
                      else ""
-        in acc * (if any (\(_, ruleBody) -> 
+        in acc * (if any (\(_, ruleBody) ->
                            currentPos `elem` ruleBody && nextPos `elem` ruleBody)
                          (phraseStructureRules model)
                   then 1.1 else 1.0)) 1.0 [0..length sentence - 2]
     in score
 
 analyzeDependencies :: SyntacticModel -> [String] -> [(String, String, String)]
-analyzeDependencies model sentence = 
-    let dependencies = [(i, j) | i <- [0..length sentence - 1], 
+analyzeDependencies model sentence =
+    let dependencies = [(i, j) | i <- [0..length sentence - 1],
                                    j <- [0..length sentence - 1], i /= j]
-        posPairs = map (\(i, j) -> 
+        posPairs = map (\(i, j) ->
             (getPosTag (sentence !! i), getPosTag (sentence !! j))) dependencies
-    in [(depType, sentence !! i, sentence !! j) | 
+    in [(depType, sentence !! i, sentence !! j) |
         (i, j) <- dependencies,
         (depType, headPos, depPos) <- dependencyPatterns model,
         getPosTag (sentence !! i) == headPos,
@@ -761,7 +844,7 @@ data SemanticModel = SemanticModel {
 } deriving Show
 
 newSemanticModel :: SemanticModel
-newSemanticModel = 
+newSemanticModel =
     let vectors = Map.fromList [
             ("cat", [0.1, 0.8, 0.2, 0.9]),
             ("dog", [0.2, 0.7, 0.3, 0.8]),
@@ -779,26 +862,26 @@ newSemanticModel =
     }
 
 semanticSimilarity :: SemanticModel -> String -> String -> Double
-semanticSimilarity model word1 word2 = 
+semanticSimilarity model word1 word2 =
     case (Map.lookup word1 (wordVectors model), Map.lookup word2 (wordVectors model)) of
-        (Just vec1, Just vec2) -> 
+        (Just vec1, Just vec2) ->
             let dotProduct = sum (zipWith (*) vec1 vec2)
                 norm1 = sqrt (sum (map (^2) vec1))
                 norm2 = sqrt (sum (map (^2) vec2))
-            in if norm1 > 0.0 && norm2 > 0.0 
+            in if norm1 > 0.0 && norm2 > 0.0
                then dotProduct / (norm1 * norm2)
                else 0.0
         _ -> 0.0
 
 findSemanticRelations :: SemanticModel -> String -> [String]
-findSemanticRelations model word = 
+findSemanticRelations model word =
     Map.findWithDefault [] word (semanticRelations model)
 
 calculateSemanticDensity :: SemanticModel -> [String] -> Double
-calculateSemanticDensity model text = 
-    let pairs = [(i, j) | i <- [0..length text - 1], 
+calculateSemanticDensity model text =
+    let pairs = [(i, j) | i <- [0..length text - 1],
                          j <- [i + 1..length text - 1]]
-        similarities = map (\(i, j) -> 
+        similarities = map (\(i, j) ->
             semanticSimilarity model (text !! i) (text !! j)) pairs
     in if null similarities then 0.0 else sum similarities / fromIntegral (length similarities)
 
@@ -817,14 +900,14 @@ newCorpusModel = CorpusModel {
 }
 
 addText :: CorpusModel -> [String] -> CorpusModel
-addText model text = 
-    let newFrequencies = foldr (\word acc -> 
+addText model text =
+    let newFrequencies = foldr (\word acc ->
             Map.insertWith (+) word 1 acc) (wordFrequencies model) text
         newTotalWords = totalWords model + length text
-        newCoOccurrence = foldr (\(i, j) acc -> 
+        newCoOccurrence = foldr (\(i, j) acc ->
             let key = (text !! i, text !! j)
             in Map.insertWith (+) key 1 acc) (coOccurrenceMatrix model)
-            [(i, j) | i <- [0..length text - 1], 
+            [(i, j) | i <- [0..length text - 1],
                       j <- [i + 1..length text - 1]]
     in model {
         wordFrequencies = newFrequencies,
@@ -833,31 +916,31 @@ addText model text =
     }
 
 wordFrequency :: CorpusModel -> String -> Double
-wordFrequency model word = 
-    if totalWords model > 0 
-    then fromIntegral (Map.findWithDefault 0 word (wordFrequencies model)) / 
+wordFrequency model word =
+    if totalWords model > 0
+    then fromIntegral (Map.findWithDefault 0 word (wordFrequencies model)) /
          fromIntegral (totalWords model)
     else 0.0
 
 coOccurrenceFrequency :: CorpusModel -> String -> String -> Double
-coOccurrenceFrequency model word1 word2 = 
+coOccurrenceFrequency model word1 word2 =
     let key1 = (word1, word2)
         key2 = (word2, word1)
-        count = Map.findWithDefault 0 key1 (coOccurrenceMatrix model) + 
+        count = Map.findWithDefault 0 key1 (coOccurrenceMatrix model) +
                 Map.findWithDefault 0 key2 (coOccurrenceMatrix model)
-    in if totalWords model > 0 
+    in if totalWords model > 0
        then fromIntegral count / fromIntegral (totalWords model)
        else 0.0
 
 vocabularyRichness :: CorpusModel -> Double
-vocabularyRichness model = 
-    if totalWords model > 0 
-    then fromIntegral (Map.size (wordFrequencies model)) / 
+vocabularyRichness model =
+    if totalWords model > 0
+    then fromIntegral (Map.size (wordFrequencies model)) /
          fromIntegral (totalWords model)
     else 0.0
 
 mutualInformation :: CorpusModel -> String -> String -> Double
-mutualInformation model word1 word2 = 
+mutualInformation model word1 word2 =
     let p_w1 = wordFrequency model word1
         p_w2 = wordFrequency model word2
         p_w1w2 = coOccurrenceFrequency model word1 word2
@@ -867,8 +950,8 @@ mutualInformation model word1 word2 =
 
 -- 辅助函数
 endsWith :: String -> String -> Bool
-endsWith str suffix = 
-    length str >= length suffix && 
+endsWith str suffix =
+    length str >= length suffix &&
     drop (length str - length suffix) str == suffix
 
 getPosTag :: String -> String
@@ -887,49 +970,49 @@ example = do
         distance = phonemeDistance phonological "p" "b"
         similarity = phonemeSimilarity phonological "p" "b"
         syllableStructure = analyzeSyllable phonological "pat"
-    
+
     putStrLn "语音学模型示例:"
     putStrLn $ "音位距离: " ++ show distance
     putStrLn $ "音位相似度: " ++ show similarity
     putStrLn $ "音节结构: " ++ syllableStructure
-    
+
     -- 形态学模型示例
     let morphological = newMorphologicalModel
         morphemes = analyzeMorphemes morphological "running"
         newWord = applyWordFormation morphological "run" "ing"
-    
+
     putStrLn "\n形态学模型示例:"
     putStrLn $ "词素分析: " ++ show morphemes
     putStrLn $ "构词结果: " ++ show newWord
-    
+
     -- 句法学模型示例
     let syntactic = newSyntacticModel
         sentence = ["the", "cat", "runs"]
         phraseScore = parsePhraseStructure syntactic sentence
         dependencies = analyzeDependencies syntactic sentence
-    
+
     putStrLn "\n句法学模型示例:"
     putStrLn $ "短语结构得分: " ++ show phraseScore
     putStrLn $ "依存关系: " ++ show dependencies
-    
+
     -- 语义学模型示例
     let semantic = newSemanticModel
         similarity = semanticSimilarity semantic "cat" "dog"
         relations = findSemanticRelations semantic "cat"
         density = calculateSemanticDensity semantic sentence
-    
+
     putStrLn "\n语义学模型示例:"
     putStrLn $ "语义相似度: " ++ show similarity
     putStrLn $ "语义关系: " ++ show relations
     putStrLn $ "语义密度: " ++ show density
-    
+
     -- 语料库模型示例
     let corpus = addText newCorpusModel ["the", "cat", "runs", "the", "dog", "walks"]
         frequency = wordFrequency corpus "the"
         coOccurrence = coOccurrenceFrequency corpus "cat" "runs"
         richness = vocabularyRichness corpus
         mi = mutualInformation corpus "cat" "runs"
-    
+
     putStrLn "\n语料库模型示例:"
     putStrLn $ "词频: " ++ show frequency
     putStrLn $ "共现频率: " ++ show coOccurrence
@@ -958,6 +1041,37 @@ example = do
 - **语音合成**: 文本到语音转换、语音克隆
 
 ---
+
+## 相关模型 / Related Models
+
+### 社会科学模型 / Social Science Models
+
+- [社会网络模型](../01-社会网络模型/README.md) - 语言网络和语义网络
+- [经济学模型](../02-经济学模型/README.md) - 语言经济学
+- [心理学模型](../03-心理学模型/README.md) - 心理语言学和语言心理学
+- [认知科学模型](../04-认知科学模型/README.md) - 认知语言学和语言认知
+
+### 计算机科学模型 / Computer Science Models
+
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 自然语言处理和计算语言学
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 语言处理算法和文本分析算法
+- [数据结构模型](../../04-计算机科学模型/03-数据结构模型/README.md) - 语言数据结构和文本数据结构
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 形式语言理论和语言代数
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 语义空间和语言几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 语言拓扑
+
+### 物理科学模型 / Physical Science Models
+
+- [声学模型](../../02-物理科学模型/07-声学模型/README.md) - 语音声学和声学语言学
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 语言学模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 语言学模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 语言学模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

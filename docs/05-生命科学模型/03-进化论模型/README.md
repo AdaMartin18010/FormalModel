@@ -4,6 +4,8 @@
 
 - [5.3 进化论模型 / Evolutionary Models](#53-进化论模型--evolutionary-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [进化论模型框架图 / Framework Diagram of Evolutionary Models](#进化论模型框架图--framework-diagram-of-evolutionary-models)
+  - [进化机制关系图 / Relationship Diagram of Evolutionary Mechanisms](#进化机制关系图--relationship-diagram-of-evolutionary-mechanisms)
   - [5.3.1 自然选择模型 / Natural Selection Models](#531-自然选择模型--natural-selection-models)
     - [定向选择 / Directional Selection](#定向选择--directional-selection)
     - [稳定选择 / Stabilizing Selection](#稳定选择--stabilizing-selection)
@@ -35,9 +37,97 @@
       - [种群遗传学 / Population Genetics](#种群遗传学--population-genetics)
       - [保护遗传学 / Conservation Genetics](#保护遗传学--conservation-genetics)
       - [进化医学 / Evolutionary Medicine](#进化医学--evolutionary-medicine)
+  - [5.3.8 算法实现 / Algorithm Implementation](#538-算法实现--algorithm-implementation)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 进化论模型框架图 / Framework Diagram of Evolutionary Models
+
+```mermaid
+graph TB
+    A[进化论模型] --> B[自然选择]
+    A --> C[遗传漂变]
+    A --> D[基因流]
+    A --> E[突变]
+    A --> F[分子进化]
+    A --> G[性选择]
+
+    B --> H[定向选择]
+    B --> I[稳定选择]
+    B --> J[分裂选择]
+
+    C --> K[Wright-Fisher]
+    C --> L[Moran模型]
+    C --> M[有效种群大小]
+
+    D --> N[岛屿模型]
+    D --> O[阶梯模型]
+    D --> P[距离隔离]
+
+    E --> Q[中性突变]
+    E --> R[有害突变]
+    E --> S[有益突变]
+
+    F --> T[Jukes-Cantor]
+    F --> U[Kimura模型]
+    F --> V[密码子替代]
+
+    G --> W[Fisher过程]
+    G --> X[良好基因]
+    G --> Y[性冲突]
+
+    H --> Z[进化理论]
+    K --> Z
+    Q --> Z
+    T --> Z
+
+    Z --> AA[进化应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style Z fill:#e8f5e9
+    style AA fill:#e8f5e9
+```
+
+## 进化机制关系图 / Relationship Diagram of Evolutionary Mechanisms
+
+```mermaid
+graph LR
+    A[进化机制] --> B[自然选择<br/>适应性变化]
+    A --> C[遗传漂变<br/>随机变化]
+    A --> D[基因流<br/>基因交换]
+    A --> E[突变<br/>新变异来源]
+
+    B --> F[适应度差异]
+    C --> G[种群大小]
+    D --> H[迁移率]
+    E --> I[突变率]
+
+    F --> J[进化速率]
+    G --> J
+    H --> J
+    I --> J
+
+    J --> K[表型进化]
+    J --> L[基因频率变化]
+
+    style A fill:#e1f5ff
+    style B fill:#e8f5e9
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style J fill:#e8f5e9
+```
 
 ## 5.3.1 自然选择模型 / Natural Selection Models
 
@@ -257,11 +347,11 @@ impl Population {
         let mut allele_frequencies = HashMap::new();
         allele_frequencies.insert("A".to_string(), 0.5);
         allele_frequencies.insert("a".to_string(), 0.5);
-        
+
         let mut fitness = HashMap::new();
         fitness.insert("A".to_string(), 1.0);
         fitness.insert("a".to_string(), 0.9);
-        
+
         Self {
             size,
             allele_frequencies,
@@ -270,31 +360,31 @@ impl Population {
             migration_rate: 0.01,
         }
     }
-    
+
     pub fn natural_selection(&mut self) {
         let mut new_frequencies = HashMap::new();
         let mut total_fitness = 0.0;
-        
+
         // 计算平均适应度
         for (allele, freq) in &self.allele_frequencies {
             let w = self.fitness.get(allele).unwrap_or(&1.0);
             total_fitness += freq * w;
         }
-        
+
         // 更新基因频率
         for (allele, freq) in &self.allele_frequencies {
             let w = self.fitness.get(allele).unwrap_or(&1.0);
             let new_freq = (freq * w) / total_fitness;
             new_frequencies.insert(allele.clone(), new_freq);
         }
-        
+
         self.allele_frequencies = new_frequencies;
     }
-    
+
     pub fn genetic_drift(&mut self) {
         let mut rng = rand::thread_rng();
         let mut new_frequencies = HashMap::new();
-        
+
         for (allele, freq) in &self.allele_frequencies {
             // 二项分布采样
             let n = self.size * 2; // 二倍体
@@ -302,24 +392,24 @@ impl Population {
             let new_freq = k / (n as f64);
             new_frequencies.insert(allele.clone(), new_freq);
         }
-        
+
         self.allele_frequencies = new_frequencies;
     }
-    
+
     pub fn mutation(&mut self) {
         let mut new_frequencies = self.allele_frequencies.clone();
-        
+
         for (allele, freq) in &self.allele_frequencies {
             let mutation_loss = freq * self.mutation_rate;
             let mutation_gain = (1.0 - freq) * self.mutation_rate;
-            
+
             let new_freq = freq - mutation_loss + mutation_gain;
             new_frequencies.insert(allele.clone(), new_freq);
         }
-        
+
         self.allele_frequencies = new_frequencies;
     }
-    
+
     pub fn calculate_heterozygosity(&self) -> f64 {
         let mut h = 0.0;
         for (_, freq) in &self.allele_frequencies {
@@ -327,13 +417,13 @@ impl Population {
         }
         h
     }
-    
+
     pub fn calculate_fst(&self, other: &Population) -> f64 {
         let mut total_fst = 0.0;
         let mut count = 0;
-        
+
         for allele in self.allele_frequencies.keys() {
-            if let (Some(p1), Some(p2)) = (self.allele_frequencies.get(allele), 
+            if let (Some(p1), Some(p2)) = (self.allele_frequencies.get(allele),
                                            other.allele_frequencies.get(allele)) {
                 let p_bar = (p1 + p2) / 2.0;
                 let var_p = ((p1 - p_bar).powi(2) + (p2 - p_bar).powi(2)) / 2.0;
@@ -342,7 +432,7 @@ impl Population {
                 count += 1;
             }
         }
-        
+
         if count > 0 { total_fst / count as f64 } else { 0.0 }
     }
 }
@@ -359,50 +449,50 @@ impl EvolutionarySimulation {
         let populations = (0..num_populations)
             .map(|_| Population::new(population_size))
             .collect();
-        
+
         Self {
             populations,
             generations: 0,
             history: Vec::new(),
         }
     }
-    
+
     pub fn simulate_generation(&mut self) {
         let mut new_populations = self.populations.clone();
-        
+
         for population in &mut new_populations {
             population.natural_selection();
             population.genetic_drift();
             population.mutation();
         }
-        
+
         // 基因流
         self.migration(&mut new_populations);
-        
+
         self.populations = new_populations;
         self.generations += 1;
-        
+
         // 记录历史
         let current_state: Vec<HashMap<String, f64>> = self.populations.iter()
             .map(|p| p.allele_frequencies.clone())
             .collect();
         self.history.push(current_state);
     }
-    
+
     pub fn migration(&self, populations: &mut Vec<Population>) {
         let num_populations = populations.len();
-        
+
         for i in 0..num_populations {
             for j in 0..num_populations {
                 if i != j {
                     let migration_rate = populations[i].migration_rate / (num_populations - 1) as f64;
-                    
+
                     for allele in populations[i].allele_frequencies.keys().cloned().collect::<Vec<_>>() {
                         let freq_i = populations[i].allele_frequencies.get(&allele).unwrap_or(&0.0);
                         let freq_j = populations[j].allele_frequencies.get(&allele).unwrap_or(&0.0);
-                        
+
                         let migration = migration_rate * (freq_j - freq_i);
-                        
+
                         if let Some(freq) = populations[i].allele_frequencies.get_mut(&allele) {
                             *freq += migration;
                         }
@@ -414,25 +504,25 @@ impl EvolutionarySimulation {
             }
         }
     }
-    
+
     pub fn calculate_average_heterozygosity(&self) -> f64 {
         let total_h = self.populations.iter()
             .map(|p| p.calculate_heterozygosity())
             .sum::<f64>();
         total_h / self.populations.len() as f64
     }
-    
+
     pub fn calculate_average_fst(&self) -> f64 {
         let mut total_fst = 0.0;
         let mut count = 0;
-        
+
         for i in 0..self.populations.len() {
             for j in (i+1)..self.populations.len() {
                 total_fst += self.populations[i].calculate_fst(&self.populations[j]);
                 count += 1;
             }
         }
-        
+
         if count > 0 { total_fst / count as f64 } else { 0.0 }
     }
 }
@@ -452,11 +542,11 @@ impl MolecularEvolution {
             substitution_model: "JC69".to_string(),
         }
     }
-    
+
     pub fn jukes_cantor_distance(&self, seq1: &str, seq2: &str) -> f64 {
         let mut differences = 0;
         let mut total = 0;
-        
+
         for (a, b) in seq1.chars().zip(seq2.chars()) {
             if a != 'N' && b != 'N' {
                 total += 1;
@@ -465,20 +555,20 @@ impl MolecularEvolution {
                 }
             }
         }
-        
+
         if total == 0 { return 0.0; }
-        
+
         let p = differences as f64 / total as f64;
         if p >= 0.75 { return f64::INFINITY; }
-        
+
         -0.75 * (1.0 - 4.0 * p / 3.0).ln()
     }
-    
+
     pub fn kimura_distance(&self, seq1: &str, seq2: &str) -> f64 {
         let mut transitions = 0;
         let mut transversions = 0;
         let mut total = 0;
-        
+
         for (a, b) in seq1.chars().zip(seq2.chars()) {
             if a != 'N' && b != 'N' {
                 total += 1;
@@ -491,59 +581,59 @@ impl MolecularEvolution {
                 }
             }
         }
-        
+
         if total == 0 { return 0.0; }
-        
+
         let P = transitions as f64 / total as f64;
         let Q = transversions as f64 / total as f64;
-        
+
         if P >= 0.5 || Q >= 0.5 { return f64::INFINITY; }
-        
+
         -0.5 * (1.0 - 2.0 * P - Q).ln() - 0.25 * (1.0 - 2.0 * Q).ln()
     }
-    
+
     fn is_transition(&self, a: char, b: char) -> bool {
-        matches!((a, b), 
+        matches!((a, b),
             ('A', 'G') | ('G', 'A') | ('C', 'T') | ('T', 'C'))
     }
-    
+
     pub fn calculate_dn_ds(&self, codon_seq1: &str, codon_seq2: &str) -> (f64, f64) {
         let mut synonymous_sites = 0.0;
         let mut nonsynonymous_sites = 0.0;
         let mut synonymous_substitutions = 0.0;
         let mut nonsynonymous_substitutions = 0.0;
-        
+
         for i in (0..codon_seq1.len()).step_by(3) {
             if i + 2 < codon_seq1.len() && i + 2 < codon_seq2.len() {
                 let codon1 = &codon_seq1[i..i+3];
                 let codon2 = &codon_seq2[i..i+3];
-                
+
                 let (syn_sites, nonsyn_sites) = self.count_sites(codon1);
                 let (syn_subs, nonsyn_subs) = self.count_substitutions(codon1, codon2);
-                
+
                 synonymous_sites += syn_sites;
                 nonsynonymous_sites += nonsyn_sites;
                 synonymous_substitutions += syn_subs;
                 nonsynonymous_substitutions += nonsyn_subs;
             }
         }
-        
+
         let ds = if synonymous_sites > 0.0 { synonymous_substitutions / synonymous_sites } else { 0.0 };
         let dn = if nonsynonymous_sites > 0.0 { nonsynonymous_substitutions / nonsynonymous_sites } else { 0.0 };
-        
+
         (dn, ds)
     }
-    
+
     fn count_sites(&self, codon: &str) -> (f64, f64) {
         // 简化的位点计数
         (1.0, 2.0)
     }
-    
+
     fn count_substitutions(&self, codon1: &str, codon2: &str) -> (f64, f64) {
         // 简化的替代计数
         let mut syn_subs = 0.0;
         let mut nonsyn_subs = 0.0;
-        
+
         for (a, b) in codon1.chars().zip(codon2.chars()) {
             if a != b {
                 if self.is_synonymous_substitution(a, b) {
@@ -553,10 +643,10 @@ impl MolecularEvolution {
                 }
             }
         }
-        
+
         (syn_subs, nonsyn_subs)
     }
-    
+
     fn is_synonymous_substitution(&self, a: char, b: char) -> bool {
         // 简化的同义替代判断
         a == b
@@ -567,47 +657,47 @@ impl MolecularEvolution {
 fn main() {
     // 单种群进化模拟
     let mut population = Population::new(1000);
-    
+
     for generation in 0..100 {
         population.natural_selection();
         population.genetic_drift();
         population.mutation();
-        
+
         if generation % 10 == 0 {
-            println!("Generation {}: A={:.3}, a={:.3}, H={:.3}", 
-                    generation, 
-                    population.allele_frequencies["A"], 
+            println!("Generation {}: A={:.3}, a={:.3}, H={:.3}",
+                    generation,
+                    population.allele_frequencies["A"],
                     population.allele_frequencies["a"],
                     population.calculate_heterozygosity());
         }
     }
-    
+
     // 多种群进化模拟
     let mut simulation = EvolutionarySimulation::new(5, 1000);
-    
+
     for generation in 0..100 {
         simulation.simulate_generation();
-        
+
         if generation % 20 == 0 {
-            println!("Generation {}: Avg H={:.3}, Fst={:.3}", 
+            println!("Generation {}: Avg H={:.3}, Fst={:.3}",
                     generation,
                     simulation.calculate_average_heterozygosity(),
                     simulation.calculate_average_fst());
         }
     }
-    
+
     // 分子进化分析
     let sequences = vec![
         "ATCGATCGATCG".to_string(),
         "ATCGATCGATCA".to_string(),
         "ATCGATCGATCT".to_string(),
     ];
-    
+
     let mol_evo = MolecularEvolution::new(sequences, 1e-6);
-    
+
     let jc_distance = mol_evo.jukes_cantor_distance(&mol_evo.sequences[0], &mol_evo.sequences[1]);
     let kimura_distance = mol_evo.kimura_distance(&mol_evo.sequences[0], &mol_evo.sequences[1]);
-    
+
     println!("JC distance: {:.6}", jc_distance);
     println!("Kimura distance: {:.6}", kimura_distance);
 }
@@ -657,7 +747,7 @@ geneticDrift pop = do
         newFrequencies = Map.fromList [(allele, simulateBinomial n freq gen) | (allele, freq) <- Map.toList (alleleFrequencies pop)]
     return pop { alleleFrequencies = newFrequencies }
   where
-    simulateBinomial n p gen = 
+    simulateBinomial n p gen =
         let randomValues = take n (randomRs (0.0, 1.0) gen)
             successes = length (filter (< p) randomValues)
         in fromIntegral successes / fromIntegral n
@@ -667,7 +757,7 @@ mutation pop = pop {
     alleleFrequencies = Map.fromList [(allele, newFreq allele freq) | (allele, freq) <- Map.toList (alleleFrequencies pop)]
 }
   where
-    newFreq allele freq = 
+    newFreq allele freq =
         let mutationLoss = freq * mutationRate pop
             mutationGain = (1.0 - freq) * mutationRate pop
         in freq - mutationLoss + mutationGain
@@ -676,12 +766,12 @@ calculateHeterozygosity :: Population -> Double
 calculateHeterozygosity pop = sum [freq * (1.0 - freq) | (_, freq) <- Map.toList (alleleFrequencies pop)]
 
 calculateFst :: Population -> Population -> Double
-calculateFst pop1 pop2 = 
+calculateFst pop1 pop2 =
     let alleles = Map.keys (alleleFrequencies pop1)
         fstValues = [calculateFstForAllele allele | allele <- alleles]
     in sum fstValues / fromIntegral (length fstValues)
   where
-    calculateFstForAllele allele = 
+    calculateFstForAllele allele =
         let p1 = alleleFrequencies pop1 Map.! allele
             p2 = alleleFrequencies pop2 Map.! allele
             pBar = (p1 + p2) / 2.0
@@ -720,29 +810,29 @@ simulatePopulation pop = do
     return $ mutation pop2
 
 migration :: [Population] -> [Population]
-migration pops = 
+migration pops =
     let numPops = length pops
         migrationRate = migrationRate (head pops) / fromIntegral (numPops - 1)
     in zipWith (\i pop -> applyMigration i pop migrationRate pops) [0..numPops-1] pops
 
 applyMigration :: Int -> Population -> Double -> [Population] -> Population
-applyMigration i pop rate allPops = 
+applyMigration i pop rate allPops =
     let alleles = Map.keys (alleleFrequencies pop)
         newFrequencies = Map.fromList [(allele, calculateNewFreq allele) | allele <- alleles]
     in pop { alleleFrequencies = newFrequencies }
   where
-    calculateNewFreq allele = 
+    calculateNewFreq allele =
         let currentFreq = alleleFrequencies pop Map.! allele
             totalMigration = sum [rate * ((alleleFrequencies (allPops !! j) Map.! allele) - currentFreq) | j <- [0..length allPops-1], j /= i]
         in currentFreq + totalMigration
 
 calculateAverageHeterozygosity :: EvolutionarySimulation -> Double
-calculateAverageHeterozygosity sim = 
+calculateAverageHeterozygosity sim =
     let heterozygosities = map calculateHeterozygosity (populations sim)
     in sum heterozygosities / fromIntegral (length heterozygosities)
 
 calculateAverageFst :: EvolutionarySimulation -> Double
-calculateAverageFst sim = 
+calculateAverageFst sim =
     let pops = populations sim
         fstValues = [calculateFst (pops !! i) (pops !! j) | i <- [0..length pops-1], j <- [i+1..length pops-1]]
     in if null fstValues then 0.0 else sum fstValues / fromIntegral (length fstValues)
@@ -762,23 +852,23 @@ newMolecularEvolution seqs rate = MolecularEvolution {
 }
 
 jukesCantorDistance :: String -> String -> Double
-jukesCantorDistance seq1 seq2 = 
+jukesCantorDistance seq1 seq2 =
     let differences = length [1 | (a, b) <- zip seq1 seq2, a /= 'N' && b /= 'N' && a /= b]
         total = length [1 | (a, b) <- zip seq1 seq2, a /= 'N' && b /= 'N']
         p = fromIntegral differences / fromIntegral total
-    in if p >= 0.75 
+    in if p >= 0.75
        then 1/0  -- infinity
        else -0.75 * log (1.0 - 4.0 * p / 3.0)
 
 kimuraDistance :: String -> String -> Double
-kimuraDistance seq1 seq2 = 
+kimuraDistance seq1 seq2 =
     let pairs = zip seq1 seq2
         transitions = length [1 | (a, b) <- pairs, a /= 'N' && b /= 'N' && a /= b && isTransition a b]
         transversions = length [1 | (a, b) <- pairs, a /= 'N' && b /= 'N' && a /= b && not (isTransition a b)]
         total = length [1 | (a, b) <- pairs, a /= 'N' && b /= 'N']
         P = fromIntegral transitions / fromIntegral total
         Q = fromIntegral transversions / fromIntegral total
-    in if P >= 0.5 || Q >= 0.5 
+    in if P >= 0.5 || Q >= 0.5
        then 1/0  -- infinity
        else -0.5 * log (1.0 - 2.0 * P - Q) - 0.25 * log (1.0 - 2.0 * Q)
 
@@ -786,14 +876,14 @@ isTransition :: Char -> Char -> Bool
 isTransition a b = (a, b) `elem` [('A', 'G'), ('G', 'A'), ('C', 'T'), ('T', 'C')]
 
 calculateDnDs :: String -> String -> (Double, Double)
-calculateDnDs codonSeq1 codonSeq2 = 
+calculateDnDs codonSeq1 codonSeq2 =
     let codons1 = chunksOf 3 codonSeq1
         codons2 = chunksOf 3 codonSeq2
         codonPairs = zip codons1 codons2
-        (synSites, nonsynSites) = foldl (\(syn, nonsyn) (codon1, codon2) -> 
+        (synSites, nonsynSites) = foldl (\(syn, nonsyn) (codon1, codon2) ->
             let (s, n) = countSites codon1
             in (syn + s, nonsyn + n)) (0.0, 0.0) codonPairs
-        (synSubs, nonsynSubs) = foldl (\(syn, nonsyn) (codon1, codon2) -> 
+        (synSubs, nonsynSubs) = foldl (\(syn, nonsyn) (codon1, codon2) ->
             let (s, n) = countSubstitutions codon1 codon2
             in (syn + s, nonsyn + n)) (0.0, 0.0) codonPairs
         ds = if synSites > 0.0 then synSubs / synSites else 0.0
@@ -808,7 +898,7 @@ countSites :: String -> (Double, Double)
 countSites codon = (1.0, 2.0)  -- 简化的位点计数
 
 countSubstitutions :: String -> String -> (Double, Double)
-countSubstitutions codon1 codon2 = 
+countSubstitutions codon1 codon2 =
     let substitutions = [(a, b) | (a, b) <- zip codon1 codon2, a /= b]
         synSubs = length [1 | (a, b) <- substitutions, isSynonymousSubstitution a b]
         nonsynSubs = length substitutions - synSubs
@@ -822,42 +912,42 @@ example :: IO ()
 example = do
     -- 单种群进化模拟
     let pop = newPopulation 1000
-    
+
     let simulatePopulation' 0 pop = return pop
         simulatePopulation' n pop = do
             let pop1 = naturalSelection pop
             pop2 <- geneticDrift pop1
             let pop3 = mutation pop2
             simulatePopulation' (n-1) pop3
-    
+
     finalPop <- simulatePopulation' 100 pop
     putStrLn $ "Final frequencies: " ++ show (alleleFrequencies finalPop)
     putStrLn $ "Heterozygosity: " ++ show (calculateHeterozygosity finalPop)
-    
+
     -- 多种群进化模拟
     let sim = newEvolutionarySimulation 5 1000
-    
+
     let simulateGenerations 0 sim = return sim
         simulateGenerations n sim = do
             newSim <- simulateGeneration sim
-            if n `mod` 20 == 0 
+            if n `mod` 20 == 0
             then do
-                putStrLn $ "Generation " ++ show (generations newSim) ++ 
+                putStrLn $ "Generation " ++ show (generations newSim) ++
                           ": Avg H=" ++ show (calculateAverageHeterozygosity newSim) ++
                           ", Fst=" ++ show (calculateAverageFst newSim)
             else return ()
             simulateGenerations (n-1) newSim
-    
+
     finalSim <- simulateGenerations 100 sim
     putStrLn $ "Final simulation: " ++ show (generations finalSim)
-    
+
     -- 分子进化分析
     let sequences = ["ATCGATCGATCG", "ATCGATCGATCA", "ATCGATCGATCT"]
         molEvo = newMolecularEvolution sequences 1e-6
-    
+
     let jcDist = jukesCantorDistance (sequences !! 0) (sequences !! 1)
         kimuraDist = kimuraDistance (sequences !! 0) (sequences !! 1)
-    
+
     putStrLn $ "JC distance: " ++ show jcDist
     putStrLn $ "Kimura distance: " ++ show kimuraDist
 ```
@@ -981,6 +1071,37 @@ def evolutionary_verification():
 if __name__ == "__main__":
     evolutionary_verification()
 ```
+
+## 相关模型 / Related Models
+
+### 生命科学模型 / Life Science Models
+
+- [分子生物学模型](../01-分子生物学模型/README.md) - 分子进化和基因变异
+- [生态学模型](../02-生态学模型/README.md) - 生态进化动力学
+- [神经科学模型](../04-神经科学模型/README.md) - 神经系统的进化
+- [基因组学模型](../05-基因组学模型/README.md) - 进化基因组学
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 进化过程的代数结构
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 表型空间几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 进化树拓扑结构
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 种群动力学和扩散
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 进化热力学
+
+### 计算机科学模型 / Computer Science Models
+
+- [算法模型](../../04-计算机科学模型/02-算法模型/README.md) - 进化算法和遗传算法
+- [人工智能模型](../../04-计算机科学模型/05-人工智能模型/README.md) - 进化计算和遗传编程
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 进化论模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 进化论模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 进化论模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

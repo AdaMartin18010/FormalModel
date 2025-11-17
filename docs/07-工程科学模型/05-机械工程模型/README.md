@@ -4,6 +4,8 @@
 
 - [7.5 机械工程模型 / Mechanical Engineering Models](#75-机械工程模型--mechanical-engineering-models)
   - [目录 / Table of Contents](#目录--table-of-contents)
+  - [机械工程模型框架图 / Framework Diagram of Mechanical Engineering Models](#机械工程模型框架图--framework-diagram-of-mechanical-engineering-models)
+  - [振动系统分析流程图 / Flowchart of Vibration System Analysis](#振动系统分析流程图--flowchart-of-vibration-system-analysis)
   - [7.5.1 静力学模型 / Statics Models](#751-静力学模型--statics-models)
     - [力系平衡 / Force System Equilibrium](#力系平衡--force-system-equilibrium)
     - [桁架分析 / Truss Analysis](#桁架分析--truss-analysis)
@@ -31,9 +33,100 @@
       - [结构设计 / Structural Design](#结构设计--structural-design)
       - [动力学分析 / Dynamics Analysis](#动力学分析--dynamics-analysis)
       - [热力学应用 / Thermodynamics Applications](#热力学应用--thermodynamics-applications)
+  - [相关模型 / Related Models](#相关模型--related-models)
+    - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
+    - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
+    - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
+    - [基础理论 / Basic Theory](#基础理论--basic-theory)
   - [参考文献 / References](#参考文献--references)
 
 ---
+
+## 机械工程模型框架图 / Framework Diagram of Mechanical Engineering Models
+
+```mermaid
+graph TB
+    A[机械工程模型] --> B[静力学]
+    A --> C[动力学]
+    A --> D[振动]
+    A --> E[热力学]
+    A --> F[流体力学]
+
+    B --> G[力系平衡]
+    B --> H[桁架分析]
+    B --> I[梁的弯曲]
+
+    C --> J[质点动力学]
+    C --> K[刚体动力学]
+    C --> L[拉格朗日力学]
+
+    D --> M[单自由度振动]
+    D --> N[多自由度振动]
+    D --> O[连续体振动]
+
+    E --> P[热力学第一定律]
+    E --> Q[热力学第二定律]
+    E --> R[理想气体]
+
+    F --> S[流体静力学]
+    F --> T[流体动力学]
+    F --> U[边界层]
+
+    G --> V[机械工程理论]
+    J --> V
+    M --> V
+    P --> V
+
+    V --> W[机械应用]
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+    style D fill:#fff4e1
+    style E fill:#fff4e1
+    style V fill:#e8f5e9
+    style W fill:#e8f5e9
+```
+
+## 振动系统分析流程图 / Flowchart of Vibration System Analysis
+
+```mermaid
+flowchart TD
+    Start([系统输入]) --> Model[建立模型<br/>质量m<br/>刚度k<br/>阻尼c]
+    Model --> Type{振动类型}
+
+    Type -->|自由振动| Free[自由振动<br/>ẍ + ωn²x = 0<br/>ωn = √(k/m)]
+    Type -->|受迫振动| Forced[受迫振动<br/>ẍ + 2ζωnẋ + ωn²x = F/m]
+    Type -->|自激振动| Self[自激振动<br/>非线性系统]
+
+    Free --> Natural[固有频率<br/>ωn]
+    Forced --> Response[响应分析<br/>幅频特性<br/>相频特性]
+    Self --> Limit[极限环<br/>稳定性分析]
+
+    Natural --> Damping{阻尼类型}
+    Response --> Damping
+
+    Damping -->|无阻尼| Undamped[无阻尼<br/>ζ = 0]
+    Damping -->|欠阻尼| Under[欠阻尼<br/>0 < ζ < 1]
+    Damping -->|临界阻尼| Critical[临界阻尼<br/>ζ = 1]
+    Damping -->|过阻尼| Over[过阻尼<br/>ζ > 1]
+
+    Undamped --> Solution[解析解<br/>x(t) = A·cos(ωnt + φ)]
+    Under --> Solution
+    Critical --> Solution
+    Over --> Solution
+
+    Solution --> Analysis[系统分析<br/>稳定性<br/>响应特性]
+    Limit --> Analysis
+
+    Analysis --> Design[系统设计<br/>参数优化<br/>减振设计]
+
+    Design --> End([设计完成])
+
+    style Start fill:#e1f5ff
+    style End fill:#e1f5ff
+    style Analysis fill:#e8f5e9
+```
 
 ## 7.5.1 静力学模型 / Statics Models
 
@@ -193,15 +286,15 @@ impl Vector3D {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x, y, z }
     }
-    
+
     pub fn magnitude(&self) -> f64 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
-    
+
     pub fn dot(&self, other: &Vector3D) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
-    
+
     pub fn cross(&self, other: &Vector3D) -> Vector3D {
         Vector3D {
             x: self.y * other.z - self.z * other.y,
@@ -221,7 +314,7 @@ impl Force {
     pub fn new(vector: Vector3D, point: Vector3D) -> Self {
         Self { vector, point }
     }
-    
+
     pub fn moment(&self, about: &Vector3D) -> Vector3D {
         let r = Vector3D {
             x: self.point.x - about.x,
@@ -241,11 +334,11 @@ impl StaticsSystem {
     pub fn new() -> Self {
         Self { forces: Vec::new() }
     }
-    
+
     pub fn add_force(&mut self, force: Force) {
         self.forces.push(force);
     }
-    
+
     pub fn resultant_force(&self) -> Vector3D {
         let mut result = Vector3D::new(0.0, 0.0, 0.0);
         for force in &self.forces {
@@ -255,7 +348,7 @@ impl StaticsSystem {
         }
         result
     }
-    
+
     pub fn resultant_moment(&self, about: &Vector3D) -> Vector3D {
         let mut result = Vector3D::new(0.0, 0.0, 0.0);
         for force in &self.forces {
@@ -266,11 +359,11 @@ impl StaticsSystem {
         }
         result
     }
-    
+
     pub fn is_equilibrium(&self, about: &Vector3D) -> bool {
         let r_force = self.resultant_force();
         let r_moment = self.resultant_moment(about);
-        
+
         r_force.magnitude() < 1e-6 && r_moment.magnitude() < 1e-6
     }
 }
@@ -288,7 +381,7 @@ impl VibrationSystem {
     pub fn new(mass: f64, stiffness: f64, damping: f64) -> Self {
         let natural_frequency = (stiffness / mass).sqrt();
         let damping_ratio = damping / (2.0 * (mass * stiffness).sqrt());
-        
+
         Self {
             mass,
             stiffness,
@@ -297,23 +390,23 @@ impl VibrationSystem {
             damping_ratio,
         }
     }
-    
+
     pub fn free_vibration(&self, initial_displacement: f64, initial_velocity: f64, time: f64) -> f64 {
         if self.damping_ratio < 1.0 {
             // 欠阻尼
             let damped_frequency = self.natural_frequency * (1.0 - self.damping_ratio.powi(2)).sqrt();
-            let amplitude = (initial_displacement.powi(2) + 
+            let amplitude = (initial_displacement.powi(2) +
                            ((initial_velocity + self.damping_ratio * self.natural_frequency * initial_displacement) / damped_frequency).powi(2)).sqrt();
-            let phase = (damped_frequency * initial_displacement / 
+            let phase = (damped_frequency * initial_displacement /
                         (initial_velocity + self.damping_ratio * self.natural_frequency * initial_displacement)).atan();
-            
-            amplitude * (-self.damping_ratio * self.natural_frequency * time).exp() * 
+
+            amplitude * (-self.damping_ratio * self.natural_frequency * time).exp() *
             (damped_frequency * time + phase).cos()
         } else {
             // 临界阻尼或过阻尼
             let c1 = initial_displacement;
             let c2 = initial_velocity + self.damping_ratio * self.natural_frequency * initial_displacement;
-            
+
             if self.damping_ratio == 1.0 {
                 // 临界阻尼
                 (c1 + c2 * time) * (-self.natural_frequency * time).exp()
@@ -322,25 +415,25 @@ impl VibrationSystem {
                 let omega_d = self.natural_frequency * (self.damping_ratio.powi(2) - 1.0).sqrt();
                 let lambda1 = -self.damping_ratio * self.natural_frequency + omega_d;
                 let lambda2 = -self.damping_ratio * self.natural_frequency - omega_d;
-                
+
                 let a = (c2 - lambda2 * c1) / (lambda1 - lambda2);
                 let b = c1 - a;
-                
+
                 a * (lambda1 * time).exp() + b * (lambda2 * time).exp()
             }
         }
     }
-    
+
     pub fn forced_vibration(&self, force_amplitude: f64, force_frequency: f64, time: f64) -> f64 {
         let frequency_ratio = force_frequency / self.natural_frequency;
-        let magnification_factor = 1.0 / ((1.0 - frequency_ratio.powi(2)).powi(2) + 
+        let magnification_factor = 1.0 / ((1.0 - frequency_ratio.powi(2)).powi(2) +
                                          (2.0 * self.damping_ratio * frequency_ratio).powi(2)).sqrt();
-        
-        let phase_angle = (2.0 * self.damping_ratio * frequency_ratio / 
+
+        let phase_angle = (2.0 * self.damping_ratio * frequency_ratio /
                           (1.0 - frequency_ratio.powi(2))).atan();
-        
+
         let steady_state_amplitude = force_amplitude / self.stiffness * magnification_factor;
-        
+
         steady_state_amplitude * (force_frequency * time - phase_angle).cos()
     }
 }
@@ -364,24 +457,24 @@ impl ThermodynamicsSystem {
             specific_heat,
         }
     }
-    
+
     pub fn ideal_gas_law(&self, moles: f64) -> f64 {
         let r = 8.314; // J/mol/K
         self.pressure * self.volume - moles * r * self.temperature
     }
-    
+
     pub fn adiabatic_process(&self, gamma: f64, new_volume: f64) -> (f64, f64) {
         let new_pressure = self.pressure * (self.volume / new_volume).powf(gamma);
         let new_temperature = self.temperature * (self.volume / new_volume).powf(gamma - 1.0);
         (new_pressure, new_temperature)
     }
-    
+
     pub fn isothermal_work(&self, initial_volume: f64, final_volume: f64) -> f64 {
         let r = 8.314; // J/mol/K
         let moles = self.pressure * self.volume / (r * self.temperature);
         moles * r * self.temperature * (final_volume / initial_volume).ln()
     }
-    
+
     pub fn carnot_efficiency(&self, cold_temperature: f64) -> f64 {
         1.0 - cold_temperature / self.temperature
     }
@@ -404,21 +497,21 @@ impl FluidSystem {
             pressure,
         }
     }
-    
+
     pub fn hydrostatic_pressure(&self, depth: f64) -> f64 {
         let g = 9.81; // m/s²
         self.pressure + self.density * g * depth
     }
-    
+
     pub fn bernoulli_equation(&self, height: f64, velocity_magnitude: f64) -> f64 {
         let g = 9.81; // m/s²
         self.pressure + 0.5 * self.density * velocity_magnitude.powi(2) + self.density * g * height
     }
-    
+
     pub fn reynolds_number(&self, characteristic_length: f64) -> f64 {
         self.density * self.velocity.magnitude() * characteristic_length / self.viscosity
     }
-    
+
     pub fn boundary_layer_thickness(&self, distance: f64, free_stream_velocity: f64) -> f64 {
         let kinematic_viscosity = self.viscosity / self.density;
         5.0 * (kinematic_viscosity * distance / free_stream_velocity).sqrt()
@@ -442,28 +535,28 @@ impl Beam {
             distributed_load,
         }
     }
-    
+
     pub fn max_deflection_simply_supported(&self) -> f64 {
         // 简支梁最大挠度
-        5.0 * self.distributed_load * self.length.powi(4) / 
+        5.0 * self.distributed_load * self.length.powi(4) /
         (384.0 * self.youngs_modulus * self.moment_of_inertia)
     }
-    
+
     pub fn max_moment_simply_supported(&self) -> f64 {
         // 简支梁最大弯矩
         self.distributed_load * self.length.powi(2) / 8.0
     }
-    
+
     pub fn cantilever_deflection(&self, point_load: f64, load_position: f64) -> f64 {
         // 悬臂梁挠度
-        point_load * load_position.powi(2) * (3.0 * self.length - load_position) / 
+        point_load * load_position.powi(2) * (3.0 * self.length - load_position) /
         (6.0 * self.youngs_modulus * self.moment_of_inertia)
     }
-    
+
     pub fn natural_frequency(&self, mass_per_unit_length: f64) -> f64 {
         // 梁的固有频率
         let pi = PI;
-        (pi.powi(2) / (2.0 * self.length.powi(2))) * 
+        (pi.powi(2) / (2.0 * self.length.powi(2))) *
         (self.youngs_modulus * self.moment_of_inertia / mass_per_unit_length).sqrt()
     }
 }
@@ -472,7 +565,7 @@ impl Beam {
 fn main() {
     // 静力学示例
     let mut statics_system = StaticsSystem::new();
-    
+
     let force1 = Force::new(
         Vector3D::new(10.0, 0.0, 0.0),
         Vector3D::new(0.0, 0.0, 0.0)
@@ -481,36 +574,36 @@ fn main() {
         Vector3D::new(-10.0, 0.0, 0.0),
         Vector3D::new(1.0, 0.0, 0.0)
     );
-    
+
     statics_system.add_force(force1);
     statics_system.add_force(force2);
-    
+
     let about_point = Vector3D::new(0.0, 0.0, 0.0);
     let is_equilibrium = statics_system.is_equilibrium(&about_point);
     println!("System in equilibrium: {}", is_equilibrium);
-    
+
     // 振动系统示例
     let vibration = VibrationSystem::new(1.0, 100.0, 2.0);
     let displacement = vibration.free_vibration(1.0, 0.0, 0.1);
     let forced_response = vibration.forced_vibration(10.0, 5.0, 0.1);
-    
+
     println!("Free vibration displacement: {:.3}", displacement);
     println!("Forced vibration response: {:.3}", forced_response);
     println!("Natural frequency: {:.3} rad/s", vibration.natural_frequency);
     println!("Damping ratio: {:.3}", vibration.damping_ratio);
-    
+
     // 热力学系统示例
     let thermo = ThermodynamicsSystem::new(300.0, 101325.0, 0.001, 1.0, 1000.0);
     let gas_law_error = thermo.ideal_gas_law(0.04);
     let (new_pressure, new_temp) = thermo.adiabatic_process(1.4, 0.002);
     let work = thermo.isothermal_work(0.001, 0.002);
     let efficiency = thermo.carnot_efficiency(273.0);
-    
+
     println!("Ideal gas law error: {:.3}", gas_law_error);
     println!("Adiabatic process - New pressure: {:.1} Pa, New temperature: {:.1} K", new_pressure, new_temp);
     println!("Isothermal work: {:.3} J", work);
     println!("Carnot efficiency: {:.3}", efficiency);
-    
+
     // 流体系统示例
     let fluid = FluidSystem::new(
         1000.0, // kg/m³
@@ -518,24 +611,24 @@ fn main() {
         Vector3D::new(1.0, 0.0, 0.0),
         101325.0 // Pa
     );
-    
+
     let hydrostatic_p = fluid.hydrostatic_pressure(10.0);
     let bernoulli = fluid.bernoulli_equation(5.0, 2.0);
     let reynolds = fluid.reynolds_number(0.01);
     let boundary_thickness = fluid.boundary_layer_thickness(1.0, 5.0);
-    
+
     println!("Hydrostatic pressure: {:.1} Pa", hydrostatic_p);
     println!("Bernoulli equation result: {:.1} Pa", bernoulli);
     println!("Reynolds number: {:.0}", reynolds);
     println!("Boundary layer thickness: {:.3} m", boundary_thickness);
-    
+
     // 梁分析示例
     let beam = Beam::new(5.0, 200e9, 1e-6, 1000.0);
     let max_deflection = beam.max_deflection_simply_supported();
     let max_moment = beam.max_moment_simply_supported();
     let cantilever_deflection = beam.cantilever_deflection(1000.0, 2.0);
     let natural_freq = beam.natural_frequency(10.0);
-    
+
     println!("Max deflection: {:.6} m", max_deflection);
     println!("Max moment: {:.1} N·m", max_moment);
     println!("Cantilever deflection: {:.6} m", cantilever_deflection);
@@ -583,7 +676,7 @@ newForce :: Vector3D -> Vector3D -> Force
 newForce vector point = Force vector point
 
 moment :: Force -> Vector3D -> Vector3D
-moment force about = 
+moment force about =
     let r = Vector3D {
             x = x (forcePoint force) - x about,
             y = y (forcePoint force) - y about,
@@ -603,7 +696,7 @@ addForce :: Force -> StaticsSystem -> StaticsSystem
 addForce force system = system { forces = force : forces system }
 
 resultantForce :: StaticsSystem -> Vector3D
-resultantForce system = 
+resultantForce system =
     let force_vectors = map forceVector (forces system)
         sum_x = sum (map x force_vectors)
         sum_y = sum (map y force_vectors)
@@ -611,7 +704,7 @@ resultantForce system =
     in Vector3D sum_x sum_y sum_z
 
 resultantMoment :: StaticsSystem -> Vector3D -> Vector3D
-resultantMoment system about = 
+resultantMoment system about =
     let moments = map (\f -> moment f about) (forces system)
         sum_x = sum (map x moments)
         sum_y = sum (map y moments)
@@ -619,7 +712,7 @@ resultantMoment system about =
     in Vector3D sum_x sum_y sum_z
 
 isEquilibrium :: StaticsSystem -> Vector3D -> Bool
-isEquilibrium system about = 
+isEquilibrium system about =
     let r_force = resultantForce system
         r_moment = resultantMoment system about
     in magnitude r_force < 1e-6 && magnitude r_moment < 1e-6
@@ -643,7 +736,7 @@ newVibrationSystem m k c = VibrationSystem {
 }
 
 freeVibration :: VibrationSystem -> Double -> Double -> Double -> Double
-freeVibration system x0 v0 t = 
+freeVibration system x0 v0 t =
     let zeta = dampingRatio system
         omega_n = naturalFrequency system
     in if zeta < 1.0
@@ -663,7 +756,7 @@ freeVibration system x0 v0 t =
                     in a * exp (lambda1 * t) + b * exp (lambda2 * t)
 
 forcedVibration :: VibrationSystem -> Double -> Double -> Double -> Double
-forcedVibration system f0 omega_f t = 
+forcedVibration system f0 omega_f t =
     let omega_n = naturalFrequency system
         zeta = dampingRatio system
         r = omega_f / omega_n
@@ -691,18 +784,18 @@ newThermodynamicsSystem temp press vol m c = ThermodynamicsSystem {
 }
 
 idealGasLaw :: ThermodynamicsSystem -> Double -> Double
-idealGasLaw system moles = 
+idealGasLaw system moles =
     let r = 8.314 -- J/mol/K
     in pressure system * volume system - moles * r * temperature system
 
 adiabaticProcess :: ThermodynamicsSystem -> Double -> Double -> (Double, Double)
-adiabaticProcess system gamma new_volume = 
+adiabaticProcess system gamma new_volume =
     let new_pressure = pressure system * (volume system / new_volume)^gamma
         new_temperature = temperature system * (volume system / new_volume)^(gamma - 1.0)
     in (new_pressure, new_temperature)
 
 isothermalWork :: ThermodynamicsSystem -> Double -> Double -> Double
-isothermalWork system v1 v2 = 
+isothermalWork system v1 v2 =
     let r = 8.314 -- J/mol/K
         moles = pressure system * volume system / (r * temperature system)
     in moles * r * temperature system * log (v2 / v1)
@@ -727,21 +820,21 @@ newFluidSystem rho mu vel p = FluidSystem {
 }
 
 hydrostaticPressure :: FluidSystem -> Double -> Double
-hydrostaticPressure fluid depth = 
+hydrostaticPressure fluid depth =
     let g = 9.81 -- m/s²
     in fluidPressure fluid + density fluid * g * depth
 
 bernoulliEquation :: FluidSystem -> Double -> Double -> Double
-bernoulliEquation fluid height vel_mag = 
+bernoulliEquation fluid height vel_mag =
     let g = 9.81 -- m/s²
     in fluidPressure fluid + 0.5 * density fluid * vel_mag^2 + density fluid * g * height
 
 reynoldsNumber :: FluidSystem -> Double -> Double
-reynoldsNumber fluid char_length = 
+reynoldsNumber fluid char_length =
     density fluid * magnitude (velocity fluid) * char_length / viscosity fluid
 
 boundaryLayerThickness :: FluidSystem -> Double -> Double -> Double
-boundaryLayerThickness fluid distance u_inf = 
+boundaryLayerThickness fluid distance u_inf =
     let nu = viscosity fluid / density fluid
     in 5.0 * sqrt (nu * distance / u_inf)
 
@@ -762,23 +855,23 @@ newBeam l e i q = Beam {
 }
 
 maxDeflectionSimplySupported :: Beam -> Double
-maxDeflectionSimplySupported beam = 
-    5.0 * distributedLoad beam * beamLength beam^4 / 
+maxDeflectionSimplySupported beam =
+    5.0 * distributedLoad beam * beamLength beam^4 /
     (384.0 * youngsModulus beam * momentOfInertia beam)
 
 maxMomentSimplySupported :: Beam -> Double
-maxMomentSimplySupported beam = 
+maxMomentSimplySupported beam =
     distributedLoad beam * beamLength beam^2 / 8.0
 
 cantileverDeflection :: Beam -> Double -> Double -> Double
-cantileverDeflection beam p_load load_pos = 
-    p_load * load_pos^2 * (3.0 * beamLength beam - load_pos) / 
+cantileverDeflection beam p_load load_pos =
+    p_load * load_pos^2 * (3.0 * beamLength beam - load_pos) /
     (6.0 * youngsModulus beam * momentOfInertia beam)
 
 naturalFrequency :: Beam -> Double -> Double
-naturalFrequency beam mass_per_length = 
+naturalFrequency beam mass_per_length =
     let pi = 3.14159265359
-    in (pi^2 / (2.0 * beamLength beam^2)) * 
+    in (pi^2 / (2.0 * beamLength beam^2)) *
        sqrt (youngsModulus beam * momentOfInertia beam / mass_per_length)
 
 -- 示例使用
@@ -790,50 +883,50 @@ example = do
         system = addForce force2 $ addForce force1 newStaticsSystem
         about_point = newVector3D 0.0 0.0 0.0
         equilibrium = isEquilibrium system about_point
-    
+
     putStrLn $ "System in equilibrium: " ++ show equilibrium
-    
+
     -- 振动系统示例
     let vibration = newVibrationSystem 1.0 100.0 2.0
         displacement = freeVibration vibration 1.0 0.0 0.1
         forced_response = forcedVibration vibration 10.0 5.0 0.1
-    
+
     putStrLn $ "Free vibration displacement: " ++ show displacement
     putStrLn $ "Forced vibration response: " ++ show forced_response
     putStrLn $ "Natural frequency: " ++ show (naturalFrequency vibration) ++ " rad/s"
     putStrLn $ "Damping ratio: " ++ show (dampingRatio vibration)
-    
+
     -- 热力学系统示例
     let thermo = newThermodynamicsSystem 300.0 101325.0 0.001 1.0 1000.0
         gas_law_error = idealGasLaw thermo 0.04
         (new_pressure, new_temp) = adiabaticProcess thermo 1.4 0.002
         work = isothermalWork thermo 0.001 0.002
         efficiency = carnotEfficiency thermo 273.0
-    
+
     putStrLn $ "Ideal gas law error: " ++ show gas_law_error
     putStrLn $ "Adiabatic process - New pressure: " ++ show new_pressure ++ " Pa, New temperature: " ++ show new_temp ++ " K"
     putStrLn $ "Isothermal work: " ++ show work ++ " J"
     putStrLn $ "Carnot efficiency: " ++ show efficiency
-    
+
     -- 流体系统示例
     let fluid = newFluidSystem 1000.0 0.001 (newVector3D 1.0 0.0 0.0) 101325.0
         hydrostatic_p = hydrostaticPressure fluid 10.0
         bernoulli = bernoulliEquation fluid 5.0 2.0
         reynolds = reynoldsNumber fluid 0.01
         boundary_thickness = boundaryLayerThickness fluid 1.0 5.0
-    
+
     putStrLn $ "Hydrostatic pressure: " ++ show hydrostatic_p ++ " Pa"
     putStrLn $ "Bernoulli equation result: " ++ show bernoulli ++ " Pa"
     putStrLn $ "Reynolds number: " ++ show reynolds
     putStrLn $ "Boundary layer thickness: " ++ show boundary_thickness ++ " m"
-    
+
     -- 梁分析示例
     let beam = newBeam 5.0 200e9 1e-6 1000.0
         max_deflection = maxDeflectionSimplySupported beam
         max_moment = maxMomentSimplySupported beam
         cantilever_deflection = cantileverDeflection beam 1000.0 2.0
         natural_freq = naturalFrequency beam 10.0
-    
+
     putStrLn $ "Max deflection: " ++ show max_deflection ++ " m"
     putStrLn $ "Max moment: " ++ show max_moment ++ " N·m"
     putStrLn $ "Cantilever deflection: " ++ show cantilever_deflection ++ " m"
@@ -861,6 +954,34 @@ example = do
 - **制冷系统**: 压缩机、冷凝器设计
 
 ---
+
+## 相关模型 / Related Models
+
+### 工程科学模型 / Engineering Science Models
+
+- [优化模型](../01-优化模型/README.md) - 结构优化和机械优化
+- [控制论模型](../02-控制论模型/README.md) - 机械控制和机器人控制
+- [信号处理模型](../03-信号处理模型/README.md) - 机械信号处理和振动分析
+- [材料科学模型](../04-材料科学模型/README.md) - 材料力学和结构材料
+- [电子工程模型](../06-电子工程模型/README.md) - 机电一体化和电子机械
+
+### 物理科学模型 / Physical Science Models
+
+- [经典力学模型](../../02-物理科学模型/01-经典力学模型/README.md) - 机械力学和工程力学
+- [热力学模型](../../02-物理科学模型/04-热力学模型/README.md) - 工程热力学和热机
+- [流体力学模型](../../02-物理科学模型/08-流体力学模型/README.md) - 工程流体力学和流体机械
+
+### 数学科学模型 / Mathematical Science Models
+
+- [代数模型](../../03-数学科学模型/01-代数模型/README.md) - 线性代数和矩阵理论在机械工程中的应用
+- [几何模型](../../03-数学科学模型/02-几何模型/README.md) - 机械几何和机构几何
+- [拓扑模型](../../03-数学科学模型/03-拓扑模型/README.md) - 机构拓扑
+
+### 基础理论 / Basic Theory
+
+- [模型分类学](../../01-基础理论/01-模型分类学/README.md) - 机械工程模型的分类
+- [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 机械工程模型的形式化方法
+- [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 机械工程模型作为科学模型的理论基础
 
 ## 参考文献 / References
 

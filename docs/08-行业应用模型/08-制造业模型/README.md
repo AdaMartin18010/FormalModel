@@ -57,6 +57,7 @@
     - [复现实操 / Reproducibility](#复现实操--reproducibility)
   - [8.8.9 算法实现 / Algorithm Implementation](#889-算法实现--algorithm-implementation)
     - [生产计划算法 / Production Planning Algorithms](#生产计划算法--production-planning-algorithms)
+      - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
     - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
@@ -1416,6 +1417,568 @@ if __name__ == "__main__":
     manufacturing_verification()
 ```
 
+#### Julia实现示例 / Julia Implementation Example
+
+```julia
+using Statistics
+using Distributions
+using Optim
+using LinearAlgebra
+
+"""
+产品结构体
+"""
+struct Product
+    id::String
+    unit_cost::Float64
+    holding_cost::Float64
+    setup_cost::Float64
+    capacity_requirement::Float64
+end
+
+"""
+生产计划结构体
+"""
+mutable struct ProductionPlan
+    products::Vector{Product}
+    periods::Int
+    demands::Dict{Tuple{String, Int}, Float64}
+    capacities::Dict{Int, Float64}
+
+    function ProductionPlan(periods::Int)
+        new(Product[], periods, Dict{Tuple{String, Int}, Float64}(), Dict{Int, Float64}())
+    end
+end
+
+"""
+添加产品
+"""
+function add_product(plan::ProductionPlan, product::Product)
+    push!(plan.products, product)
+end
+
+"""
+设置需求
+"""
+function set_demand(plan::ProductionPlan, product_id::String, period::Int, demand::Float64)
+    plan.demands[(product_id, period)] = demand
+end
+
+"""
+设置产能
+"""
+function set_capacity(plan::ProductionPlan, period::Int, capacity::Float64)
+    plan.capacities[period] = capacity
+end
+
+"""
+主生产计划调度器结构体
+"""
+mutable struct MasterProductionScheduler
+    function MasterProductionScheduler()
+        new()
+    end
+end
+
+"""
+优化生产计划
+"""
+function optimize_production(scheduler::MasterProductionScheduler,
+                            plan::ProductionPlan)::Dict{Tuple{String, Int}, Float64}
+    production = Dict{Tuple{String, Int}, Float64}()
+
+    for product in plan.products
+        for period in 0:(plan.periods - 1)
+            demand = get(plan.demands, (product.id, period), 0.0)
+            capacity = get(plan.capacities, period, Inf)
+
+            if demand > 0
+                production_quantity = min(demand, capacity / product.capacity_requirement)
+                production[(product.id, period)] = production_quantity
+            else
+                production[(product.id, period)] = 0.0
+            end
+        end
+    end
+
+    return production
+end
+
+"""
+计算总成本
+"""
+function calculate_total_cost(scheduler::MasterProductionScheduler,
+                             plan::ProductionPlan,
+                             production::Dict{Tuple{String, Int}, Float64})::Float64
+    total_cost = 0.0
+
+    for product in plan.products
+        for period in 0:(plan.periods - 1)
+            prod_quantity = get(production, (product.id, period), 0.0)
+
+            # 生产成本
+            total_cost += prod_quantity * product.unit_cost
+
+            # 库存成本
+            if period > 0
+                inventory = sum(get(production, (product.id, t), 0.0) for t in 0:(period - 1)) -
+                           sum(get(plan.demands, (product.id, t), 0.0) for t in 0:(period - 1))
+                total_cost += max(0.0, inventory) * product.holding_cost
+            end
+
+            # 启动成本
+            if prod_quantity > 0
+                total_cost += product.setup_cost
+            end
+        end
+    end
+
+    return total_cost
+end
+
+"""
+物料需求计划系统结构体
+"""
+mutable struct MRPSystem
+    bom::Dict{String, Dict{String, Float64}}
+    lead_times::Dict{String, Int}
+    lot_sizes::Dict{String, Float64}
+
+    function MRPSystem()
+        new(Dict{String, Dict{String, Float64}}(), Dict{String, Int}(), Dict{String, Float64}())
+    end
+end
+
+"""
+添加物料清单项
+"""
+function add_bom_item(mrp::MRPSystem, parent::String, component::String, quantity::Float64)
+    if !haskey(mrp.bom, parent)
+        mrp.bom[parent] = Dict{String, Float64}()
+    end
+    mrp.bom[parent][component] = quantity
+end
+
+"""
+设置提前期
+"""
+function set_lead_time(mrp::MRPSystem, item::String, lead_time::Int)
+    mrp.lead_times[item] = lead_time
+end
+
+"""
+设置批量大小
+"""
+function set_lot_size(mrp::MRPSystem, item::String, lot_size::Float64)
+    mrp.lot_sizes[item] = lot_size
+end
+
+"""
+计算物料需求计划
+"""
+function calculate_mrp(mrp::MRPSystem,
+                      master_schedule::Dict{Tuple{String, Int}, Float64},
+                      initial_inventory::Dict{String, Float64})::Dict{Tuple{String, Int}, Float64}
+    mrp_plan = Dict{Tuple{String, Int}, Float64}()
+
+    # 计算总需求
+    gross_requirements = Dict{String, Dict{Int, Float64}}()
+    for ((item, period), quantity) in master_schedule
+        if !haskey(gross_requirements, item)
+            gross_requirements[item] = Dict{Int, Float64}()
+        end
+        if !haskey(gross_requirements[item], period)
+            gross_requirements[item][period] = 0.0
+        end
+        gross_requirements[item][period] += quantity
+
+        # 计算相关组件的需求
+        if haskey(mrp.bom, item)
+            for (component, comp_quantity) in mrp.bom[item]
+                if !haskey(gross_requirements, component)
+                    gross_requirements[component] = Dict{Int, Float64}()
+                end
+                if !haskey(gross_requirements[component], period)
+                    gross_requirements[component][period] = 0.0
+                end
+                gross_requirements[component][period] += quantity * comp_quantity
+            end
+        end
+    end
+
+    # 计算净需求和计划订单
+    for item in keys(gross_requirements)
+        inventory = get(initial_inventory, item, 0.0)
+
+        for period in sort(collect(keys(gross_requirements[item])))
+            gross_req = gross_requirements[item][period]
+            net_req = max(0.0, gross_req - inventory)
+
+            if net_req > 0
+                lot_size = get(mrp.lot_sizes, item, net_req)
+                planned_order = ceil(net_req / lot_size) * lot_size
+
+                # 考虑提前期
+                order_period = period - get(mrp.lead_times, item, 0)
+                if order_period >= 0
+                    mrp_plan[(item, order_period)] = planned_order
+                end
+
+                inventory += planned_order
+            end
+
+            inventory -= gross_req
+        end
+    end
+
+    return mrp_plan
+end
+
+"""
+统计过程控制结构体
+"""
+mutable struct StatisticalProcessControl
+    target_mean::Float64
+    target_std::Float64
+    usl::Float64
+    lsl::Float64
+
+    function StatisticalProcessControl(target_mean::Float64, target_std::Float64,
+                                      usl::Float64, lsl::Float64)
+        new(target_mean, target_std, usl, lsl)
+    end
+end
+
+"""
+计算控制限
+"""
+function calculate_control_limits(spc::StatisticalProcessControl,
+                                 sample_size::Int = 1)::Tuple{Float64, Float64, Float64}
+    if sample_size == 1
+        ucl = spc.target_mean + 3 * spc.target_std
+        lcl = spc.target_mean - 3 * spc.target_std
+    else
+        ucl = spc.target_mean + 3 * spc.target_std / sqrt(sample_size)
+        lcl = spc.target_mean - 3 * spc.target_std / sqrt(sample_size)
+    end
+
+    return (ucl, spc.target_mean, lcl)
+end
+
+"""
+检查是否超出控制限
+"""
+function check_out_of_control(spc::StatisticalProcessControl,
+                             measurements::Vector{Float64})::Vector{Bool}
+    ucl, cl, lcl = calculate_control_limits(spc)
+    return [m > ucl || m < lcl for m in measurements]
+end
+
+"""
+计算过程能力指数Cp
+"""
+function calculate_cp(spc::StatisticalProcessControl)::Float64
+    return (spc.usl - spc.lsl) / (6 * spc.target_std)
+end
+
+"""
+计算过程能力指数Cpk
+"""
+function calculate_cpk(spc::StatisticalProcessControl)::Float64
+    cpu = (spc.usl - spc.target_mean) / (3 * spc.target_std)
+    cpl = (spc.target_mean - spc.lsl) / (3 * spc.target_std)
+    return min(cpu, cpl)
+end
+
+"""
+计算缺陷率
+"""
+function calculate_defect_rate(spc::StatisticalProcessControl)::Float64
+    defect_rate_above = 1.0 - cdf(Normal(spc.target_mean, spc.target_std), spc.usl)
+    defect_rate_below = cdf(Normal(spc.target_mean, spc.target_std), spc.lsl)
+    return defect_rate_above + defect_rate_below
+end
+
+"""
+六西格玛结构体
+"""
+mutable struct SixSigma
+    function SixSigma()
+        new()
+    end
+end
+
+"""
+计算西格玛水平
+"""
+function calculate_sigma_level(six_sigma::SixSigma, defect_rate::Float64)::Float64
+    if defect_rate <= 0
+        return Inf
+    end
+
+    dpmo = defect_rate * 1_000_000
+    sigma_level = quantile(Normal(), 1.0 - dpmo / 1_000_000)
+    return sigma_level
+end
+
+"""
+计算每百万机会的缺陷数
+"""
+function calculate_defects_per_million(six_sigma::SixSigma, sigma_level::Float64)::Float64
+    defect_rate = 1.0 - cdf(Normal(), sigma_level)
+    dpmo = defect_rate * 1_000_000
+    return dpmo
+end
+
+"""
+库存管理器结构体
+"""
+mutable struct InventoryManager
+    demand_rate::Float64
+    setup_cost::Float64
+    holding_cost::Float64
+    lead_time::Float64
+
+    function InventoryManager(demand_rate::Float64, setup_cost::Float64,
+                              holding_cost::Float64, lead_time::Float64)
+        new(demand_rate, setup_cost, holding_cost, lead_time)
+    end
+end
+
+"""
+计算经济订货量
+"""
+function calculate_eoq(inventory::InventoryManager)::Float64
+    eoq = sqrt(2 * inventory.demand_rate * inventory.setup_cost / inventory.holding_cost)
+    return eoq
+end
+
+"""
+计算安全库存
+"""
+function calculate_safety_stock(inventory::InventoryManager, demand_std::Float64,
+                               service_level::Float64 = 0.95)::Float64
+    z_score = quantile(Normal(), service_level)
+    safety_stock = z_score * demand_std * sqrt(inventory.lead_time)
+    return safety_stock
+end
+
+"""
+计算再订货点
+"""
+function calculate_reorder_point(inventory::InventoryManager, demand_std::Float64,
+                               service_level::Float64 = 0.95)::Float64
+    safety_stock = calculate_safety_stock(inventory, demand_std, service_level)
+    reorder_point = inventory.demand_rate * inventory.lead_time + safety_stock
+    return reorder_point
+end
+
+"""
+计算总成本
+"""
+function calculate_total_cost(inventory::InventoryManager, order_quantity::Float64)::Float64
+    annual_orders = inventory.demand_rate / order_quantity
+    average_inventory = order_quantity / 2
+
+    total_cost = annual_orders * inventory.setup_cost + average_inventory * inventory.holding_cost
+    return total_cost
+end
+
+"""
+预防性维护结构体
+"""
+mutable struct PreventiveMaintenance
+    failure_rate::Float64
+    maintenance_interval::Float64
+
+    function PreventiveMaintenance(failure_rate::Float64, maintenance_interval::Float64)
+        new(failure_rate, maintenance_interval)
+    end
+end
+
+"""
+计算可靠性
+"""
+function calculate_reliability(pm::PreventiveMaintenance, time::Float64)::Float64
+    reliability = exp(-pm.failure_rate * time)
+    return reliability
+end
+
+"""
+计算最优维护间隔
+"""
+function calculate_optimal_maintenance_interval(pm::PreventiveMaintenance,
+                                               maintenance_cost::Float64,
+                                               failure_cost::Float64)::Float64
+    function total_cost_per_unit_time(t::Float64)
+        return maintenance_cost / t + failure_cost * pm.failure_rate *
+               (1.0 - calculate_reliability(pm, t))
+    end
+
+    result = optimize(total_cost_per_unit_time, 0.1, 100.0)
+    return Optim.minimizer(result)
+end
+
+"""
+预测性维护结构体
+"""
+mutable struct PredictiveMaintenance
+    health_scores::Vector{Float64}
+    threshold::Float64
+
+    function PredictiveMaintenance()
+        new(Float64[], 0.7)
+    end
+end
+
+"""
+更新健康评分
+"""
+function update_health_score(pdm::PredictiveMaintenance,
+                           sensor_data::Dict{String, Float64})::Float64
+    temperature_score = 1.0 - min(1.0, get(sensor_data, "temperature", 0.0) / 100.0)
+    vibration_score = 1.0 - min(1.0, get(sensor_data, "vibration", 0.0) / 10.0)
+    pressure_score = 1.0 - min(1.0, abs(get(sensor_data, "pressure", 50.0) - 50.0) / 50.0)
+
+    health_score = (temperature_score + vibration_score + pressure_score) / 3.0
+    push!(pdm.health_scores, health_score)
+
+    return health_score
+end
+
+"""
+预测故障
+"""
+function predict_failure(pdm::PredictiveMaintenance, window_size::Int = 10)::Bool
+    if length(pdm.health_scores) < window_size
+        return false
+    end
+
+    recent_scores = pdm.health_scores[(end - window_size + 1):end]
+    trend = (recent_scores[end] - recent_scores[1]) / length(recent_scores)
+
+    current_score = recent_scores[end]
+    return current_score < pdm.threshold && trend < -0.01
+end
+
+# 示例：制造业模型使用
+function manufacturing_example()
+    println("=== 制造业模型验证 ===")
+
+    # 生产计划验证
+    println("\n1. 生产计划验证:")
+
+    plan = ProductionPlan(4)
+
+    product_a = Product("A", 10.0, 2.0, 100.0, 1.0)
+    add_product(plan, product_a)
+
+    set_demand(plan, "A", 0, 100.0)
+    set_demand(plan, "A", 1, 150.0)
+    set_demand(plan, "A", 2, 200.0)
+    set_demand(plan, "A", 3, 120.0)
+
+    for period in 0:3
+        set_capacity(plan, period, 200.0)
+    end
+
+    scheduler = MasterProductionScheduler()
+    production = optimize_production(scheduler, plan)
+    total_cost = calculate_total_cost(scheduler, plan, production)
+
+    println("生产计划: $production")
+    println("总成本: \$$(round(total_cost, digits=2))")
+
+    # MRP验证
+    println("\n2. MRP验证:")
+
+    mrp = MRPSystem()
+    add_bom_item(mrp, "A", "B", 2.0)
+    add_bom_item(mrp, "A", "C", 1.0)
+    set_lead_time(mrp, "B", 1)
+    set_lead_time(mrp, "C", 2)
+    set_lot_size(mrp, "B", 50.0)
+    set_lot_size(mrp, "C", 100.0)
+
+    initial_inventory = Dict("B" => 50.0, "C" => 100.0)
+    mrp_plan = calculate_mrp(mrp, production, initial_inventory)
+
+    println("MRP计划: $mrp_plan")
+
+    # 质量控制验证
+    println("\n3. 质量控制验证:")
+
+    spc = StatisticalProcessControl(100.0, 2.0, 106.0, 94.0)
+
+    measurements = [98.0, 102.0, 99.0, 101.0, 103.0, 97.0, 100.0, 104.0]
+    out_of_control = check_out_of_control(spc, measurements)
+
+    cp = calculate_cp(spc)
+    cpk = calculate_cpk(spc)
+    defect_rate = calculate_defect_rate(spc)
+
+    println("控制图检查: $out_of_control")
+    println("过程能力指数Cp: $(round(cp, digits=4))")
+    println("过程能力指数Cpk: $(round(cpk, digits=4))")
+    println("缺陷率: $(round(defect_rate, digits=4))")
+
+    six_sigma = SixSigma()
+    sigma_level = calculate_sigma_level(six_sigma, defect_rate)
+    dpmo = calculate_defects_per_million(six_sigma, sigma_level)
+
+    println("西格玛水平: $(round(sigma_level, digits=2))")
+    println("每百万机会缺陷数: $(round(dpmo, digits=2))")
+
+    # 库存管理验证
+    println("\n4. 库存管理验证:")
+
+    inventory = InventoryManager(1000.0, 50.0, 5.0, 2.0)
+
+    eoq = calculate_eoq(inventory)
+    safety_stock = calculate_safety_stock(inventory, 50.0)
+    reorder_point = calculate_reorder_point(inventory, 50.0)
+    total_cost = calculate_total_cost(inventory, eoq)
+
+    println("经济订货量: $(round(eoq, digits=2))")
+    println("安全库存: $(round(safety_stock, digits=2))")
+    println("再订货点: $(round(reorder_point, digits=2))")
+    println("总库存成本: \$$(round(total_cost, digits=2))")
+
+    # 设备维护验证
+    println("\n5. 设备维护验证:")
+
+    pm = PreventiveMaintenance(0.01, 100.0)
+    reliability = calculate_reliability(pm, 50.0)
+    optimal_interval = calculate_optimal_maintenance_interval(pm, 1000.0, 5000.0)
+
+    println("可靠性: $(round(reliability, digits=4))")
+    println("最优维护间隔: $(round(optimal_interval, digits=2))")
+
+    pdm = PredictiveMaintenance()
+
+    sensor_data = Dict(
+        "temperature" => 75.0,
+        "vibration" => 3.0,
+        "pressure" => 52.0
+    )
+
+    health_score = update_health_score(pdm, sensor_data)
+    failure_prediction = predict_failure(pdm)
+
+    println("健康评分: $(round(health_score, digits=4))")
+    println("故障预测: $failure_prediction")
+
+    println("\n验证完成!")
+
+    return Dict(
+        "total_cost" => total_cost,
+        "cp" => cp,
+        "cpk" => cpk,
+        "eoq" => eoq
+    )
+end
+```
+
 ---
 
 ## 相关模型 / Related Models
@@ -1472,5 +2035,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

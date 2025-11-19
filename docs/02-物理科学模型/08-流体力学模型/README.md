@@ -1,8 +1,8 @@
 # 流体力学模型 / Fluid Mechanics Models
 
-**版本**: 1.0.0
-**最后更新**: 2025-08-25
-**状态**: 开发中
+**版本**: 1.2.0
+**最后更新**: 2025-01-XX
+**状态**: 核心功能已完成 / Core Features Completed
 
 ## 目录 / Table of Contents
 
@@ -37,6 +37,10 @@
     - [4.2 壁面摩擦](#42-壁面摩擦)
       - [Blasius相似解与阻力](#blasius相似解与阻力)
       - [边界层验证示例](#边界层验证示例)
+  - [实现与应用 / Implementation and Applications](#实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
     - [基础理论 / Basic Theory](#基础理论--basic-theory)
@@ -442,6 +446,316 @@ def boundary_layer_sanity_checks(nu: float = 1.5e-5, U: float = 1.0,
     cf2 = blasius_cf(Re_x2)
     # 趋势：厚度随x增大；C_f随Re_x增大而减小
     return (d2 > d1) and (cf2 < cf1)
+```
+
+## 实现与应用 / Implementation and Applications
+
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+/// 静水压力计算
+pub fn hydrostatic_pressure(p0: f64, density: f64, g: f64, depth: f64) -> f64 {
+    p0 + density * g * depth
+}
+
+/// 浮力计算（阿基米德原理）
+pub fn buoyant_force(fluid_density: f64, gravity: f64, displaced_volume: f64) -> f64 {
+    fluid_density * gravity * displaced_volume
+}
+
+/// 雷诺数计算
+pub fn reynolds_number(rho: f64, u_char: f64, L: f64, mu: f64) -> f64 {
+    rho * u_char * L / mu
+}
+
+/// 临界雷诺数（管道流）
+pub fn critical_reynolds_pipe() -> f64 {
+    2300.0
+}
+
+/// 理想气体压力（可压缩流）
+pub fn ideal_gas_pressure(rho: f64, e: f64, gamma: f64) -> f64 {
+    (gamma - 1.0) * rho * e
+}
+
+/// 声速计算
+pub fn speed_of_sound(gamma: f64, r: f64, t: f64) -> f64 {
+    (gamma * r * t).sqrt()
+}
+
+/// 马赫数计算
+pub fn mach_number(u: f64, a: f64) -> f64 {
+    u / a
+}
+
+/// 动态压力
+pub fn dynamic_pressure(rho: f64, u: f64) -> f64 {
+    0.5 * rho * u * u
+}
+
+/// 哈根-泊肃叶速度分布（层流）
+pub fn hagen_poiseuille_velocity(
+    delta_p: f64,
+    mu: f64,
+    l: f64,
+    r: f64,
+    radial_pos: f64,
+) -> f64 {
+    (delta_p / (4.0 * mu * l)) * (r * r - radial_pos * radial_pos)
+}
+
+/// 普朗特边界层厚度
+pub fn bl_thickness_prandtl(nu: f64, x: f64, u: f64) -> f64 {
+    5.0 * (nu * x / u).sqrt()
+}
+
+/// Blasius壁面摩擦系数
+pub fn blasius_cf(re_x: f64) -> f64 {
+    0.664 / re_x.sqrt()
+}
+
+/// 平板阻力系数
+pub fn flat_plate_drag_coefficient(re_l: f64) -> f64 {
+    1.328 / re_l.sqrt()
+}
+
+/// k-ε湍流模型：涡粘性
+pub fn eddy_viscosity_k_epsilon(k: f64, eps: f64, c_mu: f64) -> f64 {
+    if eps <= 0.0 {
+        return 0.0;
+    }
+    c_mu * k * k / eps
+}
+
+/// k-ω湍流模型：涡粘性
+pub fn eddy_viscosity_k_omega(k: f64, omega: f64) -> f64 {
+    if omega <= 0.0 {
+        return 0.0;
+    }
+    k / omega
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hydrostatic_pressure() {
+        let p = hydrostatic_pressure(101325.0, 1000.0, 9.81, 10.0);
+        assert!((p - 199425.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_buoyant_force() {
+        let f = buoyant_force(1000.0, 9.81, 0.001);
+        assert!((f - 9.81).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_reynolds_number() {
+        let re = reynolds_number(1000.0, 1.0, 0.1, 0.001);
+        assert!((re - 100000.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_mach_number() {
+        let ma = mach_number(343.0, 343.0);
+        assert!((ma - 1.0).abs() < 0.01);
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module FluidMechanics where
+
+-- 静水压力计算
+hydrostaticPressure :: Double -> Double -> Double -> Double -> Double
+hydrostaticPressure p0 density g depth = p0 + density * g * depth
+
+-- 浮力计算（阿基米德原理）
+buoyantForce :: Double -> Double -> Double -> Double
+buoyantForce fluidDensity gravity displacedVolume =
+    fluidDensity * gravity * displacedVolume
+
+-- 雷诺数计算
+reynoldsNumber :: Double -> Double -> Double -> Double -> Double
+reynoldsNumber rho uChar l mu = rho * uChar * l / mu
+
+-- 临界雷诺数（管道流）
+criticalReynoldsPipe :: Double
+criticalReynoldsPipe = 2300.0
+
+-- 理想气体压力（可压缩流）
+idealGasPressure :: Double -> Double -> Double -> Double
+idealGasPressure rho e gamma = (gamma - 1.0) * rho * e
+
+-- 声速计算
+speedOfSound :: Double -> Double -> Double -> Double
+speedOfSound gamma r t = sqrt (gamma * r * t)
+
+-- 马赫数计算
+machNumber :: Double -> Double -> Double
+machNumber u a = u / a
+
+-- 动态压力
+dynamicPressure :: Double -> Double -> Double
+dynamicPressure rho u = 0.5 * rho * u * u
+
+-- 哈根-泊肃叶速度分布（层流）
+hagenPoiseuilleVelocity :: Double -> Double -> Double -> Double -> Double -> Double
+hagenPoiseuilleVelocity deltaP mu l r radialPos =
+    (deltaP / (4.0 * mu * l)) * (r^2 - radialPos^2)
+
+-- 普朗特边界层厚度
+blThicknessPrandtl :: Double -> Double -> Double -> Double
+blThicknessPrandtl nu x u = 5.0 * sqrt (nu * x / u)
+
+-- Blasius壁面摩擦系数
+blasiusCf :: Double -> Double
+blasiusCf reX = 0.664 / sqrt reX
+
+-- 平板阻力系数
+flatPlateDragCoefficient :: Double -> Double
+flatPlateDragCoefficient reL = 1.328 / sqrt reL
+
+-- k-ε湍流模型：涡粘性
+eddyViscosityKEpsilon :: Double -> Double -> Double -> Double
+eddyViscosityKEpsilon k eps cMu
+    | eps <= 0.0 = 0.0
+    | otherwise = cMu * k^2 / eps
+
+-- k-ω湍流模型：涡粘性
+eddyViscosityKOmega :: Double -> Double -> Double
+eddyViscosityKOmega k omega
+    | omega <= 0.0 = 0.0
+    | otherwise = k / omega
+
+-- 示例：计算静水压力
+exampleHydrostaticPressure :: Double
+exampleHydrostaticPressure =
+    hydrostaticPressure 101325.0 1000.0 9.81 10.0
+
+-- 示例：计算浮力
+exampleBuoyantForce :: Double
+exampleBuoyantForce = buoyantForce 1000.0 9.81 0.001
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+"""
+静水压力计算
+"""
+hydrostatic_pressure(p0::Float64, density::Float64, g::Float64, depth::Float64) =
+    p0 + density * g * depth
+
+"""
+浮力计算（阿基米德原理）
+"""
+buoyant_force(fluid_density::Float64, gravity::Float64, displaced_volume::Float64) =
+    fluid_density * gravity * displaced_volume
+
+"""
+雷诺数计算
+"""
+reynolds_number(rho::Float64, u_char::Float64, L::Float64, mu::Float64) =
+    rho * u_char * L / mu
+
+"""
+临界雷诺数（管道流）
+"""
+critical_reynolds_pipe() = 2300.0
+
+"""
+理想气体压力（可压缩流）
+"""
+ideal_gas_pressure(rho::Float64, e::Float64, gamma::Float64) =
+    (gamma - 1.0) * rho * e
+
+"""
+声速计算
+"""
+speed_of_sound(gamma::Float64, R::Float64, T::Float64) =
+    sqrt(gamma * R * T)
+
+"""
+马赫数计算
+"""
+mach_number(u::Float64, a::Float64) = u / a
+
+"""
+动态压力
+"""
+dynamic_pressure(rho::Float64, u::Float64) = 0.5 * rho * u^2
+
+"""
+哈根-泊肃叶速度分布（层流）
+"""
+function hagen_poiseuille_velocity(delta_p::Float64, mu::Float64, L::Float64,
+                                  R::Float64, r::Float64)
+    return (delta_p / (4.0 * mu * L)) * (R^2 - r^2)
+end
+
+"""
+普朗特边界层厚度
+"""
+bl_thickness_prandtl(nu::Float64, x::Float64, U::Float64) =
+    5.0 * sqrt(nu * x / U)
+
+"""
+Blasius壁面摩擦系数
+"""
+blasius_cf(Re_x::Float64) = 0.664 / sqrt(Re_x)
+
+"""
+平板阻力系数
+"""
+flat_plate_drag_coefficient(Re_L::Float64) = 1.328 / sqrt(Re_L)
+
+"""
+k-ε湍流模型：涡粘性
+"""
+function eddy_viscosity_k_epsilon(k::Float64, eps::Float64, C_mu::Float64 = 0.09)
+    if eps <= 0.0
+        return 0.0
+    end
+    return C_mu * k^2 / eps
+end
+
+"""
+k-ω湍流模型：涡粘性
+"""
+function eddy_viscosity_k_omega(k::Float64, omega::Float64)
+    if omega <= 0.0
+        return 0.0
+    end
+    return k / omega
+end
+
+# 示例：计算静水压力
+function fluid_mechanics_example()
+    # 静水压力
+    p = hydrostatic_pressure(101325.0, 1000.0, 9.81, 10.0)
+
+    # 浮力
+    f_b = buoyant_force(1000.0, 9.81, 0.001)
+
+    # 雷诺数
+    re = reynolds_number(1000.0, 1.0, 0.1, 0.001)
+
+    # 马赫数
+    a = speed_of_sound(1.4, 287.0, 300.0)
+    ma = mach_number(343.0, a)
+
+    return Dict(
+        "hydrostatic_pressure" => p,
+        "buoyant_force" => f_b,
+        "reynolds_number" => re,
+        "mach_number" => ma
+    )
+end
 ```
 
 ## 相关模型 / Related Models

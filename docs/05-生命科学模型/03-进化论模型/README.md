@@ -33,6 +33,7 @@
   - [5.3.7 实现与应用 / Implementation and Applications](#537-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [种群遗传学 / Population Genetics](#种群遗传学--population-genetics)
       - [保护遗传学 / Conservation Genetics](#保护遗传学--conservation-genetics)
@@ -952,6 +953,300 @@ example = do
     putStrLn $ "Kimura distance: " ++ show kimuraDist
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using Random
+using Statistics
+
+"""
+种群结构体
+"""
+mutable struct Population
+    size::Int
+    allele_frequencies::Dict{String, Float64}
+    fitness::Dict{String, Float64}
+    mutation_rate::Float64
+    migration_rate::Float64
+
+    function Population(size::Int)
+        allele_freqs = Dict("A" => 0.5, "a" => 0.5)
+        fitness_dict = Dict("A" => 1.0, "a" => 0.9)
+        new(size, allele_freqs, fitness_dict, 1e-6, 0.01)
+    end
+end
+
+"""
+自然选择
+"""
+function natural_selection(pop::Population)
+    total_fitness = sum(freq * pop.fitness[allele]
+                       for (allele, freq) in pop.allele_frequencies)
+    for allele in keys(pop.allele_frequencies)
+        pop.allele_frequencies[allele] = (pop.allele_frequencies[allele] *
+                                          pop.fitness[allele]) / total_fitness
+    end
+end
+
+"""
+遗传漂变（Wright-Fisher模型）
+"""
+function genetic_drift(pop::Population)
+    n = pop.size * 2  # 二倍体
+    for allele in keys(pop.allele_frequencies)
+        p = pop.allele_frequencies[allele]
+        successes = sum(rand() < p for _ in 1:n)
+        pop.allele_frequencies[allele] = successes / n
+    end
+end
+
+"""
+突变
+"""
+function mutation(pop::Population)
+    for allele in keys(pop.allele_frequencies)
+        if allele == "A"
+            pop.allele_frequencies["A"] *= (1 - pop.mutation_rate)
+            pop.allele_frequencies["a"] += pop.allele_frequencies["A"] * pop.mutation_rate
+        else
+            pop.allele_frequencies["a"] *= (1 - pop.mutation_rate)
+            pop.allele_frequencies["A"] += pop.allele_frequencies["a"] * pop.mutation_rate
+        end
+    end
+end
+
+"""
+计算杂合度
+"""
+function calculate_heterozygosity(pop::Population)::Float64
+    h = 0.0
+    for (allele, freq) in pop.allele_frequencies
+        h += freq * (1 - freq)
+    end
+    return h
+end
+
+"""
+Wright-Fisher模型步进
+"""
+function wright_fisher_step(p::Float64, N::Int, s::Float64 = 0.0,
+                          mu::Float64 = 0.0)::Float64
+    wA = 1.0 + s
+    wa = 1.0
+    # 选择后的频率
+    p_selected = (p * wA) / (p * wA + (1 - p) * wa)
+    # 突变
+    p_mutated = p_selected * (1 - mu) + (1 - p_selected) * mu
+    # 抽样
+    n = 2 * N
+    successes = sum(rand() < p_mutated for _ in 1:n)
+    return successes / n
+end
+
+"""
+Moran模型步进
+"""
+function moran_step(p::Float64, N::Int, s::Float64 = 0.0)::Float64
+    wA = 1.0 + s
+    wa = 1.0
+    # 选择概率
+    prob_A = (p * wA) / (p * wA + (1 - p) * wa)
+    # 随机选择一个个体死亡，另一个个体复制
+    if rand() < prob_A
+        # A个体死亡的概率
+        death_A = p
+        if rand() < death_A
+            return max(0.0, p - 1/N)
+        else
+            return min(1.0, p + 1/N)
+        end
+    else
+        return p
+    end
+end
+
+"""
+Jukes-Cantor距离
+"""
+function jukes_cantor_distance(seq1::String, seq2::String)::Float64
+    p = count(i -> seq1[i] != seq2[i], 1:min(length(seq1), length(seq2))) /
+        min(length(seq1), length(seq2))
+    if p >= 0.75
+        return Inf
+    end
+    return -0.75 * log(1 - 4p / 3)
+end
+
+"""
+Kimura距离
+"""
+function kimura_distance(seq1::String, seq2::String)::Float64
+    transitions = 0
+    transversions = 0
+    transitions_set = Set([('A', 'G'), ('G', 'A'), ('C', 'T'), ('T', 'C')])
+
+    for i in 1:min(length(seq1), length(seq2))
+        if seq1[i] != seq2[i]
+            if (seq1[i], seq2[i]) in transitions_set
+                transitions += 1
+            else
+                transversions += 1
+            end
+        end
+    end
+
+    total = min(length(seq1), length(seq2))
+    P = transitions / total
+    Q = transversions / total
+
+    if P >= 0.5 || Q >= 0.5
+        return Inf
+    end
+
+    return -0.5 * log(1 - 2P - Q) - 0.25 * log(1 - 2Q)
+end
+
+"""
+计算Fst（种群分化系数）
+"""
+function calculate_fst(pop1::Population, pop2::Population)::Float64
+    p1 = pop1.allele_frequencies["A"]
+    p2 = pop2.allele_frequencies["A"]
+    p_mean = (p1 + p2) / 2
+    var_p = ((p1 - p_mean)^2 + (p2 - p_mean)^2) / 2
+    h_mean = (calculate_heterozygosity(pop1) + calculate_heterozygosity(pop2)) / 2
+    if h_mean == 0
+        return 0.0
+    end
+    return var_p / (p_mean * (1 - p_mean) + h_mean)
+end
+
+"""
+有效种群大小
+"""
+function effective_population_size(N::Int, var_family_size::Float64 = 0.0)::Float64
+    if var_family_size == 0.0
+        return N
+    end
+    return N / (1 + var_family_size)
+end
+
+"""
+定向选择
+"""
+function directional_selection(p::Float64, s::Float64, dt::Float64)::Float64
+    dp = s * p * (1 - p) * dt
+    return max(0.0, min(1.0, p + dp))
+end
+
+"""
+稳定选择
+"""
+function stabilizing_selection(p::Float64, p_opt::Float64, s::Float64, dt::Float64)::Float64
+    dp = -s * (p - p_opt) * p * (1 - p) * dt
+    return max(0.0, min(1.0, p + dp))
+end
+
+"""
+分裂选择
+"""
+function disruptive_selection(p::Float64, s::Float64, dt::Float64)::Float64
+    dp = s * (2p - 1) * p * (1 - p) * dt
+    return max(0.0, min(1.0, p + dp))
+end
+
+"""
+密码子替代模型：计算dN/dS
+"""
+function calculate_dnds(seq1::String, seq2::String)::Float64
+    syn_sites = 0.0
+    nonsyn_sites = 0.0
+    syn_subs = 0.0
+    nonsyn_subs = 0.0
+
+    # 简化的位点计数和替代计数
+    for i in 1:3:min(length(seq1), length(seq2))-2
+        codon1 = seq1[i:i+2]
+        codon2 = seq2[i:i+2]
+        if codon1 != codon2
+            if is_synonymous_substitution(codon1, codon2)
+                syn_subs += 1.0
+            else
+                nonsyn_subs += 1.0
+            end
+        end
+        syn_sites += 1.0
+        nonsyn_sites += 2.0
+    end
+
+    dS = syn_subs / max(syn_sites, 1.0)
+    dN = nonsyn_subs / max(nonsyn_sites, 1.0)
+    return syn_sites > 0 && syn_subs > 0 ? dN / dS : 0.0
+end
+
+"""
+判断同义替代（简化）
+"""
+function is_synonymous_substitution(codon1::String, codon2::String)::Bool
+    # 简化实现：如果密码子编码相同氨基酸则为同义
+    return codon1 == codon2
+end
+
+# 示例：进化论模型使用
+function evolutionary_example()
+    # 单种群进化模拟
+    pop = Population(1000)
+    for generation in 1:100
+        natural_selection(pop)
+        genetic_drift(pop)
+        mutation(pop)
+        if generation % 10 == 0
+            h = calculate_heterozygosity(pop)
+            println("Generation $generation: A=$(pop.allele_frequencies["A"]), " *
+                    "a=$(pop.allele_frequencies["a"]), H=$h")
+        end
+    end
+
+    # Wright-Fisher模拟
+    p = 0.5
+    N = 1000
+    for _ in 1:100
+        p = wright_fisher_step(p, N, 0.01, 1e-6)
+    end
+    println("Wright-Fisher final frequency: $p")
+
+    # 分子进化分析
+    seq1 = "ATCGATCGATCG"
+    seq2 = "ATCGATCGATCA"
+    seq3 = "ATCGATCGATCT"
+
+    jc_dist = jukes_cantor_distance(seq1, seq2)
+    kimura_dist = kimura_distance(seq1, seq2)
+    println("JC distance: $jc_dist")
+    println("Kimura distance: $kimura_dist")
+
+    # 选择类型模拟
+    p_dir = 0.3
+    p_stab = 0.5
+    p_disr = 0.4
+    for _ in 1:100
+        p_dir = directional_selection(p_dir, 0.1, 0.01)
+        p_stab = stabilizing_selection(p_stab, 0.5, 0.1, 0.01)
+        p_disr = disruptive_selection(p_disr, 0.1, 0.01)
+    end
+    println("Directional selection: $p_dir")
+    println("Stabilizing selection: $p_stab")
+    println("Disruptive selection: $p_disr")
+
+    return Dict(
+        "final_frequency" => pop.allele_frequencies["A"],
+        "heterozygosity" => calculate_heterozygosity(pop),
+        "jc_distance" => jc_dist,
+        "kimura_distance" => kimura_dist
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 种群遗传学 / Population Genetics
@@ -1112,5 +1407,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

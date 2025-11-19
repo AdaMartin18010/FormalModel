@@ -74,18 +74,18 @@ $$\vec{F} = m\vec{a} = m\frac{d\vec{v}}{dt} = m\frac{d^2\vec{r}}{dt^2}$$
 ### 3.3 代码块示例 / Code Block Examples
 
 ```markdown
-```rust
-/// 形式化模型的标准接口
-///
-/// 所有形式化模型都必须实现此接口，确保一致性和可互操作性。
-pub trait FormalModel {
-    /// 模型类型
-    type ModelType;
+    ```rust
+    /// 形式化模型的标准接口
+    ///
+    /// 所有形式化模型都必须实现此接口，确保一致性和可互操作性。
+    pub trait FormalModel {
+        /// 模型类型
+        type ModelType;
 
-    /// 验证模型正确性
-    fn verify(&self) -> Result<VerificationResult, ModelError>;
-}
-```
+        /// 验证模型正确性
+        fn verify(&self) -> Result<VerificationResult, ModelError>;
+    }
+    ```
 
 ```
 

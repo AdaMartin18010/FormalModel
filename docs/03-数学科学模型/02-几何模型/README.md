@@ -1015,5 +1015,6 @@ println("Convex hull has ", length(hull), " vertices")
 
 ---
 
-*最后更新: 2025-08-26*
+*最后更新: 2025-01-XX*
 *版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

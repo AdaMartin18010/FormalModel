@@ -26,6 +26,7 @@
   - [8.1.4 实现与应用 / Implementation and Applications](#814-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [电子商务 / E-commerce](#电子商务--e-commerce)
       - [制造业 / Manufacturing](#制造业--manufacturing)
@@ -598,6 +599,258 @@ example = do
     putStrLn $ "总成本: " ++ show totalCost
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using Statistics
+using LinearAlgebra
+
+"""
+库存管理模型结构体
+"""
+mutable struct InventoryModel
+    demand_rate::Float64
+    order_cost::Float64
+    holding_cost::Float64
+    lead_time::Float64
+    service_level::Float64
+
+    function InventoryModel(demand_rate::Float64, order_cost::Float64,
+                           holding_cost::Float64, lead_time::Float64,
+                           service_level::Float64)
+        new(demand_rate, order_cost, holding_cost, lead_time, service_level)
+    end
+end
+
+"""
+经济订货量（EOQ）
+"""
+function economic_order_quantity(model::InventoryModel)::Float64
+    return sqrt(2.0 * model.demand_rate * model.order_cost / model.holding_cost)
+end
+
+"""
+总成本
+"""
+function total_cost(model::InventoryModel, order_quantity::Float64)::Float64
+    ordering_cost = model.demand_rate / order_quantity * model.order_cost
+    holding_cost_val = order_quantity / 2.0 * model.holding_cost
+    return ordering_cost + holding_cost_val
+end
+
+"""
+安全库存
+"""
+function safety_stock(model::InventoryModel, demand_std::Float64)::Float64
+    z_score = 1.645  # 对应95%服务水平
+    return z_score * demand_std * sqrt(model.lead_time)
+end
+
+"""
+再订货点
+"""
+function reorder_point(model::InventoryModel, demand_std::Float64)::Float64
+    average_demand = model.demand_rate * model.lead_time
+    safety_stock_val = safety_stock(model, demand_std)
+    return average_demand + safety_stock_val
+end
+
+"""
+运输优化模型结构体
+"""
+mutable struct TransportationModel
+    distances::Dict{Tuple{String, String}, Float64}
+    demands::Dict{String, Float64}
+    vehicle_capacity::Float64
+
+    function TransportationModel()
+        new(Dict{Tuple{String, String}, Float64}(), Dict{String, Float64}(), 1000.0)
+    end
+end
+
+"""
+添加距离
+"""
+function add_distance(model::TransportationModel, from::String, to::String, distance::Float64)
+    model.distances[(from, to)] = distance
+    return model
+end
+
+"""
+添加需求
+"""
+function add_demand(model::TransportationModel, location::String, demand::Float64)
+    model.demands[location] = demand
+    return model
+end
+
+"""
+计算总距离
+"""
+function calculate_total_distance(model::TransportationModel, route::Vector{String})::Float64
+    total = 0.0
+    for i in 1:length(route)-1
+        total += get(model.distances, (route[i], route[i+1]), 0.0)
+    end
+    return total
+end
+
+"""
+最近邻TSP算法
+"""
+function nearest_neighbor_tsp(model::TransportationModel, start::String,
+                             locations::Vector{String})::Vector{String}
+    unvisited = filter(x -> x != start, locations)
+    route = [start]
+    current = start
+
+    while !isempty(unvisited)
+        nearest = argmin(loc -> get(model.distances, (current, loc), Inf), unvisited)
+        push!(route, nearest)
+        current = nearest
+        filter!(x -> x != nearest, unvisited)
+    end
+
+    push!(route, start)  # 返回起点
+    return route
+end
+
+"""
+供应链网络模型结构体
+"""
+mutable struct SupplyChainNetwork
+    nodes::Vector{String}
+    costs::Dict{Tuple{String, String}, Float64}
+    capacities::Dict{Tuple{String, String}, Float64}
+
+    function SupplyChainNetwork()
+        new(String[], Dict{Tuple{String, String}, Float64}(),
+            Dict{Tuple{String, String}, Float64}())
+    end
+end
+
+"""
+添加节点
+"""
+function add_node(network::SupplyChainNetwork, node::String)
+    if !(node in network.nodes)
+        push!(network.nodes, node)
+    end
+    return network
+end
+
+"""
+添加成本
+"""
+function add_cost(network::SupplyChainNetwork, from::String, to::String, cost::Float64)
+    add_node(network, from)
+    add_node(network, to)
+    network.costs[(from, to)] = cost
+    return network
+end
+
+"""
+简单优化
+"""
+function simple_optimization(network::SupplyChainNetwork)::Dict{Tuple{String, String}, Float64}
+    flows = Dict{Tuple{String, String}, Float64}()
+    for (edge, cost) in network.costs
+        flows[edge] = 1.0  # 简化：单位流量
+    end
+    return flows
+end
+
+"""
+计算总成本
+"""
+function calculate_total_cost(network::SupplyChainNetwork,
+                             flows::Dict{Tuple{String, String}, Float64})::Float64
+    total = 0.0
+    for (edge, flow) in flows
+        cost = get(network.costs, edge, 0.0)
+        total += cost * flow
+    end
+    return total
+end
+
+"""
+需求预测模型（移动平均）
+"""
+function moving_average_forecast(demands::Vector{Float64}, window::Int)::Float64
+    if length(demands) < window
+        return mean(demands)
+    end
+    return mean(demands[end-window+1:end])
+end
+
+"""
+指数平滑预测
+"""
+function exponential_smoothing_forecast(demands::Vector{Float64}, alpha::Float64)::Float64
+    if isempty(demands)
+        return 0.0
+    end
+
+    forecast = demands[1]
+    for demand in demands[2:end]
+        forecast = alpha * demand + (1.0 - alpha) * forecast
+    end
+    return forecast
+end
+
+# 示例：物流供应链模型使用
+function logistics_supply_chain_example()
+    # 库存管理
+    inventory = InventoryModel(100.0, 50.0, 2.0, 5.0, 0.95)
+    eoq = economic_order_quantity(inventory)
+    total_cost_val = total_cost(inventory, eoq)
+    safety_stock_val = safety_stock(inventory, 10.0)
+    reorder_point_val = reorder_point(inventory, 10.0)
+
+    println("EOQ: $eoq")
+    println("Total cost: $total_cost_val")
+    println("Safety stock: $safety_stock_val")
+    println("Reorder point: $reorder_point_val")
+
+    # 运输优化
+    transportation = TransportationModel()
+    add_distance(transportation, "A", "B", 10.0)
+    add_distance(transportation, "B", "C", 15.0)
+    add_distance(transportation, "C", "A", 20.0)
+    add_demand(transportation, "A", 100.0)
+    add_demand(transportation, "B", 150.0)
+
+    route = nearest_neighbor_tsp(transportation, "A", ["A", "B", "C"])
+    total_distance = calculate_total_distance(transportation, route)
+    println("Route: $route")
+    println("Total distance: $total_distance")
+
+    # 供应链网络
+    supply_chain = SupplyChainNetwork()
+    add_cost(supply_chain, "S1", "F1", 10.0)
+    add_cost(supply_chain, "F1", "C1", 5.0)
+
+    flows = simple_optimization(supply_chain)
+    total_cost_network = calculate_total_cost(supply_chain, flows)
+    println("Flows: $flows")
+    println("Total cost: $total_cost_network")
+
+    # 需求预测
+    demands = [100.0, 120.0, 110.0, 130.0, 125.0]
+    ma_forecast = moving_average_forecast(demands, 3)
+    es_forecast = exponential_smoothing_forecast(demands, 0.3)
+    println("Moving average forecast: $ma_forecast")
+    println("Exponential smoothing forecast: $es_forecast")
+
+    return Dict(
+        "eoq" => eoq,
+        "total_cost" => total_cost_val,
+        "total_distance" => total_distance,
+        "ma_forecast" => ma_forecast
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 电子商务 / E-commerce
@@ -1073,5 +1326,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

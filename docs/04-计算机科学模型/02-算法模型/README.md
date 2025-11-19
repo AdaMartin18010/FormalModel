@@ -36,6 +36,9 @@
     - [启发式算法 / Heuristic Algorithms](#启发式算法--heuristic-algorithms)
   - [4.2.8 算法实现 / Algorithm Implementation](#428-算法实现--algorithm-implementation)
     - [复杂度分析算法 / Complexity Analysis Algorithms](#复杂度分析算法--complexity-analysis-algorithms)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
     - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
@@ -1156,6 +1159,522 @@ if __name__ == "__main__":
     algorithm_verification()
 ```
 
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+use std::collections::HashMap;
+use std::time::Instant;
+
+// 归并排序
+pub fn merge_sort<T: Clone + Ord>(arr: &[T]) -> Vec<T> {
+    if arr.len() <= 1 {
+        return arr.to_vec();
+    }
+
+    let mid = arr.len() / 2;
+    let left = merge_sort(&arr[..mid]);
+    let right = merge_sort(&arr[mid..]);
+
+    merge(&left, &right)
+}
+
+fn merge<T: Clone + Ord>(left: &[T], right: &[T]) -> Vec<T> {
+    let mut result = Vec::with_capacity(left.len() + right.len());
+    let mut i = 0;
+    let mut j = 0;
+
+    while i < left.len() && j < right.len() {
+        if left[i] <= right[j] {
+            result.push(left[i].clone());
+            i += 1;
+        } else {
+            result.push(right[j].clone());
+            j += 1;
+        }
+    }
+
+    result.extend_from_slice(&left[i..]);
+    result.extend_from_slice(&right[j..]);
+    result
+}
+
+// 快速排序
+pub fn quick_sort<T: Clone + Ord>(arr: &mut [T]) {
+    if arr.len() <= 1 {
+        return;
+    }
+
+    let pivot = partition(arr);
+    quick_sort(&mut arr[..pivot]);
+    quick_sort(&mut arr[pivot + 1..]);
+}
+
+fn partition<T: Clone + Ord>(arr: &mut [T]) -> usize {
+    let pivot_index = arr.len() - 1;
+    let mut i = 0;
+
+    for j in 0..pivot_index {
+        if arr[j] <= arr[pivot_index] {
+            arr.swap(i, j);
+            i += 1;
+        }
+    }
+
+    arr.swap(i, pivot_index);
+    i
+}
+
+// 动态规划：最长公共子序列
+pub fn longest_common_subsequence(s1: &str, s2: &str) -> (usize, String) {
+    let m = s1.len();
+    let n = s2.len();
+    let s1_chars: Vec<char> = s1.chars().collect();
+    let s2_chars: Vec<char> = s2.chars().collect();
+
+    let mut dp = vec![vec![0; n + 1]; m + 1];
+
+    for i in 1..=m {
+        for j in 1..=n {
+            if s1_chars[i - 1] == s2_chars[j - 1] {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = dp[i - 1][j].max(dp[i][j - 1]);
+            }
+        }
+    }
+
+    // 重构LCS
+    let mut lcs = String::new();
+    let mut i = m;
+    let mut j = n;
+
+    while i > 0 && j > 0 {
+        if s1_chars[i - 1] == s2_chars[j - 1] {
+            lcs.push(s1_chars[i - 1]);
+            i -= 1;
+            j -= 1;
+        } else if dp[i - 1][j] > dp[i][j - 1] {
+            i -= 1;
+        } else {
+            j -= 1;
+        }
+    }
+
+    lcs = lcs.chars().rev().collect();
+    (dp[m][n], lcs)
+}
+
+// 动态规划：0-1背包问题
+pub fn knapsack_01(values: &[i32], weights: &[i32], capacity: i32) -> (i32, Vec<usize>) {
+    let n = values.len();
+    let capacity = capacity as usize;
+    let mut dp = vec![vec![0; capacity + 1]; n + 1];
+
+    for i in 1..=n {
+        for w in 0..=capacity {
+            if weights[i - 1] as usize <= w {
+                dp[i][w] = dp[i - 1][w].max(
+                    dp[i - 1][w - weights[i - 1] as usize] + values[i - 1]
+                );
+            } else {
+                dp[i][w] = dp[i - 1][w];
+            }
+        }
+    }
+
+    // 重构选择的物品
+    let mut selected = Vec::new();
+    let mut w = capacity;
+    for i in (1..=n).rev() {
+        if dp[i][w] != dp[i - 1][w] {
+            selected.push(i - 1);
+            w -= weights[i - 1] as usize;
+        }
+    }
+
+    selected.reverse();
+    (dp[n][capacity], selected)
+}
+
+// 图算法：Dijkstra最短路径
+pub struct Graph {
+    vertices: usize,
+    adj: Vec<Vec<(usize, i32)>>,
+}
+
+impl Graph {
+    pub fn new(vertices: usize) -> Self {
+        Graph {
+            vertices,
+            adj: vec![Vec::new(); vertices],
+        }
+    }
+
+    pub fn add_edge(&mut self, u: usize, v: usize, weight: i32) {
+        self.adj[u].push((v, weight));
+        self.adj[v].push((u, weight)); // 无向图
+    }
+
+    pub fn dijkstra(&self, start: usize) -> Vec<i32> {
+        let mut dist = vec![i32::MAX; self.vertices];
+        let mut visited = vec![false; self.vertices];
+        dist[start] = 0;
+
+        for _ in 0..self.vertices {
+            let u = self.min_distance(&dist, &visited);
+            if u == usize::MAX {
+                break;
+            }
+
+            visited[u] = true;
+
+            for &(v, weight) in &self.adj[u] {
+                if !visited[v] && dist[u] != i32::MAX {
+                    let new_dist = dist[u] + weight;
+                    if new_dist < dist[v] {
+                        dist[v] = new_dist;
+                    }
+                }
+            }
+        }
+
+        dist
+    }
+
+    fn min_distance(&self, dist: &[i32], visited: &[bool]) -> usize {
+        let mut min = i32::MAX;
+        let mut min_index = usize::MAX;
+
+        for v in 0..self.vertices {
+            if !visited[v] && dist[v] < min {
+                min = dist[v];
+                min_index = v;
+            }
+        }
+
+        min_index
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_merge_sort() {
+        let arr = vec![3, 1, 4, 1, 5, 9, 2, 6];
+        let sorted = merge_sort(&arr);
+        assert_eq!(sorted, vec![1, 1, 2, 3, 4, 5, 6, 9]);
+    }
+
+    #[test]
+    fn test_quick_sort() {
+        let mut arr = vec![3, 1, 4, 1, 5, 9, 2, 6];
+        quick_sort(&mut arr);
+        assert_eq!(arr, vec![1, 1, 2, 3, 4, 5, 6, 9]);
+    }
+
+    #[test]
+    fn test_lcs() {
+        let (length, lcs) = longest_common_subsequence("ABCDGH", "AEDFHR");
+        assert_eq!(length, 3);
+        assert_eq!(lcs, "ADH");
+    }
+
+    #[test]
+    fn test_knapsack() {
+        let values = vec![60, 100, 120];
+        let weights = vec![10, 20, 30];
+        let (max_value, _) = knapsack_01(&values, &weights, 50);
+        assert_eq!(max_value, 220);
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module Algorithms where
+
+import Data.List (sort, minimumBy)
+import Data.Ord (comparing)
+
+-- 归并排序
+mergeSort :: Ord a => [a] -> [a]
+mergeSort [] = []
+mergeSort [x] = [x]
+mergeSort xs = merge (mergeSort left) (mergeSort right)
+    where
+        (left, right) = splitAt (length xs `div` 2) xs
+
+merge :: Ord a => [a] -> [a] -> [a]
+merge [] ys = ys
+merge xs [] = xs
+merge (x:xs) (y:ys)
+    | x <= y = x : merge xs (y:ys)
+    | otherwise = y : merge (x:xs) ys
+
+-- 快速排序
+quickSort :: Ord a => [a] -> [a]
+quickSort [] = []
+quickSort (x:xs) = quickSort [y | y <- xs, y < x] ++ [x] ++ quickSort [y | y <- xs, y >= x]
+
+-- 动态规划：最长公共子序列
+lcs :: String -> String -> (Int, String)
+lcs s1 s2 = (length result, result)
+    where
+        result = lcs' s1 s2
+        lcs' [] _ = []
+        lcs' _ [] = []
+        lcs' (x:xs) (y:ys)
+            | x == y = x : lcs' xs ys
+            | otherwise = longer (lcs' xs (y:ys)) (lcs' (x:xs) ys)
+        longer a b = if length a > length b then a else b
+
+-- 动态规划：0-1背包问题
+knapsack01 :: [Int] -> [Int] -> Int -> (Int, [Int])
+knapsack01 values weights capacity = (maxValue, selectedItems)
+    where
+        n = length values
+        dp = [[if i == 0 || w == 0 then 0
+               else if weights !! (i-1) <= w
+                    then max (dp !! (i-1) !! w)
+                             (dp !! (i-1) !! (w - weights !! (i-1)) + values !! (i-1))
+                    else dp !! (i-1) !! w
+               | w <- [0..capacity]]
+              | i <- [0..n]]
+        maxValue = dp !! n !! capacity
+        selectedItems = reconstruct dp values weights capacity n
+
+reconstruct :: [[Int]] -> [Int] -> [Int] -> Int -> Int -> [Int]
+reconstruct _ _ _ _ 0 = []
+reconstruct dp values weights w i
+    | dp !! i !! w == dp !! (i-1) !! w = reconstruct dp values weights w (i-1)
+    | otherwise = (i-1) : reconstruct dp values weights (w - weights !! (i-1)) (i-1)
+
+-- 图算法：Dijkstra最短路径
+type Graph = [[(Int, Int)]]  -- [(vertex, weight)]
+
+dijkstra :: Graph -> Int -> [Int]
+dijkstra graph start = dijkstra' graph start [0..length graph - 1] (replicate (length graph) maxBound)
+    where
+        dijkstra' _ _ [] dist = dist
+        dijkstra' graph start unvisited dist =
+            let u = minimumBy (comparing (dist !!)) unvisited
+                newDist = updateDistances graph u dist
+                newUnvisited = filter (/= u) unvisited
+            in dijkstra' graph start newUnvisited newDist
+
+updateDistances :: Graph -> Int -> [Int] -> [Int]
+updateDistances graph u dist = zipWith min dist newDist
+    where
+        newDist = map (\(v, w) -> if dist !! u == maxBound then dist !! v
+                                  else min (dist !! v) (dist !! u + w)) (graph !! u)
+
+-- 示例使用
+example :: IO ()
+example = do
+    -- 归并排序
+    let sorted1 = mergeSort [3, 1, 4, 1, 5, 9, 2, 6]
+    print $ "Merge sort: " ++ show sorted1
+
+    -- 快速排序
+    let sorted2 = quickSort [3, 1, 4, 1, 5, 9, 2, 6]
+    print $ "Quick sort: " ++ show sorted2
+
+    -- LCS
+    let (lcsLen, lcsStr) = lcs "ABCDGH" "AEDFHR"
+    print $ "LCS: length=" ++ show lcsLen ++ ", string=" ++ lcsStr
+
+    -- 背包问题
+    let (maxVal, items) = knapsack01 [60, 100, 120] [10, 20, 30] 50
+    print $ "Knapsack: max value=" ++ show maxVal ++ ", items=" ++ show items
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+# 归并排序
+function merge_sort(arr::Vector{T}) where T
+    if length(arr) <= 1
+        return arr
+    end
+
+    mid = length(arr) ÷ 2
+    left = merge_sort(arr[1:mid])
+    right = merge_sort(arr[mid+1:end])
+
+    return merge_arrays(left, right)
+end
+
+function merge_arrays(left::Vector{T}, right::Vector{T}) where T
+    result = Vector{T}()
+    i, j = 1, 1
+
+    while i <= length(left) && j <= length(right)
+        if left[i] <= right[j]
+            push!(result, left[i])
+            i += 1
+        else
+            push!(result, right[j])
+            j += 1
+        end
+    end
+
+    append!(result, left[i:end])
+    append!(result, right[j:end])
+    return result
+end
+
+# 快速排序
+function quick_sort!(arr::Vector{T}) where T
+    if length(arr) <= 1
+        return arr
+    end
+
+    pivot = arr[end]
+    left = [x for x in arr[1:end-1] if x <= pivot]
+    right = [x for x in arr[1:end-1] if x > pivot]
+
+    return vcat(quick_sort!(left), [pivot], quick_sort!(right))
+end
+
+# 动态规划：最长公共子序列
+function longest_common_subsequence(s1::String, s2::String)::Tuple{Int, String}
+    m, n = length(s1), length(s2)
+    dp = zeros(Int, m + 1, n + 1)
+
+    for i in 1:m
+        for j in 1:n
+            if s1[i] == s2[j]
+                dp[i+1, j+1] = dp[i, j] + 1
+            else
+                dp[i+1, j+1] = max(dp[i, j+1], dp[i+1, j])
+            end
+        end
+    end
+
+    # 重构LCS
+    lcs = Char[]
+    i, j = m, n
+    while i > 0 && j > 0
+        if s1[i] == s2[j]
+            push!(lcs, s1[i])
+            i -= 1
+            j -= 1
+        elseif dp[i, j+1] > dp[i+1, j]
+            i -= 1
+        else
+            j -= 1
+        end
+    end
+
+    return (dp[m+1, n+1], String(reverse(lcs)))
+end
+
+# 动态规划：0-1背包问题
+function knapsack_01(values::Vector{Int}, weights::Vector{Int}, capacity::Int)::Tuple{Int, Vector{Int}}
+    n = length(values)
+    dp = zeros(Int, n + 1, capacity + 1)
+
+    for i in 1:n
+        for w in 0:capacity
+            if weights[i] <= w
+                dp[i+1, w+1] = max(dp[i, w+1], dp[i, w+1-weights[i]] + values[i])
+            else
+                dp[i+1, w+1] = dp[i, w+1]
+            end
+        end
+    end
+
+    # 重构选择的物品
+    selected = Int[]
+    w = capacity
+    for i in n:-1:1
+        if dp[i+1, w+1] != dp[i, w+1]
+            push!(selected, i)
+            w -= weights[i]
+        end
+    end
+
+    return (dp[n+1, capacity+1], reverse(selected))
+end
+
+# 图算法：Dijkstra最短路径
+struct Graph
+    vertices::Int
+    adj::Vector{Vector{Tuple{Int, Int}}}
+end
+
+function Graph(vertices::Int)
+    Graph(vertices, [Tuple{Int, Int}[] for _ in 1:vertices])
+end
+
+function add_edge!(g::Graph, u::Int, v::Int, weight::Int)
+    push!(g.adj[u], (v, weight))
+    push!(g.adj[v], (u, weight))  # 无向图
+end
+
+function dijkstra(g::Graph, start::Int)::Vector{Int}
+    dist = fill(typemax(Int), g.vertices)
+    visited = falses(g.vertices)
+    dist[start] = 0
+
+    for _ in 1:g.vertices
+        u = find_min_distance(dist, visited)
+        if u == -1
+            break
+        end
+
+        visited[u] = true
+
+        for (v, weight) in g.adj[u]
+            if !visited[v] && dist[u] != typemax(Int)
+                new_dist = dist[u] + weight
+                if new_dist < dist[v]
+                    dist[v] = new_dist
+                end
+            end
+        end
+    end
+
+    return dist
+end
+
+function find_min_distance(dist::Vector{Int}, visited::BitVector)::Int
+    min_dist = typemax(Int)
+    min_index = -1
+
+    for v in 1:length(dist)
+        if !visited[v] && dist[v] < min_dist
+            min_dist = dist[v]
+            min_index = v
+        end
+    end
+
+    return min_index
+end
+
+# 使用示例
+arr = [3, 1, 4, 1, 5, 9, 2, 6]
+println("Merge sort: ", merge_sort(arr))
+println("Quick sort: ", quick_sort!(copy(arr)))
+
+lcs_len, lcs_str = longest_common_subsequence("ABCDGH", "AEDFHR")
+println("LCS: length=$lcs_len, string=$lcs_str")
+
+max_val, items = knapsack_01([60, 100, 120], [10, 20, 30], 50)
+println("Knapsack: max value=$max_val, items=$items")
+
+g = Graph(4)
+add_edge!(g, 1, 2, 4)
+add_edge!(g, 1, 3, 3)
+add_edge!(g, 2, 3, 1)
+add_edge!(g, 2, 4, 2)
+add_edge!(g, 3, 4, 4)
+println("Dijkstra distances: ", dijkstra(g, 1))
+```
+
 ## 相关模型 / Related Models
 
 ### 计算机科学模型 / Computer Science Models
@@ -1185,5 +1704,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

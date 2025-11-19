@@ -1,8 +1,8 @@
 # 声学模型 / Acoustic Models
 
-**版本**: 1.0.0
-**最后更新**: 2025-08-25
-**状态**: 开发中
+**版本**: 1.2.0
+**最后更新**: 2025-01-XX
+**状态**: 核心功能已完成 / Core Features Completed
 
 ## 目录 / Table of Contents
 
@@ -42,6 +42,10 @@
       - [3.1.2 公理化定义 / Axiomatic Definitions](#312-公理化定义--axiomatic-definitions)
       - [3.1.3 形式化定理 / Formal Theorems](#313-形式化定理--formal-theorems)
       - [3.1.3 算法实现 / Algorithm Implementation](#313-算法实现--algorithm-implementation)
+  - [实现与应用 / Implementation and Applications](#实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [版本历史 / Version History](#版本历史--version-history)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
@@ -800,6 +804,483 @@ def resonance_example():
         "test_frequencies": test_frequencies,
         "responses": responses
     }
+```
+
+## 实现与应用 / Implementation and Applications
+
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+use std::f64::consts::PI;
+
+/// 声波结构体
+#[derive(Debug, Clone)]
+pub struct AcousticWave {
+    pub amplitude: f64,
+    pub frequency: f64,
+    pub wave_vector: [f64; 3],
+    pub phase: f64,
+}
+
+impl AcousticWave {
+    pub fn new(amplitude: f64, frequency: f64, wave_vector: [f64; 3], phase: f64) -> Self {
+        Self {
+            amplitude,
+            frequency,
+            wave_vector,
+            phase,
+        }
+    }
+
+    pub fn angular_frequency(&self) -> f64 {
+        2.0 * PI * self.frequency
+    }
+
+    pub fn wavelength(&self) -> f64 {
+        let k_norm = (self.wave_vector[0].powi(2) +
+                      self.wave_vector[1].powi(2) +
+                      self.wave_vector[2].powi(2)).sqrt();
+        2.0 * PI / k_norm
+    }
+
+    pub fn pressure_field(&self, position: [f64; 3], time: f64) -> f64 {
+        let k_dot_r = self.wave_vector[0] * position[0] +
+                      self.wave_vector[1] * position[1] +
+                      self.wave_vector[2] * position[2];
+        let phase_factor = k_dot_r - self.angular_frequency() * time + self.phase;
+        self.amplitude * phase_factor.cos()
+    }
+}
+
+/// 从体积模量和密度计算声速
+pub fn sound_speed_from_bulk_modulus(bulk_modulus: f64, density: f64) -> f64 {
+    (bulk_modulus / density).sqrt()
+}
+
+/// 线性化条件验证
+pub fn linearization_condition(particle_velocity: f64, sound_speed: f64) -> bool {
+    particle_velocity.abs() < 0.1 * sound_speed
+}
+
+/// 平面波声压计算
+pub fn plane_wave_pressure(
+    amplitude: f64,
+    wave_vector: [f64; 3],
+    angular_frequency: f64,
+    position: [f64; 3],
+    time: f64,
+) -> f64 {
+    let k_dot_r = wave_vector[0] * position[0] +
+                  wave_vector[1] * position[1] +
+                  wave_vector[2] * position[2];
+    let phase = k_dot_r - angular_frequency * time;
+    amplitude * phase.cos()
+}
+
+/// 从声压计算质点速度
+pub fn particle_velocity_from_pressure(
+    pressure: f64,
+    wave_vector: [f64; 3],
+    density: f64,
+    angular_frequency: f64,
+) -> [f64; 3] {
+    let k_norm = (wave_vector[0].powi(2) +
+                  wave_vector[1].powi(2) +
+                  wave_vector[2].powi(2)).sqrt();
+    let factor = k_norm / (density * angular_frequency);
+    [
+        factor * pressure * wave_vector[0] / k_norm,
+        factor * pressure * wave_vector[1] / k_norm,
+        factor * pressure * wave_vector[2] / k_norm,
+    ]
+}
+
+/// 声学色散关系
+pub fn dispersion_relation_acoustic(wave_vector: [f64; 3], sound_speed: f64) -> f64 {
+    let k_norm = (wave_vector[0].powi(2) +
+                  wave_vector[1].powi(2) +
+                  wave_vector[2].powi(2)).sqrt();
+    sound_speed * k_norm
+}
+
+/// 声学能量密度
+pub fn acoustic_energy_density(
+    pressure: f64,
+    particle_velocity: [f64; 3],
+    density: f64,
+    sound_speed: f64,
+) -> f64 {
+    let potential_energy = 0.5 * pressure.powi(2) / (density * sound_speed.powi(2));
+    let v_squared = particle_velocity[0].powi(2) +
+                    particle_velocity[1].powi(2) +
+                    particle_velocity[2].powi(2);
+    let kinetic_energy = 0.5 * density * v_squared;
+    potential_energy + kinetic_energy
+}
+
+/// 球面波声压计算
+pub fn spherical_wave_pressure(
+    amplitude: f64,
+    wave_number: f64,
+    angular_frequency: f64,
+    distance: f64,
+    time: f64,
+) -> (f64, f64) {
+    let phase = wave_number * distance - angular_frequency * time;
+    let real = (amplitude / distance) * phase.cos();
+    let imag = (amplitude / distance) * phase.sin();
+    (real, imag)
+}
+
+/// 特性阻抗计算
+pub fn characteristic_impedance(density: f64, sound_speed: f64) -> f64 {
+    density * sound_speed
+}
+
+/// 反射系数计算
+pub fn reflection_coefficient(impedance1: f64, impedance2: f64) -> f64 {
+    (impedance2 - impedance1) / (impedance2 + impedance1)
+}
+
+/// 透射系数计算
+pub fn transmission_coefficient(impedance1: f64, impedance2: f64) -> f64 {
+    2.0 * impedance2 / (impedance1 + impedance2)
+}
+
+/// 一维共振腔共振频率
+pub fn resonance_frequency_1d(mode_number: i32, sound_speed: f64, length: f64) -> f64 {
+    (mode_number as f64) * sound_speed / (2.0 * length)
+}
+
+/// 品质因子计算
+pub fn quality_factor(resonance_frequency: f64, bandwidth: f64) -> f64 {
+    resonance_frequency / bandwidth
+}
+
+/// 共振响应函数
+pub fn resonance_response(
+    frequency: f64,
+    resonance_frequency: f64,
+    quality_factor: f64,
+    amplitude: f64,
+) -> (f64, f64) {
+    let detuning = (frequency - resonance_frequency) / resonance_frequency;
+    let denominator = 1.0 + (2.0 * quality_factor * detuning).powi(2);
+    let real = amplitude / denominator;
+    let imag = -2.0 * quality_factor * detuning * amplitude / denominator;
+    (real, imag)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_acoustic_wave() {
+        let wave = AcousticWave::new(
+            1.0,
+            1000.0,
+            [2.0 * PI * 1000.0 / 343.0, 0.0, 0.0],
+            0.0,
+        );
+        let position = [1.0, 0.0, 0.0];
+        let pressure = wave.pressure_field(position, 0.0);
+        assert!(pressure.abs() <= 1.0);
+    }
+
+    #[test]
+    fn test_sound_speed() {
+        let bulk_modulus = 1.42e5; // Pa (空气)
+        let density = 1.2; // kg/m³
+        let speed = sound_speed_from_bulk_modulus(bulk_modulus, density);
+        assert!((speed - 343.0).abs() < 10.0);
+    }
+
+    #[test]
+    fn test_resonance_frequency() {
+        let freq = resonance_frequency_1d(1, 343.0, 1.0);
+        assert!((freq - 171.5).abs() < 0.1);
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module AcousticModels where
+
+import Data.Complex
+
+-- 声波数据类型
+data AcousticWave = AcousticWave
+  { amplitude :: Double
+  , frequency :: Double
+  , waveVector :: (Double, Double, Double)
+  , phase :: Double
+  }
+
+-- 角频率
+angularFrequency :: AcousticWave -> Double
+angularFrequency wave = 2 * pi * frequency wave
+
+-- 波长
+wavelength :: AcousticWave -> Double
+wavelength wave =
+  let (kx, ky, kz) = waveVector wave
+      kNorm = sqrt (kx^2 + ky^2 + kz^2)
+  in 2 * pi / kNorm
+
+-- 声压场计算
+pressureField :: AcousticWave -> (Double, Double, Double) -> Double -> Double
+pressureField wave (x, y, z) t =
+  let (kx, ky, kz) = waveVector wave
+      kDotR = kx * x + ky * y + kz * z
+      phaseFactor = kDotR - angularFrequency wave * t + phase wave
+  in amplitude wave * cos phaseFactor
+
+-- 从体积模量和密度计算声速
+soundSpeedFromBulkModulus :: Double -> Double -> Double
+soundSpeedFromBulkModulus bulkModulus density = sqrt (bulkModulus / density)
+
+-- 线性化条件验证
+linearizationCondition :: Double -> Double -> Bool
+linearizationCondition particleVelocity soundSpeed =
+  abs particleVelocity < 0.1 * soundSpeed
+
+-- 平面波声压计算
+planeWavePressure :: Double -> (Double, Double, Double) -> Double -> (Double, Double, Double) -> Double -> Double
+planeWavePressure amplitude (kx, ky, kz) angularFreq (x, y, z) t =
+  let kDotR = kx * x + ky * y + kz * z
+      phase = kDotR - angularFreq * t
+  in amplitude * cos phase
+
+-- 从声压计算质点速度
+particleVelocityFromPressure :: Double -> (Double, Double, Double) -> Double -> Double -> (Double, Double, Double)
+particleVelocityFromPressure pressure (kx, ky, kz) density angularFreq =
+  let kNorm = sqrt (kx^2 + ky^2 + kz^2)
+      factor = kNorm / (density * angularFreq)
+  in (factor * pressure * kx / kNorm,
+      factor * pressure * ky / kNorm,
+      factor * pressure * kz / kNorm)
+
+-- 声学色散关系
+dispersionRelationAcoustic :: (Double, Double, Double) -> Double -> Double
+dispersionRelationAcoustic (kx, ky, kz) soundSpeed =
+  let kNorm = sqrt (kx^2 + ky^2 + kz^2)
+  in soundSpeed * kNorm
+
+-- 声学能量密度
+acousticEnergyDensity :: Double -> (Double, Double, Double) -> Double -> Double -> Double
+acousticEnergyDensity pressure (vx, vy, vz) density soundSpeed =
+  let potentialEnergy = 0.5 * pressure^2 / (density * soundSpeed^2)
+      vSquared = vx^2 + vy^2 + vz^2
+      kineticEnergy = 0.5 * density * vSquared
+  in potentialEnergy + kineticEnergy
+
+-- 球面波声压计算（复数形式）
+sphericalWavePressure :: Double -> Double -> Double -> Double -> Double -> Complex Double
+sphericalWavePressure amplitude waveNumber angularFreq distance t =
+  let phase = waveNumber * distance - angularFreq * t
+  in (amplitude / distance) :+ 0.0 * exp (0 :+ phase)
+
+-- 特性阻抗计算
+characteristicImpedance :: Double -> Double -> Double
+characteristicImpedance density soundSpeed = density * soundSpeed
+
+-- 反射系数计算
+reflectionCoefficient :: Double -> Double -> Double
+reflectionCoefficient impedance1 impedance2 =
+  (impedance2 - impedance1) / (impedance2 + impedance1)
+
+-- 透射系数计算
+transmissionCoefficient :: Double -> Double -> Double
+transmissionCoefficient impedance1 impedance2 =
+  2.0 * impedance2 / (impedance1 + impedance2)
+
+-- 一维共振腔共振频率
+resonanceFrequency1D :: Int -> Double -> Double -> Double
+resonanceFrequency1D modeNumber soundSpeed length =
+  fromIntegral modeNumber * soundSpeed / (2.0 * length)
+
+-- 品质因子计算
+qualityFactor :: Double -> Double -> Double
+qualityFactor resonanceFreq bandwidth = resonanceFreq / bandwidth
+
+-- 共振响应函数（复数形式）
+resonanceResponse :: Double -> Double -> Double -> Double -> Complex Double
+resonanceResponse freq resonanceFreq qualityFactor amplitude =
+  let detuning = (freq - resonanceFreq) / resonanceFreq
+      denominator = 1.0 + (2.0 * qualityFactor * detuning)^2
+      real = amplitude / denominator
+      imag = -2.0 * qualityFactor * detuning * amplitude / denominator
+  in real :+ imag
+
+-- 示例：创建声波并计算声压
+exampleAcousticWave :: Double
+exampleAcousticWave =
+  let wave = AcousticWave
+        { amplitude = 1.0
+        , frequency = 1000.0
+        , waveVector = (2 * pi * 1000.0 / 343.0, 0.0, 0.0)
+        , phase = 0.0
+        }
+      position = (1.0, 0.0, 0.0)
+      time = 0.0
+  in pressureField wave position time
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+
+"""
+声波结构体
+"""
+struct AcousticWave
+    amplitude::Float64
+    frequency::Float64
+    wave_vector::Vector{Float64}
+    phase::Float64
+
+    function AcousticWave(amplitude::Float64, frequency::Float64,
+                         wave_vector::Vector{Float64}, phase::Float64 = 0.0)
+        new(amplitude, frequency, wave_vector, phase)
+    end
+end
+
+"""
+角频率
+"""
+angular_frequency(wave::AcousticWave) = 2π * wave.frequency
+
+"""
+波长
+"""
+wavelength(wave::AcousticWave) = 2π / norm(wave.wave_vector)
+
+"""
+声压场计算
+"""
+function pressure_field(wave::AcousticWave, position::Vector{Float64}, time::Float64)
+    k_dot_r = dot(wave.wave_vector, position)
+    phase_factor = k_dot_r - angular_frequency(wave) * time + wave.phase
+    return wave.amplitude * cos(phase_factor)
+end
+
+"""
+从体积模量和密度计算声速
+"""
+sound_speed_from_bulk_modulus(bulk_modulus::Float64, density::Float64) =
+    sqrt(bulk_modulus / density)
+
+"""
+线性化条件验证
+"""
+linearization_condition(particle_velocity::Float64, sound_speed::Float64) =
+    abs(particle_velocity) < 0.1 * sound_speed
+
+"""
+平面波声压计算
+"""
+function plane_wave_pressure(amplitude::Float64, wave_vector::Vector{Float64},
+                            angular_frequency::Float64, position::Vector{Float64},
+                            time::Float64)
+    k_dot_r = dot(wave_vector, position)
+    phase = k_dot_r - angular_frequency * time
+    return amplitude * cos(phase)
+end
+
+"""
+从声压计算质点速度
+"""
+function particle_velocity_from_pressure(pressure::Float64, wave_vector::Vector{Float64},
+                                        density::Float64, angular_frequency::Float64)
+    k_norm = norm(wave_vector)
+    factor = k_norm / (density * angular_frequency)
+    return factor * pressure * wave_vector / k_norm
+end
+
+"""
+声学色散关系
+"""
+dispersion_relation_acoustic(wave_vector::Vector{Float64}, sound_speed::Float64) =
+    sound_speed * norm(wave_vector)
+
+"""
+声学能量密度
+"""
+function acoustic_energy_density(pressure::Float64, particle_velocity::Vector{Float64},
+                                 density::Float64, sound_speed::Float64)
+    potential_energy = 0.5 * pressure^2 / (density * sound_speed^2)
+    kinetic_energy = 0.5 * density * norm(particle_velocity)^2
+    return potential_energy + kinetic_energy
+end
+
+"""
+球面波声压计算（复数形式）
+"""
+function spherical_wave_pressure(amplitude::Float64, wave_number::Float64,
+                                 angular_frequency::Float64, distance::Float64,
+                                 time::Float64)
+    phase = wave_number * distance - angular_frequency * time
+    return (amplitude / distance) * exp(im * phase)
+end
+
+"""
+特性阻抗计算
+"""
+characteristic_impedance(density::Float64, sound_speed::Float64) =
+    density * sound_speed
+
+"""
+反射系数计算
+"""
+reflection_coefficient(impedance1::Float64, impedance2::Float64) =
+    (impedance2 - impedance1) / (impedance2 + impedance1)
+
+"""
+透射系数计算
+"""
+transmission_coefficient(impedance1::Float64, impedance2::Float64) =
+    2.0 * impedance2 / (impedance1 + impedance2)
+
+"""
+一维共振腔共振频率
+"""
+resonance_frequency_1d(mode_number::Int, sound_speed::Float64, length::Float64) =
+    mode_number * sound_speed / (2.0 * length)
+
+"""
+品质因子计算
+"""
+quality_factor(resonance_frequency::Float64, bandwidth::Float64) =
+    resonance_frequency / bandwidth
+
+"""
+共振响应函数（复数形式）
+"""
+function resonance_response(frequency::Float64, resonance_frequency::Float64,
+                           quality_factor::Float64, amplitude::Float64 = 1.0)
+    detuning = (frequency - resonance_frequency) / resonance_frequency
+    denominator = 1.0 + (2.0 * quality_factor * detuning)^2
+    real_part = amplitude / denominator
+    imag_part = -2.0 * quality_factor * detuning * amplitude / denominator
+    return real_part + im * imag_part
+end
+
+# 示例：创建声波并计算声压
+function acoustic_wave_example()
+    wave = AcousticWave(1.0, 1000.0, [2π * 1000.0 / 343.0, 0.0, 0.0], 0.0)
+    position = [1.0, 0.0, 0.0]
+    time = 0.0
+    pressure = pressure_field(wave, position, time)
+    return Dict(
+        "pressure" => pressure,
+        "wavelength" => wavelength(wave),
+        "angular_frequency" => angular_frequency(wave)
+    )
+end
 ```
 
 ## 版本历史 / Version History

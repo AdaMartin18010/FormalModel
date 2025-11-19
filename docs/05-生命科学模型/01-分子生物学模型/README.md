@@ -37,6 +37,7 @@
   - [5.1.8 实现与应用 / Implementation and Applications](#518-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [基础研究 / Basic Research](#基础研究--basic-research)
       - [生物技术 / Biotechnology](#生物技术--biotechnology)
@@ -807,6 +808,237 @@ example = do
     putStrLn $ "Final expression levels: " ++ show (last history)
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+
+"""
+DNA结构体
+"""
+mutable struct DNA
+    sequence::String
+    length::Int
+
+    function DNA(sequence::String)
+        new(sequence, length(sequence))
+    end
+end
+
+"""
+DNA复制（半保留复制）
+"""
+function replicate(dna::DNA, error_rate::Float64 = 0.0)::Tuple{DNA, DNA}
+    daughter1 = ""
+    daughter2 = ""
+
+    for base in dna.sequence
+        # 复制（可能发生突变）
+        new_base = if rand() < error_rate
+            mutate_base(base)
+        else
+            base
+        end
+        daughter1 *= new_base
+        daughter2 *= complementary_base(new_base)
+    end
+
+    return DNA(daughter1), DNA(daughter2)
+end
+
+"""
+互补碱基
+"""
+complementary_base(base::Char) = Dict(
+    'A' => 'T', 'T' => 'A',
+    'C' => 'G', 'G' => 'C'
+)[base]
+
+"""
+突变碱基
+"""
+mutate_base(base::Char) = rand(['A', 'T', 'C', 'G'])
+
+"""
+计算GC含量
+"""
+function gc_content(dna::DNA)::Float64
+    gc_count = count(c -> c == 'G' || c == 'C', dna.sequence)
+    return gc_count / dna.length
+end
+
+"""
+Michaelis-Menten酶动力学
+"""
+function michaelis_menten(S::Float64, Vmax::Float64, Km::Float64)::Float64
+    return (Vmax * S) / (Km + S)
+end
+
+"""
+竞争性抑制
+"""
+function competitive_inhibition(S::Float64, I::Float64, Vmax::Float64,
+                                Km::Float64, Ki::Float64)::Float64
+    Km_apparent = Km * (1 + I / Ki)
+    return (Vmax * S) / (Km_apparent + S)
+end
+
+"""
+非竞争性抑制
+"""
+function noncompetitive_inhibition(S::Float64, I::Float64, Vmax::Float64,
+                                   Km::Float64, Ki::Float64)::Float64
+    Vmax_apparent = Vmax / (1 + I / Ki)
+    return (Vmax_apparent * S) / (Km + S)
+end
+
+"""
+Hill函数（激活）
+"""
+function hill_activation(x::Float64, K::Float64, n::Int)::Float64
+    xn = max(x, 0.0)^n
+    Kn = K^n
+    return xn / (Kn + xn + 1e-15)
+end
+
+"""
+Hill函数（抑制）
+"""
+function hill_repression(x::Float64, K::Float64, n::Int)::Float64
+    xn = max(x, 0.0)^n
+    Kn = K^n
+    return Kn / (Kn + xn + 1e-15)
+end
+
+"""
+基因表达ODE（单基因）
+"""
+function gene_expression_ode(m::Float64, p::Float64, alpha::Float64,
+                             beta::Float64, delta_m::Float64, delta_p::Float64,
+                             regulator::Float64)::Tuple{Float64, Float64}
+    dm = alpha * regulator - delta_m * m
+    dp = beta * m - delta_p * p
+    return dm, dp
+end
+
+"""
+RK4步进
+"""
+function rk4_step(m::Float64, p::Float64, dt::Float64, alpha::Float64,
+                 beta::Float64, delta_m::Float64, delta_p::Float64,
+                 regulator_func::Function)::Tuple{Float64, Float64}
+    k1m, k1p = gene_expression_ode(m, p, alpha, beta, delta_m, delta_p, regulator_func(p))
+    k2m, k2p = gene_expression_ode(m + 0.5*dt*k1m, p + 0.5*dt*k1p,
+                                   alpha, beta, delta_m, delta_p, regulator_func(p + 0.5*dt*k1p))
+    k3m, k3p = gene_expression_ode(m + 0.5*dt*k2m, p + 0.5*dt*k2p,
+                                   alpha, beta, delta_m, delta_p, regulator_func(p + 0.5*dt*k2p))
+    k4m, k4p = gene_expression_ode(m + dt*k3m, p + dt*k3p,
+                                   alpha, beta, delta_m, delta_p, regulator_func(p + dt*k3p))
+
+    m_new = m + dt * (k1m + 2*k2m + 2*k3m + k4m) / 6.0
+    p_new = p + dt * (k1p + 2*k2p + 2*k3p + k4p) / 6.0
+    return m_new, p_new
+end
+
+"""
+基因开关模拟
+"""
+function simulate_gene_switch(T::Float64 = 200.0, dt::Float64 = 0.1)
+    time = 0.0:dt:T
+    m, p = 0.1, 0.1
+    traj_m = Float64[]
+    traj_p = Float64[]
+
+    alpha = 2.0
+    beta = 5.0
+    delta_m = 0.5
+    delta_p = 0.2
+    regulator_func = x -> hill_activation(x, 1.0, 3)
+
+    for _ in time
+        m, p = rk4_step(m, p, dt, alpha, beta, delta_m, delta_p, regulator_func)
+        push!(traj_m, m)
+        push!(traj_p, p)
+    end
+
+    return collect(time), traj_m, traj_p
+end
+
+"""
+抑制振荡器（Repressilator）
+"""
+function repressilator(T::Float64 = 300.0, dt::Float64 = 0.05)
+    time = 0.0:dt:T
+    m = [0.1, 0.1, 0.1]
+    p = [0.1, 0.1, 0.1]
+    traj = Vector{Float64}[]
+
+    alpha_m = 1.0
+    alpha_p = 5.0
+    delta_m = 0.5
+    delta_p = 0.2
+    K = 1.0
+    n = 2
+
+    function deriv(mv::Vector{Float64}, pv::Vector{Float64})
+        dm = zeros(3)
+        dp = zeros(3)
+        # 抑制环: 0<-2, 1<-0, 2<-1
+        regs = [hill_repression(pv[3], K, n),
+                hill_repression(pv[1], K, n),
+                hill_repression(pv[2], K, n)]
+        for i in 1:3
+            dm[i] = alpha_m * regs[i] - delta_m * mv[i]
+            dp[i] = alpha_p * mv[i] - delta_p * pv[i]
+        end
+        return dm, dp
+    end
+
+    for _ in time
+        dm1, dp1 = deriv(m, p)
+        dm2, dp2 = deriv(m + 0.5*dt*dm1, p + 0.5*dt*dp1)
+        dm3, dp3 = deriv(m + 0.5*dt*dm2, p + 0.5*dt*dp2)
+        dm4, dp4 = deriv(m + dt*dm3, p + dt*dp3)
+        m = m + dt * (dm1 + 2*dm2 + 2*dm3 + dm4) / 6.0
+        p = p + dt * (dp1 + 2*dp2 + 2*dp3 + dp4) / 6.0
+        push!(traj, copy(p))
+    end
+
+    return collect(time), hcat(traj...)'  # 转置以便每行是一个时间点
+end
+
+# 示例：分子生物学模型使用
+function molecular_biology_example()
+    # DNA复制
+    dna = DNA("ATCGATCG")
+    daughter1, daughter2 = replicate(dna, 0.001)
+    gc = gc_content(dna)
+    println("GC content: $gc")
+
+    # 酶动力学
+    S = 10.0
+    Vmax = 100.0
+    Km = 5.0
+    v = michaelis_menten(S, Vmax, Km)
+    println("Reaction rate: $v")
+
+    # 基因开关
+    t, m, p = simulate_gene_switch(120.0, 0.1)
+    println("Gene switch simulation completed")
+
+    # 抑制振荡器
+    t2, P = repressilator(150.0, 0.05)
+    println("Repressilator simulation completed")
+
+    return Dict(
+        "gc_content" => gc,
+        "reaction_rate" => v,
+        "gene_switch_time" => t,
+        "repressilator_time" => t2
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 基础研究 / Basic Research
@@ -966,5 +1198,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

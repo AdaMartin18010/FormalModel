@@ -50,6 +50,7 @@
     - [复现实操 / Reproducibility](#复现实操--reproducibility)
   - [8.6.8 算法实现 / Algorithm Implementation](#868-算法实现--algorithm-implementation)
     - [风险管理算法 / Risk Management Algorithms](#风险管理算法--risk-management-algorithms)
+      - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
     - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
@@ -912,6 +913,409 @@ if __name__ == "__main__":
     banking_finance_verification()
 ```
 
+#### Julia实现示例 / Julia Implementation Example
+
+```julia
+using Statistics
+using LinearAlgebra
+using Distributions
+using Random
+
+"""
+VaR计算器结构体
+"""
+mutable struct VaRCalculator
+    confidence_level::Float64
+
+    function VaRCalculator(confidence_level::Float64 = 0.95)
+        new(confidence_level)
+    end
+end
+
+"""
+参数VaR
+"""
+function parametric_var(calc::VaRCalculator, returns::Vector{Float64},
+                       portfolio_value::Float64 = 1.0)::Float64
+    mean_return = mean(returns)
+    std_return = std(returns)
+    z_score = quantile(Normal(), 1.0 - calc.confidence_level)
+
+    var = portfolio_value * (mean_return - z_score * std_return)
+    return abs(var)
+end
+
+"""
+历史VaR
+"""
+function historical_var(calc::VaRCalculator, returns::Vector{Float64},
+                       portfolio_value::Float64 = 1.0)::Float64
+    percentile_val = (1.0 - calc.confidence_level) * 100.0
+    var = quantile(returns, percentile_val / 100.0)
+    return abs(portfolio_value * var)
+end
+
+"""
+蒙特卡洛VaR
+"""
+function monte_carlo_var(calc::VaRCalculator, returns::Vector{Float64},
+                        portfolio_value::Float64 = 1.0, n_simulations::Int = 10000,
+                        time_horizon::Int = 1)::Float64
+    mean_return = mean(returns)
+    std_return = std(returns)
+
+    # 生成模拟收益
+    simulated_returns = rand(Normal(mean_return, std_return), n_simulations, time_horizon)
+
+    # 计算投资组合价值变化
+    portfolio_values = portfolio_value * prod(1.0 .+ simulated_returns, dims=2)
+    portfolio_changes = portfolio_values .- portfolio_value
+
+    # 计算VaR
+    percentile_val = (1.0 - calc.confidence_level) * 100.0
+    var = quantile(vec(portfolio_changes), percentile_val / 100.0)
+    return abs(var)
+end
+
+"""
+信用风险模型结构体
+"""
+mutable struct CreditRiskModel
+    risk_free_rate::Float64
+
+    function CreditRiskModel(risk_free_rate::Float64 = 0.05)
+        new(risk_free_rate)
+    end
+end
+
+"""
+Merton模型
+"""
+function merton_model(model::CreditRiskModel, asset_value::Float64, debt_value::Float64,
+                     asset_volatility::Float64, time_to_maturity::Float64)::Dict{String, Float64}
+    # 计算d1和d2
+    d1 = (log(asset_value / debt_value) +
+          (model.risk_free_rate + asset_volatility^2 / 2.0) * time_to_maturity) /
+         (asset_volatility * sqrt(time_to_maturity))
+
+    d2 = d1 - asset_volatility * sqrt(time_to_maturity)
+
+    # 计算股权价值
+    equity_value = asset_value * cdf(Normal(), d1) -
+                   debt_value * exp(-model.risk_free_rate * time_to_maturity) *
+                   cdf(Normal(), d2)
+
+    # 计算违约概率
+    default_probability = cdf(Normal(), -d2)
+
+    return Dict(
+        "equity_value" => equity_value,
+        "default_probability" => default_probability,
+        "d1" => d1,
+        "d2" => d2
+    )
+end
+
+"""
+GARCH模型结构体
+"""
+mutable struct GARCHModel
+    omega::Float64
+    alpha::Float64
+    beta::Float64
+    variances::Vector{Float64}
+
+    function GARCHModel(omega::Float64 = 0.0001, alpha::Float64 = 0.1, beta::Float64 = 0.8)
+        new(omega, alpha, beta, Float64[])
+    end
+end
+
+"""
+拟合GARCH模型
+"""
+function fit(garch::GARCHModel, returns::Vector{Float64})
+    n = length(returns)
+    garch.variances = zeros(n)
+
+    # 初始化方差
+    garch.variances[1] = var(returns)
+
+    # 递归计算方差
+    for t in 2:n
+        garch.variances[t] = garch.omega +
+                            garch.alpha * returns[t-1]^2 +
+                            garch.beta * garch.variances[t-1]
+    end
+
+    return garch
+end
+
+"""
+预测方差
+"""
+function forecast(garch::GARCHModel, steps::Int = 1)::Vector{Float64}
+    if isempty(garch.variances)
+        error("Model must be fitted before forecasting")
+    end
+
+    forecasts = Float64[]
+    last_variance = garch.variances[end]
+
+    for _ in 1:steps
+        forecast_variance = garch.omega + garch.beta * last_variance
+        push!(forecasts, forecast_variance)
+        last_variance = forecast_variance
+    end
+
+    return forecasts
+end
+
+"""
+马科维茨投资组合结构体
+"""
+mutable struct MarkowitzPortfolio
+    risk_free_rate::Float64
+
+    function MarkowitzPortfolio(risk_free_rate::Float64 = 0.02)
+        new(risk_free_rate)
+    end
+end
+
+"""
+计算最优权重
+"""
+function calculate_optimal_weights(portfolio::MarkowitzPortfolio,
+                                   returns::Matrix{Float64},
+                                   target_return::Union{Float64, Nothing} = nothing)::Vector{Float64}
+    n_assets = size(returns, 2)
+
+    # 计算期望收益和协方差矩阵
+    expected_returns = mean(returns, dims=1)[:]
+    covariance_matrix = cov(returns)
+
+    if target_return === nothing
+        # 最大化夏普比率
+        inv_cov = inv(covariance_matrix)
+        excess_returns = expected_returns .- portfolio.risk_free_rate
+        weights = inv_cov * excess_returns
+        weights = weights / sum(weights)
+    else
+        # 最小化风险，满足目标收益
+        inv_cov = inv(covariance_matrix)
+        ones_vec = ones(n_assets)
+
+        # 简化实现
+        weights = inv_cov * expected_returns
+        weights = weights / sum(weights)
+    end
+
+    return weights
+end
+
+"""
+计算投资组合指标
+"""
+function calculate_portfolio_metrics(portfolio::MarkowitzPortfolio,
+                                    weights::Vector{Float64},
+                                    returns::Matrix{Float64})::Dict{String, Float64}
+    expected_returns = mean(returns, dims=1)[:]
+    covariance_matrix = cov(returns)
+
+    portfolio_return = dot(weights, expected_returns)
+    portfolio_variance = weights' * covariance_matrix * weights
+    portfolio_volatility = sqrt(portfolio_variance)
+    sharpe_ratio = (portfolio_return - portfolio.risk_free_rate) / portfolio_volatility
+
+    return Dict(
+        "return" => portfolio_return,
+        "volatility" => portfolio_volatility,
+        "sharpe_ratio" => sharpe_ratio,
+        "variance" => portfolio_variance
+    )
+end
+
+"""
+CAPM模型结构体
+"""
+mutable struct CAPMModel
+    risk_free_rate::Float64
+
+    function CAPMModel(risk_free_rate::Float64 = 0.02)
+        new(risk_free_rate)
+    end
+end
+
+"""
+计算贝塔系数
+"""
+function calculate_beta(model::CAPMModel, asset_returns::Vector{Float64},
+                       market_returns::Vector{Float64})::Float64
+    covariance_val = cov(asset_returns, market_returns)
+    market_variance = var(market_returns)
+    beta = covariance_val / market_variance
+    return beta
+end
+
+"""
+计算期望收益
+"""
+function calculate_expected_return(model::CAPMModel, beta::Float64,
+                                 market_return::Float64)::Float64
+    expected_return = model.risk_free_rate + beta * (market_return - model.risk_free_rate)
+    return expected_return
+end
+
+"""
+Black-Scholes模型结构体
+"""
+mutable struct BlackScholesModel
+    risk_free_rate::Float64
+
+    function BlackScholesModel(risk_free_rate::Float64 = 0.05)
+        new(risk_free_rate)
+    end
+end
+
+"""
+计算期权价格
+"""
+function calculate_option_price(model::BlackScholesModel, S::Float64, K::Float64,
+                               T::Float64, sigma::Float64,
+                               option_type::String = "call")::Float64
+    d1 = (log(S / K) + (model.risk_free_rate + sigma^2 / 2.0) * T) /
+         (sigma * sqrt(T))
+    d2 = d1 - sigma * sqrt(T)
+
+    if lowercase(option_type) == "call"
+        price = S * cdf(Normal(), d1) -
+               K * exp(-model.risk_free_rate * T) * cdf(Normal(), d2)
+    else  # put
+        price = K * exp(-model.risk_free_rate * T) * cdf(Normal(), -d2) -
+               S * cdf(Normal(), -d1)
+    end
+
+    return price
+end
+
+"""
+二叉树模型结构体
+"""
+mutable struct BinomialTreeModel
+    risk_free_rate::Float64
+
+    function BinomialTreeModel(risk_free_rate::Float64 = 0.05)
+        new(risk_free_rate)
+    end
+end
+
+"""
+计算期权价格（二叉树）
+"""
+function calculate_option_price(model::BinomialTreeModel, S::Float64, K::Float64,
+                               T::Float64, sigma::Float64, n_steps::Int,
+                               option_type::String = "call")::Float64
+    dt = T / n_steps
+    u = exp(sigma * sqrt(dt))
+    d = 1.0 / u
+    p = (exp(model.risk_free_rate * dt) - d) / (u - d)
+
+    # 构建价格树
+    stock_prices = zeros(n_steps + 1, n_steps + 1)
+    option_prices = zeros(n_steps + 1, n_steps + 1)
+
+    # 计算股票价格
+    for i in 0:n_steps
+        for j in 0:i
+            stock_prices[i+1, j+1] = S * u^j * d^(i-j)
+        end
+    end
+
+    # 计算期权价格（从到期日向前）
+    for j in 0:n_steps
+        if lowercase(option_type) == "call"
+            option_prices[n_steps+1, j+1] = max(0.0, stock_prices[n_steps+1, j+1] - K)
+        else
+            option_prices[n_steps+1, j+1] = max(0.0, K - stock_prices[n_steps+1, j+1])
+        end
+    end
+
+    # 向后递归
+    for i in n_steps:-1:1
+        for j in 0:i-1
+            option_prices[i, j+1] = exp(-model.risk_free_rate * dt) *
+                                    (p * option_prices[i+1, j+2] +
+                                     (1.0 - p) * option_prices[i+1, j+1])
+        end
+    end
+
+    return option_prices[1, 1]
+end
+
+# 示例：银行金融模型使用
+function banking_finance_example()
+    # VaR计算
+    returns = randn(1000) * 0.02
+    var_calc = VaRCalculator(0.95)
+    parametric_var_val = parametric_var(var_calc, returns, 1000000.0)
+    historical_var_val = historical_var(var_calc, returns, 1000000.0)
+    mc_var_val = monte_carlo_var(var_calc, returns, 1000000.0)
+    println("Parametric VaR: $parametric_var_val")
+    println("Historical VaR: $historical_var_val")
+    println("Monte Carlo VaR: $mc_var_val")
+
+    # 信用风险
+    credit_model = CreditRiskModel()
+    merton_result = merton_model(credit_model, 100.0, 80.0, 0.2, 1.0)
+    println("Equity value: $(merton_result["equity_value"])")
+    println("Default probability: $(merton_result["default_probability"])")
+
+    # GARCH模型
+    garch = GARCHModel()
+    fit(garch, returns)
+    forecast_var = forecast(garch, 5)
+    println("GARCH forecast variance: $forecast_var")
+
+    # 投资组合
+    n_assets = 5
+    n_periods = 1000
+    asset_returns = rand(MvNormal(zeros(n_assets), Matrix{Float64}(I, n_assets) * 0.02^2), n_periods)'
+
+    portfolio = MarkowitzPortfolio()
+    weights = calculate_optimal_weights(portfolio, asset_returns)
+    metrics = calculate_portfolio_metrics(portfolio, weights, asset_returns)
+    println("Optimal weights: $weights")
+    println("Portfolio return: $(metrics["return"])")
+    println("Portfolio volatility: $(metrics["volatility"])")
+    println("Sharpe ratio: $(metrics["sharpe_ratio"])")
+
+    # CAPM
+    market_returns = randn(n_periods) * 0.015 .+ 0.001
+    capm = CAPMModel()
+    beta = calculate_beta(capm, asset_returns[:, 1], market_returns)
+    expected_return = calculate_expected_return(capm, beta, mean(market_returns))
+    println("Beta: $beta")
+    println("Expected return: $expected_return")
+
+    # 期权定价
+    bs_model = BlackScholesModel()
+    call_price = calculate_option_price(bs_model, 100.0, 100.0, 1.0, 0.2, "call")
+    put_price = calculate_option_price(bs_model, 100.0, 100.0, 1.0, 0.2, "put")
+    println("Call option price: $call_price")
+    println("Put option price: $put_price")
+
+    binomial_model = BinomialTreeModel()
+    binomial_call_price = calculate_option_price(binomial_model, 100.0, 100.0, 1.0, 0.2, 100, "call")
+    println("Binomial call price: $binomial_call_price")
+
+    return Dict(
+        "var" => parametric_var_val,
+        "equity_value" => merton_result["equity_value"],
+        "portfolio_return" => metrics["return"],
+        "call_price" => call_price
+    )
+end
+```
+
 ---
 
 ## 相关模型 / Related Models
@@ -963,5 +1367,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

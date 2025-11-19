@@ -61,6 +61,7 @@
     - [复现实操 / Reproducibility](#复现实操--reproducibility)
   - [8.7.9 算法实现 / Algorithm Implementation](#879-算法实现--algorithm-implementation)
     - [供需基础算法 / Basic Supply-Demand Algorithms](#供需基础算法--basic-supply-demand-algorithms)
+      - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [行业应用模型 / Industry Application Models](#行业应用模型--industry-application-models)
     - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
@@ -1214,6 +1215,529 @@ if __name__ == "__main__":
     economic_supply_demand_verification()
 ```
 
+#### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+using NLsolve
+using Statistics
+
+"""
+需求函数结构体
+"""
+mutable struct DemandFunction
+    a::Float64  # 截距
+    b::Float64  # 斜率
+
+    function DemandFunction(a::Float64, b::Float64)
+        new(a, b)
+    end
+end
+
+"""
+计算需求量
+"""
+function (df::DemandFunction)(price::Float64)::Float64
+    return max(0.0, df.a - df.b * price)
+end
+
+"""
+反需求函数
+"""
+function inverse(df::DemandFunction, quantity::Float64)::Float64
+    return max(0.0, (df.a - quantity) / df.b)
+end
+
+"""
+供给函数结构体
+"""
+mutable struct SupplyFunction
+    c::Float64  # 截距
+    d::Float64  # 斜率
+
+    function SupplyFunction(c::Float64, d::Float64)
+        new(c, d)
+    end
+end
+
+"""
+计算供给量
+"""
+function (sf::SupplyFunction)(price::Float64)::Float64
+    return max(0.0, sf.c + sf.d * price)
+end
+
+"""
+反供给函数
+"""
+function inverse(sf::SupplyFunction, quantity::Float64)::Float64
+    return max(0.0, (quantity - sf.c) / sf.d)
+end
+
+"""
+市场均衡结构体
+"""
+mutable struct MarketEquilibrium
+    demand::DemandFunction
+    supply::SupplyFunction
+
+    function MarketEquilibrium(demand::DemandFunction, supply::SupplyFunction)
+        new(demand, supply)
+    end
+end
+
+"""
+寻找均衡价格和数量
+"""
+function find_equilibrium(me::MarketEquilibrium)::Union{Tuple{Float64, Float64}, Nothing}
+    function excess_demand(price::Vector{Float64})
+        return [me.demand(price[1]) - me.supply(price[1])]
+    end
+
+    try
+        result = nlsolve(excess_demand, [50.0])
+        if converged(result)
+            equilibrium_price = result.zero[1]
+            equilibrium_quantity = me.demand(equilibrium_price)
+
+            if equilibrium_price > 0 && equilibrium_quantity > 0
+                return (equilibrium_price, equilibrium_quantity)
+            end
+        end
+    catch
+    end
+
+    return nothing
+end
+
+"""
+计算消费者剩余
+"""
+function calculate_consumer_surplus(me::MarketEquilibrium, price::Float64)::Float64
+    if price <= 0
+        return 0.0
+    end
+
+    max_price = inverse(me.demand, 0.0)
+    if max_price <= price
+        return 0.0
+    end
+
+    quantity = me.demand(price)
+    surplus = 0.5 * (max_price - price) * quantity
+    return surplus
+end
+
+"""
+计算生产者剩余
+"""
+function calculate_producer_surplus(me::MarketEquilibrium, price::Float64)::Float64
+    if price <= 0
+        return 0.0
+    end
+
+    min_price = inverse(me.supply, 0.0)
+    if price <= min_price
+        return 0.0
+    end
+
+    quantity = me.supply(price)
+    surplus = 0.5 * (price - min_price) * quantity
+    return surplus
+end
+
+"""
+弹性计算器结构体
+"""
+mutable struct ElasticityCalculator
+    function ElasticityCalculator()
+        new()
+    end
+end
+
+"""
+需求价格弹性
+"""
+function price_elasticity_of_demand(calc::ElasticityCalculator,
+                                   demand_func::Function,
+                                   price::Float64, delta::Float64 = 0.01)::Float64
+    quantity = demand_func(price)
+    if quantity <= 0
+        return 0.0
+    end
+
+    new_price = price + delta
+    new_quantity = demand_func(new_price)
+
+    price_change = (new_price - price) / price
+    quantity_change = (new_quantity - quantity) / quantity
+
+    if price_change == 0
+        return 0.0
+    end
+
+    elasticity = quantity_change / price_change
+    return elasticity
+end
+
+"""
+需求收入弹性
+"""
+function income_elasticity_of_demand(calc::ElasticityCalculator,
+                                    demand_func::Function,
+                                    income::Float64, price::Float64,
+                                    delta::Float64 = 0.01)::Float64
+    quantity = demand_func(price, income)
+    if quantity <= 0
+        return 0.0
+    end
+
+    new_income = income + delta
+    new_quantity = demand_func(price, new_income)
+
+    income_change = (new_income - income) / income
+    quantity_change = (new_quantity - quantity) / quantity
+
+    if income_change == 0
+        return 0.0
+    end
+
+    elasticity = quantity_change / income_change
+    return elasticity
+end
+
+"""
+交叉价格弹性
+"""
+function cross_price_elasticity(calc::ElasticityCalculator,
+                               demand_func::Function,
+                               price::Float64, other_price::Float64,
+                               delta::Float64 = 0.01)::Float64
+    quantity = demand_func(price, other_price)
+    if quantity <= 0
+        return 0.0
+    end
+
+    new_other_price = other_price + delta
+    new_quantity = demand_func(price, new_other_price)
+
+    price_change = (new_other_price - other_price) / other_price
+    quantity_change = (new_quantity - quantity) / quantity
+
+    if price_change == 0
+        return 0.0
+    end
+
+    elasticity = quantity_change / price_change
+    return elasticity
+end
+
+"""
+纳什均衡结构体
+"""
+mutable struct NashEquilibrium
+    function NashEquilibrium()
+        new()
+    end
+end
+
+"""
+寻找纳什均衡
+"""
+function find_nash_equilibrium(ne::NashEquilibrium,
+                              payoff_matrix_A::Matrix{Float64},
+                              payoff_matrix_B::Matrix{Float64})::Vector{Tuple{Int, Int}}
+    n_strategies_A = size(payoff_matrix_A, 1)
+    n_strategies_B = size(payoff_matrix_A, 2)
+    nash_equilibria = Tuple{Int, Int}[]
+
+    for i in 1:n_strategies_A
+        for j in 1:n_strategies_B
+            is_nash = true
+
+            # 检查玩家A是否有更好的策略
+            for k in 1:n_strategies_A
+                if payoff_matrix_A[k, j] > payoff_matrix_A[i, j]
+                    is_nash = false
+                    break
+                end
+            end
+
+            if !is_nash
+                continue
+            end
+
+            # 检查玩家B是否有更好的策略
+            for l in 1:n_strategies_B
+                if payoff_matrix_B[i, l] > payoff_matrix_B[i, j]
+                    is_nash = false
+                    break
+                end
+            end
+
+            if is_nash
+                push!(nash_equilibria, (i, j))
+            end
+        end
+    end
+
+    return nash_equilibria
+end
+
+"""
+古诺模型结构体
+"""
+mutable struct CournotModel
+    n_firms::Int
+    market_demand::Function
+    marginal_costs::Vector{Float64}
+
+    function CournotModel(n_firms::Int, market_demand::Function,
+                         marginal_costs::Vector{Float64})
+        new(n_firms, market_demand, marginal_costs)
+    end
+end
+
+"""
+需求函数的导数
+"""
+function _demand_derivative(cm::CournotModel, quantity::Float64,
+                           delta::Float64 = 0.01)::Float64
+    return (cm.market_demand(quantity + delta) - cm.market_demand(quantity)) / delta
+end
+
+"""
+寻找古诺均衡
+"""
+function find_equilibrium(cm::CournotModel, tolerance::Float64 = 1e-6,
+                         max_iterations::Int = 1000)::Vector{Float64}
+    quantities = ones(Float64, cm.n_firms)
+
+    for iteration in 1:max_iterations
+        new_quantities = copy(quantities)
+
+        for i in 1:cm.n_firms
+            # 计算其他企业的总产量
+            other_quantity = sum(quantities[j] for j in 1:cm.n_firms if j != i)
+
+            # 计算市场价格
+            total_quantity = other_quantity + quantities[i]
+            market_price = cm.market_demand(total_quantity)
+
+            # 计算边际收益
+            demand_deriv = _demand_derivative(cm, total_quantity)
+            marginal_revenue = market_price - quantities[i] * demand_deriv
+
+            # 最优产量条件：边际收益 = 边际成本
+            if demand_deriv != 0
+                optimal_quantity = (marginal_revenue - cm.marginal_costs[i]) /
+                                 (-demand_deriv)
+                new_quantities[i] = max(0.0, optimal_quantity)
+            end
+        end
+
+        # 检查收敛
+        if all(abs(new_quantities[i] - quantities[i]) < tolerance
+               for i in 1:cm.n_firms)
+            break
+        end
+
+        quantities = new_quantities
+    end
+
+    return quantities
+end
+
+"""
+伯特兰模型结构体
+"""
+mutable struct BertrandModel
+    n_firms::Int
+    marginal_costs::Vector{Float64}
+
+    function BertrandModel(n_firms::Int, marginal_costs::Vector{Float64})
+        new(n_firms, marginal_costs)
+    end
+end
+
+"""
+寻找伯特兰均衡
+"""
+function find_equilibrium(bm::BertrandModel)::Vector{Float64}
+    min_cost = minimum(bm.marginal_costs)
+    equilibrium_prices = fill(min_cost, bm.n_firms)
+    return equilibrium_prices
+end
+
+"""
+IS-LM模型结构体
+"""
+mutable struct ISLMModel
+    consumption_func::Function
+    investment_func::Function
+    money_demand_func::Function
+    money_supply::Float64
+
+    function ISLMModel(consumption_func::Function, investment_func::Function,
+                      money_demand_func::Function, money_supply::Float64)
+        new(consumption_func, investment_func, money_demand_func, money_supply)
+    end
+end
+
+"""
+寻找IS-LM均衡
+"""
+function find_equilibrium(islm::ISLMModel, government_spending::Float64,
+                        taxes::Float64)::Tuple{Union{Float64, Nothing}, Union{Float64, Nothing}}
+    function is_curve(vars::Vector{Float64})
+        y, r = vars
+        c = islm.consumption_func(y - taxes)
+        i = islm.investment_func(r)
+        return [y - c - i - government_spending]
+    end
+
+    function lm_curve(vars::Vector{Float64})
+        y, r = vars
+        return [islm.money_demand_func(y, r) - islm.money_supply]
+    end
+
+    function system(vars::Vector{Float64})
+        return [is_curve(vars)[1], lm_curve(vars)[1]]
+    end
+
+    try
+        result = nlsolve(system, [1000.0, 0.05])
+        if converged(result)
+            return (result.zero[1], result.zero[2])
+        end
+    catch
+    end
+
+    return (nothing, nothing)
+end
+
+"""
+菲利普斯曲线结构体
+"""
+mutable struct PhillipsCurve
+    natural_unemployment::Float64
+    inflation_expectations::Float64
+
+    function PhillipsCurve(natural_unemployment::Float64 = 0.05,
+                           inflation_expectations::Float64 = 0.02)
+        new(natural_unemployment, inflation_expectations)
+    end
+end
+
+"""
+计算通货膨胀率
+"""
+function calculate_inflation(pc::PhillipsCurve, unemployment::Float64,
+                           supply_shock::Float64 = 0.0)::Float64
+    inflation = pc.inflation_expectations -
+               0.5 * (unemployment - pc.natural_unemployment) +
+               supply_shock
+    return inflation
+end
+
+"""
+计算牺牲率
+"""
+function calculate_sacrifice_ratio(pc::PhillipsCurve,
+                                  initial_unemployment::Float64,
+                                  target_unemployment::Float64,
+                                  disinflation_periods::Int)::Float64
+    unemployment_gap = target_unemployment - initial_unemployment
+    sacrifice_ratio = unemployment_gap / disinflation_periods
+    return sacrifice_ratio
+end
+
+# 示例：经济供需模型使用
+function economic_supply_demand_example()
+    println("=== 经济供需模型验证 ===")
+
+    # 供需基础验证
+    println("\n1. 供需基础验证:")
+
+    demand = DemandFunction(100.0, 2.0)  # Qd = 100 - 2P
+    supply = SupplyFunction(-20.0, 3.0)  # Qs = -20 + 3P
+
+    market = MarketEquilibrium(demand, supply)
+    equilibrium = find_equilibrium(market)
+
+    if equilibrium !== nothing
+        price, quantity = equilibrium
+        println("均衡价格: \$$(round(price, digits=2))")
+        println("均衡数量: $(round(quantity, digits=2))")
+
+        consumer_surplus = calculate_consumer_surplus(market, price)
+        producer_surplus = calculate_producer_surplus(market, price)
+        println("消费者剩余: \$$(round(consumer_surplus, digits=2))")
+        println("生产者剩余: \$$(round(producer_surplus, digits=2))")
+    end
+
+    # 弹性计算验证
+    println("\n2. 弹性计算验证:")
+
+    elasticity_calc = ElasticityCalculator()
+
+    demand_func(price) = max(0.0, 100.0 - 2.0 * price)
+
+    price_elasticity = price_elasticity_of_demand(elasticity_calc, demand_func, 30.0)
+    println("需求价格弹性: $(round(price_elasticity, digits=4))")
+
+    # 博弈论验证
+    println("\n3. 博弈论验证:")
+
+    payoff_A = [3.0 1.0; 0.0 2.0]  # 囚徒困境
+    payoff_B = [3.0 0.0; 1.0 2.0]
+
+    nash = NashEquilibrium()
+    equilibria = find_nash_equilibrium(nash, payoff_A, payoff_B)
+    println("纳什均衡: $equilibria")
+
+    market_demand_func(total_quantity) = max(0.0, 100.0 - total_quantity)
+
+    cournot = CournotModel(2, market_demand_func, [10.0, 15.0])
+    equilibrium_quantities = find_equilibrium(cournot)
+    println("古诺均衡产量: $equilibrium_quantities")
+
+    bertrand = BertrandModel(2, [10.0, 15.0])
+    equilibrium_prices = find_equilibrium(bertrand)
+    println("伯特兰均衡价格: $equilibrium_prices")
+
+    # 宏观经济模型验证
+    println("\n4. 宏观经济模型验证:")
+
+    consumption_func(disposable_income) = 100.0 + 0.8 * disposable_income
+    investment_func(interest_rate) = 200.0 - 1000.0 * interest_rate
+    money_demand_func(income, interest_rate) = 0.5 * income - 1000.0 * interest_rate
+
+    islm = ISLMModel(consumption_func, investment_func, money_demand_func, 500.0)
+    equilibrium_y, equilibrium_r = find_equilibrium(islm, 100.0, 50.0)
+
+    if equilibrium_y !== nothing
+        println("均衡收入: \$$(round(equilibrium_y, digits=2))")
+        println("均衡利率: $(round(equilibrium_r, digits=4))")
+    end
+
+    phillips = PhillipsCurve()
+    inflation = calculate_inflation(phillips, 0.06)
+    println("通货膨胀率: $(round(inflation, digits=4))")
+
+    sacrifice_ratio = calculate_sacrifice_ratio(phillips, 0.08, 0.05, 5)
+    println("牺牲率: $(round(sacrifice_ratio, digits=4))")
+
+    println("\n验证完成!")
+
+    return Dict(
+        "equilibrium_price" => equilibrium !== nothing ? equilibrium[1] : nothing,
+        "equilibrium_quantity" => equilibrium !== nothing ? equilibrium[2] : nothing,
+        "price_elasticity" => price_elasticity
+    )
+end
+```
+
 ---
 
 ## 相关模型 / Related Models
@@ -1260,5 +1784,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

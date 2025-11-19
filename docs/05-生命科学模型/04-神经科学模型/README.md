@@ -33,6 +33,7 @@
   - [5.4.7 实现与应用 / Implementation and Applications](#547-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [脑机接口 / Brain-Computer Interface](#脑机接口--brain-computer-interface)
       - [神经康复 / Neural Rehabilitation](#神经康复--neural-rehabilitation)
@@ -945,6 +946,381 @@ example = do
     putStrLn $ "Working memory output: " ++ show (last outputHistory)
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+using Statistics
+
+"""
+神经元结构体
+"""
+mutable struct Neuron
+    membrane_potential::Float64
+    threshold::Float64
+    reset_potential::Float64
+    resting_potential::Float64
+    membrane_time_constant::Float64
+    refractory_period::Float64
+    last_spike_time::Float64
+    current_time::Float64
+
+    function Neuron()
+        new(-65.0, -55.0, -65.0, -65.0, 20.0, 2.0, -1000.0, 0.0)
+    end
+end
+
+"""
+Integrate-and-Fire模型
+"""
+function integrate_and_fire(neuron::Neuron, input_current::Float64, dt::Float64)::Tuple{Neuron, Bool}
+    neuron.current_time += dt
+
+    # 不应期检查
+    if neuron.current_time - neuron.last_spike_time < neuron.refractory_period
+        neuron.membrane_potential = neuron.reset_potential
+        return neuron, false
+    end
+
+    # 膜电位更新
+    dv_dt = (-(neuron.membrane_potential - neuron.resting_potential) + input_current) /
+            neuron.membrane_time_constant
+    neuron.membrane_potential += dv_dt * dt
+
+    # 动作电位检查
+    if neuron.membrane_potential >= neuron.threshold
+        neuron.membrane_potential = neuron.reset_potential
+        neuron.last_spike_time = neuron.current_time
+        return neuron, true
+    end
+
+    return neuron, false
+end
+
+"""
+Hodgkin-Huxley模型（简化版）
+"""
+function hodgkin_huxley_step(v::Float64, n::Float64, m::Float64, h::Float64,
+                            I::Float64, dt::Float64)::Tuple{Float64, Float64, Float64, Float64}
+    # 参数
+    g_na = 120.0
+    g_k = 36.0
+    g_l = 0.3
+    e_na = 55.0
+    e_k = -77.0
+    e_l = -54.4
+    C = 1.0
+
+    # 门控变量动力学
+    alpha_n = 0.01 * (v + 55.0) / (1 - exp(-(v + 55.0) / 10.0))
+    beta_n = 0.125 * exp(-(v + 65.0) / 80.0)
+
+    alpha_m = 0.1 * (v + 40.0) / (1 - exp(-(v + 40.0) / 10.0))
+    beta_m = 4.0 * exp(-(v + 65.0) / 18.0)
+
+    alpha_h = 0.07 * exp(-(v + 65.0) / 20.0)
+    beta_h = 1.0 / (1 + exp(-(v + 35.0) / 10.0))
+
+    # 电流
+    I_na = g_na * m^3 * h * (v - e_na)
+    I_k = g_k * n^4 * (v - e_k)
+    I_l = g_l * (v - e_l)
+
+    # 膜电位更新
+    dv_dt = (I - I_na - I_k - I_l) / C
+    v_new = v + dt * dv_dt
+
+    # 门控变量更新
+    dn_dt = alpha_n * (1 - n) - beta_n * n
+    dm_dt = alpha_m * (1 - m) - beta_m * m
+    dh_dt = alpha_h * (1 - h) - beta_h * h
+
+    n_new = n + dt * dn_dt
+    m_new = m + dt * dm_dt
+    h_new = h + dt * dh_dt
+
+    return v_new, n_new, m_new, h_new
+end
+
+"""
+Izhikevich模型
+"""
+function izhikevich_step(v::Float64, u::Float64, I::Float64, dt::Float64,
+                        a::Float64 = 0.02, b::Float64 = 0.2, c::Float64 = -65.0,
+                        d::Float64 = 8.0, v_threshold::Float64 = 30.0)::Tuple{Float64, Float64, Bool}
+    dv_dt = 0.04 * v^2 + 5 * v + 140 - u + I
+    du_dt = a * (b * v - u)
+
+    v_new = v + dt * dv_dt
+    u_new = u + dt * du_dt
+
+    spike = false
+    if v_new >= v_threshold
+        v_new = c
+        u_new = u_new + d
+        spike = true
+    end
+
+    return v_new, u_new, spike
+end
+
+"""
+Hebbian学习规则
+"""
+function hebbian_update(w::Float64, pre_activity::Float64, post_activity::Float64,
+                       learning_rate::Float64 = 0.01, w_max::Float64 = 1.0)::Float64
+    dw = learning_rate * pre_activity * post_activity
+    return min(w_max, max(0.0, w + dw))
+end
+
+"""
+STDP（Spike-Timing-Dependent Plasticity）更新
+"""
+function stdp_update(w::Float64, delta_t::Float64, A_plus::Float64 = 0.01,
+                    A_minus::Float64 = 0.012, tau_plus::Float64 = 0.02,
+                    tau_minus::Float64 = 0.02, w_min::Float64 = 0.0,
+                    w_max::Float64 = 1.0)::Float64
+    if delta_t > 0
+        # 前突触先于后突触发放
+        dw = A_plus * exp(-delta_t / tau_plus)
+    else
+        # 后突触先于前突触发放
+        dw = -A_minus * exp(delta_t / tau_minus)
+    end
+    return min(w_max, max(w_min, w + dw))
+end
+
+"""
+前馈神经网络
+"""
+mutable struct FeedforwardNetwork
+    weights::Matrix{Float64}
+    biases::Vector{Float64}
+    activation::Function
+
+    function FeedforwardNetwork(input_size::Int, hidden_size::Int, output_size::Int)
+        weights = randn(hidden_size, input_size) * 0.1
+        biases = zeros(hidden_size)
+        activation = x -> max(0.0, x)  # ReLU
+        new(weights, biases, activation)
+    end
+end
+
+"""
+前向传播
+"""
+function forward(net::FeedforwardNetwork, input::Vector{Float64})::Vector{Float64}
+    hidden = net.activation.(net.weights * input + net.biases)
+    return hidden
+end
+
+"""
+反向传播（简化版）
+"""
+function backprop(net::FeedforwardNetwork, input::Vector{Float64}, target::Vector{Float64},
+                 learning_rate::Float64 = 0.01)
+    output = forward(net, input)
+    error = output - target
+    # 简化的梯度更新
+    for i in 1:size(net.weights, 1)
+        for j in 1:size(net.weights, 2)
+            net.weights[i, j] -= learning_rate * error[i] * input[j]
+        end
+        net.biases[i] -= learning_rate * error[i]
+    end
+end
+
+"""
+工作记忆模型
+"""
+mutable struct WorkingMemory
+    neurons::Vector{Float64}
+    recurrent_weights::Matrix{Float64}
+    input_weights::Vector{Float64}
+    output_weights::Vector{Float64}
+    time_constant::Float64
+
+    function WorkingMemory(num_neurons::Int)
+        neurons = zeros(num_neurons)
+        recurrent_weights = randn(num_neurons, num_neurons) * 0.1
+        input_weights = ones(num_neurons)
+        output_weights = ones(num_neurons)
+        new(neurons, recurrent_weights, input_weights, output_weights, 100.0)
+    end
+end
+
+"""
+更新工作记忆
+"""
+function update_working_memory(wm::WorkingMemory, input::Float64, dt::Float64)::Tuple{Float64, WorkingMemory}
+    # 计算总输入
+    total_input = input * wm.input_weights + wm.recurrent_weights * wm.neurons
+
+    # 更新神经元活动
+    dactivity_dt = (-wm.neurons + total_input) / wm.time_constant
+    wm.neurons += dactivity_dt * dt
+
+    # 计算输出
+    output = dot(wm.neurons, wm.output_weights)
+
+    return output, wm
+end
+
+"""
+存储模式到工作记忆
+"""
+function store_pattern(wm::WorkingMemory, pattern::Vector{Float64})
+    wm.neurons = copy(pattern)
+    return wm
+end
+
+"""
+决策模型（漂移扩散模型）
+"""
+mutable struct DriftDiffusionModel
+    evidence::Float64
+    threshold::Float64
+    drift_rate::Float64
+    noise::Float64
+
+    function DriftDiffusionModel(threshold::Float64 = 1.0, drift_rate::Float64 = 0.1,
+                                noise::Float64 = 0.1)
+        new(0.0, threshold, drift_rate, noise)
+    end
+end
+
+"""
+决策步进
+"""
+function decision_step(ddm::DriftDiffusionModel, dt::Float64)::Tuple{Bool, DriftDiffusionModel}
+    # 证据累积
+    dE = ddm.drift_rate * dt + ddm.noise * sqrt(dt) * randn()
+    ddm.evidence += dE
+
+    # 检查是否达到阈值
+    decision = abs(ddm.evidence) >= ddm.threshold
+
+    return decision, ddm
+end
+
+"""
+计算反应时间和准确率
+"""
+function decision_metrics(ddm::DriftDiffusionModel, mu::Float64, theta::Float64,
+                        sigma::Float64)::Tuple{Float64, Float64}
+    rt = theta / mu  # 反应时间
+    p_correct = 1.0 / (1.0 + exp(-2 * mu * theta / sigma^2))  # 准确率
+    return rt, p_correct
+end
+
+"""
+LIF神经元模拟
+"""
+function lif_simulate(T::Float64 = 1.0, dt::Float64 = 1e-4, I::Float64 = 1.5,
+                     V_rest::Float64 = -65.0, V_th::Float64 = -50.0,
+                     V_reset::Float64 = -65.0, tau_m::Float64 = 0.02,
+                     t_ref::Float64 = 0.002)
+    n = Int(T / dt)
+    V = fill(V_rest, n)
+    spikes = zeros(Bool, n)
+    ref_counter = 0.0
+    R = 1.0
+
+    for t in 2:n
+        if ref_counter > 0.0
+            V[t] = V_reset
+            ref_counter -= dt
+            continue
+        end
+
+        dV = (-(V[t-1] - V_rest) + R * I) / tau_m
+        V[t] = V[t-1] + dt * dV
+
+        if V[t] >= V_th
+            spikes[t] = true
+            V[t] = V_reset
+            ref_counter = t_ref
+        end
+    end
+
+    time = collect(0:dt:T-dt)
+    return time, V, spikes
+end
+
+"""
+STDP更新（时间差版本）
+"""
+function stdp_update_timedelta(w::Float64, pre_spike_time::Float64, post_spike_time::Float64,
+                              A_plus::Float64 = 0.01, A_minus::Float64 = 0.012,
+                              tau_plus::Float64 = 0.02, tau_minus::Float64 = 0.02,
+                              w_min::Float64 = 0.0, w_max::Float64 = 1.0)::Float64
+    delta_t = post_spike_time - pre_spike_time
+    return stdp_update(w, delta_t, A_plus, A_minus, tau_plus, tau_minus, w_min, w_max)
+end
+
+# 示例：神经科学模型使用
+function neuroscience_example()
+    # Integrate-and-Fire神经元
+    neuron = Neuron()
+    spike_times = Float64[]
+    for t in 0:0.001:1.0
+        neuron, spiked = integrate_and_fire(neuron, 1.5, 0.001)
+        if spiked
+            push!(spike_times, t)
+        end
+    end
+    println("Spike times: $(spike_times[1:min(5, length(spike_times))])")
+
+    # Hodgkin-Huxley模型
+    v, n, m, h = -65.0, 0.3, 0.05, 0.6
+    for _ in 1:1000
+        v, n, m, h = hodgkin_huxley_step(v, n, m, h, 10.0, 0.001)
+    end
+    println("HH final voltage: $v")
+
+    # Izhikevich模型
+    v_izh, u_izh = -65.0, 0.0
+    spike_count = 0
+    for _ in 1:1000
+        v_izh, u_izh, spiked = izhikevich_step(v_izh, u_izh, 10.0, 0.001)
+        if spiked
+            spike_count += 1
+        end
+    end
+    println("Izhikevich spikes: $spike_count")
+
+    # 工作记忆
+    wm = WorkingMemory(5)
+    pattern = [1.0, 0.5, 0.0, 0.5, 1.0]
+    store_pattern(wm, pattern)
+    output_history = Float64[]
+    for _ in 1:1000
+        output, wm = update_working_memory(wm, 0.0, 0.1)
+        push!(output_history, output)
+    end
+    println("Working memory output: $(output_history[end])")
+
+    # 决策模型
+    ddm = DriftDiffusionModel(1.0, 0.1, 0.1)
+    decision_made = false
+    steps = 0
+    while !decision_made && steps < 10000
+        decision_made, ddm = decision_step(ddm, 0.001)
+        steps += 1
+    end
+    rt, p_correct = decision_metrics(ddm, 0.1, 1.0, 0.1)
+    println("Decision: $decision_made, RT: $rt, Accuracy: $p_correct")
+
+    return Dict(
+        "spike_count" => length(spike_times),
+        "hh_voltage" => v,
+        "izh_spikes" => spike_count,
+        "wm_output" => output_history[end],
+        "decision_time" => steps * 0.001
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 脑机接口 / Brain-Computer Interface
@@ -1085,5 +1461,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

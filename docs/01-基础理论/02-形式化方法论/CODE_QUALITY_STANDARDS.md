@@ -12,32 +12,32 @@
 
 ```rust
 /// 形式化模型的标准接口
-/// 
+///
 /// 所有形式化模型都必须实现此接口，确保一致性和可互操作性。
-/// 
+///
 /// # Examples
-/// 
+///
 /// ```
 /// use formal_model::prelude::*;
-/// 
+///
 /// struct MyModel {
 ///     state: Vec<f64>,
 ///     parameters: ModelParameters,
 /// }
-/// 
+///
 /// impl FormalModel for MyModel {
 ///     type ModelType = Vec<f64>;
-///     
+///
 ///     fn verify(&self) -> Result<VerificationResult, ModelError> {
 ///         // 验证模型正确性
 ///         Ok(VerificationResult::Valid)
 ///     }
-///     
+///
 ///     fn simulate(&self, config: SimulationConfig) -> Result<SimulationResult, ModelError> {
 ///         // 执行模型模拟
 ///         Ok(SimulationResult::new())
 ///     }
-///     
+///
 ///     fn export(&self, format: ExportFormat) -> Result<Vec<u8>, ModelError> {
 ///         // 导出模型表示
 ///         Ok(Vec::new())
@@ -47,19 +47,19 @@
 pub trait FormalModel {
     /// 模型类型
     type ModelType;
-    
+
     /// 验证模型正确性
-    /// 
+    ///
     /// 返回验证结果，包括模型的有效性、一致性和完整性检查。
     fn verify(&self) -> Result<VerificationResult, ModelError>;
-    
+
     /// 执行模型模拟
-    /// 
+    ///
     /// 根据给定的配置参数执行模型模拟，返回模拟结果。
     fn simulate(&self, config: SimulationConfig) -> Result<SimulationResult, ModelError>;
-    
+
     /// 导出模型表示
-    /// 
+    ///
     /// 将模型导出为指定格式的字节序列。
     fn export(&self, format: ExportFormat) -> Result<Vec<u8>, ModelError>;
 }
@@ -70,19 +70,19 @@ pub enum ModelError {
     /// 验证失败错误
     #[error("验证失败: {0}")]
     ValidationFailed(String),
-    
+
     /// 计算错误
     #[error("计算错误: {0}")]
     ComputationError(String),
-    
+
     /// 格式错误
     #[error("格式错误: {0}")]
     FormatError(String),
-    
+
     /// 参数错误
     #[error("参数错误: {0}")]
     ParameterError(String),
-    
+
     /// 内部错误
     #[error("内部错误: {0}")]
     InternalError(String),
@@ -152,7 +152,7 @@ impl SimulationResult {
             metadata: SimulationMetadata::default(),
         }
     }
-    
+
     /// 验证结果的有效性
     pub fn validate(&self) -> Result<(), ModelError> {
         if self.time_series.len() != self.state_series.len() {
@@ -171,7 +171,7 @@ impl SimulationResult {
 /// 错误处理工具函数
 pub mod error_utils {
     use super::*;
-    
+
     /// 检查数值的有效性
     pub fn validate_numeric(value: f64, name: &str) -> Result<(), ModelError> {
         if value.is_nan() {
@@ -186,7 +186,7 @@ pub mod error_utils {
         }
         Ok(())
     }
-    
+
     /// 检查向量的有效性
     pub fn validate_vector(vector: &[f64], name: &str) -> Result<(), ModelError> {
         if vector.is_empty() {
@@ -194,14 +194,14 @@ pub mod error_utils {
                 format!("{} 是空向量", name)
             ));
         }
-        
+
         for (i, &value) in vector.iter().enumerate() {
             validate_numeric(value, &format!("{}[{}]", name, i))?;
         }
-        
+
         Ok(())
     }
-    
+
     /// 检查矩阵的有效性
     pub fn validate_matrix(matrix: &[Vec<f64>], name: &str) -> Result<(), ModelError> {
         if matrix.is_empty() {
@@ -209,10 +209,10 @@ pub mod error_utils {
                 format!("{} 是空矩阵", name)
             ));
         }
-        
+
         let rows = matrix.len();
         let cols = matrix[0].len();
-        
+
         for (i, row) in matrix.iter().enumerate() {
             if row.len() != cols {
                 return Err(ModelError::ValidationFailed(
@@ -221,7 +221,7 @@ pub mod error_utils {
             }
             validate_vector(row, &format!("{}[{}]", name, i))?;
         }
-        
+
         Ok(())
     }
 }
@@ -236,13 +236,13 @@ pub mod error_utils {
 class FormalModel m where
     -- 模型类型
     type ModelType m
-    
+
     -- 验证模型正确性
     verify :: m -> Either ModelError VerificationResult
-    
+
     -- 执行模型模拟
     simulate :: m -> SimulationConfig -> Either ModelError SimulationResult
-    
+
     -- 导出模型表示
     export :: m -> ExportFormat -> Either ModelError ByteString
 
@@ -310,7 +310,7 @@ validateNumeric value name
 validateVector :: [Double] -> String -> Either ModelError ()
 validateVector vector name
     | null vector = Left $ ValidationFailed $ name ++ " 是空向量"
-    | otherwise = mapM_ (\(i, v) -> validateNumeric v (name ++ "[" ++ show i ++ "]")) 
+    | otherwise = mapM_ (\(i, v) -> validateNumeric v (name ++ "[" ++ show i ++ "]"))
                        (zip [0..] vector)
 
 -- 矩阵验证函数
@@ -320,7 +320,7 @@ validateMatrix matrix name
     | otherwise = do
         let rows = length matrix
             cols = length (head matrix)
-        mapM_ (\(i, row) -> 
+        mapM_ (\(i, row) ->
             if length row /= cols
                 then Left $ ValidationFailed $ name ++ " 的第 " ++ show i ++ " 行长度不一致"
                 else validateVector row (name ++ "[" ++ show i ++ "]")
@@ -372,7 +372,7 @@ class ModelParameters:
     max_iterations: int = 1000
     convergence_threshold: float = 1e-6
     random_seed: Optional[int] = None
-    
+
     def validate(self) -> None:
         """验证参数有效性"""
         if self.time_step <= 0:
@@ -389,7 +389,7 @@ class SimulationConfig:
     initial_conditions: List[float]
     boundary_conditions: Optional[Dict[str, Any]] = None
     output_config: Optional[Dict[str, Any]] = None
-    
+
     def validate(self) -> None:
         """验证配置有效性"""
         self.parameters.validate()
@@ -401,35 +401,35 @@ class SimulationConfig:
 
 class FormalModel(ABC):
     """形式化模型抽象基类"""
-    
+
     @abstractmethod
     def verify(self) -> bool:
         """验证模型正确性"""
         pass
-    
+
     @abstractmethod
     def simulate(self, config: SimulationConfig) -> 'SimulationResult':
         """执行模型模拟"""
         pass
-    
+
     @abstractmethod
     def export(self, format_type: str) -> bytes:
         """导出模型表示"""
         pass
-    
+
     def validate_input(self, data: np.ndarray, name: str) -> None:
         """验证输入数据"""
         if data.size == 0:
             raise ValidationError(f"{name} 是空数组")
         if not np.all(np.isfinite(data)):
             raise ValidationError(f"{name} 包含非有限数值")
-    
+
     def safe_divide(self, numerator: float, denominator: float) -> float:
         """安全除法"""
         if denominator == 0:
             raise ComputationError("除零错误")
         return numerator / denominator
-    
+
     def safe_sqrt(self, value: float) -> float:
         """安全平方根"""
         if value < 0:
@@ -447,34 +447,34 @@ from scipy.integrate import solve_ivp
 
 class NumericalMethods:
     """数值计算方法集合"""
-    
+
     @staticmethod
-    def runge_kutta_4(f, t_span: Tuple[float, float], y0: np.ndarray, 
+    def runge_kutta_4(f, t_span: Tuple[float, float], y0: np.ndarray,
                      h: float) -> Tuple[np.ndarray, np.ndarray]:
         """四阶龙格库塔方法"""
         t_start, t_end = t_span
         t_values = np.arange(t_start, t_end + h, h)
         n_steps = len(t_values)
         n_vars = len(y0)
-        
+
         y_values = np.zeros((n_steps, n_vars))
         y_values[0] = y0
-        
+
         for i in range(1, n_steps):
             t = t_values[i-1]
             y = y_values[i-1]
-            
+
             k1 = h * f(t, y)
             k2 = h * f(t + h/2, y + k1/2)
             k3 = h * f(t + h/2, y + k2/2)
             k4 = h * f(t + h, y + k3)
-            
+
             y_values[i] = y + (k1 + 2*k2 + 2*k3 + k4) / 6
-        
+
         return t_values, y_values
-    
+
     @staticmethod
-    def newton_method(f, df, x0: float, tol: float = 1e-6, 
+    def newton_method(f, df, x0: float, tol: float = 1e-6,
                      max_iter: int = 100) -> Tuple[float, bool]:
         """牛顿法求解非线性方程"""
         x = x0
@@ -482,19 +482,19 @@ class NumericalMethods:
             fx = f(x)
             if abs(fx) < tol:
                 return x, True
-            
+
             dfx = df(x)
             if abs(dfx) < 1e-12:
                 return x, False  # 导数接近零，可能发散
-            
+
             x_new = x - fx / dfx
             if abs(x_new - x) < tol:
                 return x_new, True
-            
+
             x = x_new
-        
+
         return x, False  # 达到最大迭代次数
-    
+
     @staticmethod
     def linear_solve(A: np.ndarray, b: np.ndarray) -> np.ndarray:
         """线性方程组求解"""
@@ -502,7 +502,7 @@ class NumericalMethods:
             return np.linalg.solve(A, b)
         except np.linalg.LinAlgError:
             raise ComputationError("线性方程组求解失败：矩阵奇异")
-    
+
     @staticmethod
     def eigenvalue_decomposition(A: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """特征值分解"""
@@ -521,7 +521,7 @@ class NumericalMethods:
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_model_parameters_default() {
         let params = ModelParameters::default();
@@ -530,40 +530,40 @@ mod tests {
         assert_eq!(params.convergence_threshold, 1e-6);
         assert_eq!(params.random_seed, None);
     }
-    
+
     #[test]
     fn test_simulation_result_validation() {
         let mut result = SimulationResult::new();
         result.time_series = vec![0.0, 1.0, 2.0];
         result.state_series = vec![vec![1.0], vec![2.0], vec![3.0]];
-        
+
         assert!(result.validate().is_ok());
     }
-    
+
     #[test]
     fn test_simulation_result_validation_failure() {
         let mut result = SimulationResult::new();
         result.time_series = vec![0.0, 1.0];
         result.state_series = vec![vec![1.0]];  // 长度不匹配
-        
+
         assert!(result.validate().is_err());
     }
-    
+
     #[test]
     fn test_error_utils_validate_numeric() {
         assert!(error_utils::validate_numeric(1.0, "test").is_ok());
         assert!(error_utils::validate_numeric(f64::NAN, "test").is_err());
         assert!(error_utils::validate_numeric(f64::INFINITY, "test").is_err());
     }
-    
+
     #[test]
     fn test_error_utils_validate_vector() {
         let valid_vector = vec![1.0, 2.0, 3.0];
         assert!(error_utils::validate_vector(&valid_vector, "test").is_ok());
-        
+
         let empty_vector = vec![];
         assert!(error_utils::validate_vector(&empty_vector, "test").is_err());
-        
+
         let invalid_vector = vec![1.0, f64::NAN, 3.0];
         assert!(error_utils::validate_vector(&invalid_vector, "test").is_err());
     }
@@ -579,7 +579,7 @@ from formal_model import FormalModel, SimulationConfig, ModelParameters
 
 class TestFormalModel(unittest.TestCase):
     """形式化模型集成测试"""
-    
+
     def setUp(self):
         """测试前准备"""
         self.params = ModelParameters(
@@ -591,42 +591,42 @@ class TestFormalModel(unittest.TestCase):
             parameters=self.params,
             initial_conditions=[1.0, 0.0]
         )
-    
+
     def test_model_verification(self):
         """测试模型验证"""
         model = self.create_test_model()
         self.assertTrue(model.verify())
-    
+
     def test_model_simulation(self):
         """测试模型模拟"""
         model = self.create_test_model()
         result = model.simulate(self.config)
-        
+
         self.assertIsNotNone(result)
         self.assertEqual(len(result.time_series), len(result.state_series))
         self.assertTrue(len(result.time_series) > 0)
-    
+
     def test_model_export(self):
         """测试模型导出"""
         model = self.create_test_model()
         exported_data = model.export("json")
-        
+
         self.assertIsInstance(exported_data, bytes)
         self.assertTrue(len(exported_data) > 0)
-    
+
     def test_error_handling(self):
         """测试错误处理"""
         model = self.create_test_model()
-        
+
         # 测试无效参数
         invalid_config = SimulationConfig(
             parameters=ModelParameters(time_step=-1.0),
             initial_conditions=[]
         )
-        
+
         with self.assertRaises(ValidationError):
             model.simulate(invalid_config)
-    
+
     def create_test_model(self):
         """创建测试模型"""
         # 这里应该返回一个具体的模型实现
@@ -653,7 +653,7 @@ mod benchmarks {
             boundary_conditions: None,
             output_config: None,
         };
-        
+
         c.bench_function("simulation_1000_steps", |b| {
             b.iter(|| {
                 let model = create_test_model();
@@ -661,7 +661,7 @@ mod benchmarks {
             })
         });
     }
-    
+
     fn benchmark_verification(c: &mut Criterion) {
         c.bench_function("model_verification", |b| {
             b.iter(|| {
@@ -670,7 +670,7 @@ mod benchmarks {
             })
         });
     }
-    
+
     criterion_group!(benches, benchmark_simulation, benchmark_verification);
     criterion_main!(benches);
 }
@@ -692,20 +692,20 @@ impl MemoryMonitor {
             current_memory: 0,
         }
     }
-    
+
     pub fn record_allocation(&mut self, size: usize) {
         self.current_memory += size;
         self.peak_memory = self.peak_memory.max(self.current_memory);
     }
-    
+
     pub fn record_deallocation(&mut self, size: usize) {
         self.current_memory = self.current_memory.saturating_sub(size);
     }
-    
+
     pub fn get_peak_memory(&self) -> usize {
         self.peak_memory
     }
-    
+
     pub fn get_current_memory(&self) -> usize {
         self.current_memory
     }
@@ -718,28 +718,28 @@ impl MemoryMonitor {
 
 ```rust
 /// 形式化模型的核心接口
-/// 
+///
 /// 此接口定义了所有形式化模型必须实现的基本功能。
 /// 实现此接口的模型可以参与统一的验证、模拟和导出流程。
-/// 
+///
 /// # 实现要求
-/// 
+///
 /// - `verify()` 方法必须检查模型的内在一致性
 /// - `simulate()` 方法必须处理所有可能的错误情况
 /// - `export()` 方法必须支持至少一种标准格式
-/// 
+///
 /// # 示例
-/// 
+///
 /// ```
 /// use formal_model::prelude::*;
-/// 
+///
 /// struct SimpleModel {
 ///     parameters: Vec<f64>,
 /// }
-/// 
+///
 /// impl FormalModel for SimpleModel {
 ///     type ModelType = Vec<f64>;
-///     
+///
 ///     fn verify(&self) -> Result<VerificationResult, ModelError> {
 ///         // 验证参数的有效性
 ///         for param in &self.parameters {
@@ -751,12 +751,12 @@ impl MemoryMonitor {
 ///         }
 ///         Ok(VerificationResult::Valid)
 ///     }
-///     
+///
 ///     fn simulate(&self, config: SimulationConfig) -> Result<SimulationResult, ModelError> {
 ///         // 执行模拟逻辑
 ///         Ok(SimulationResult::new())
 ///     }
-///     
+///
 ///     fn export(&self, format: ExportFormat) -> Result<Vec<u8>, ModelError> {
 ///         // 导出为指定格式
 ///         Ok(Vec::new())
@@ -772,28 +772,28 @@ pub trait FormalModel {
 
 ```rust
 /// 计算模型的雅可比矩阵
-/// 
+///
 /// 雅可比矩阵是模型状态对参数的偏导数矩阵，用于：
 /// - 敏感性分析
 /// - 参数优化
 /// - 稳定性分析
-/// 
+///
 /// # 参数
-/// 
+///
 /// * `state` - 当前状态向量
 /// * `parameters` - 模型参数向量
 /// * `epsilon` - 数值微分步长
-/// 
+///
 /// # 返回值
-/// 
+///
 /// 返回雅可比矩阵，维度为 [状态维度] × [参数维度]
-/// 
+///
 /// # 错误
-/// 
+///
 /// 如果数值微分失败或矩阵计算出现问题，返回 `ComputationError`
-/// 
+///
 /// # 示例
-/// 
+///
 /// ```
 /// let jacobian = compute_jacobian(&state, &parameters, 1e-6)?;
 /// ```
@@ -852,6 +852,6 @@ pub fn compute_jacobian(
 
 ---
 
-**文档版本**: 1.0.0  
-**创建时间**: 2025-09-15  
+**文档版本**: 1.0.0
+**创建时间**: 2025-09-15
 **状态**: 执行中 / Status: In Progress

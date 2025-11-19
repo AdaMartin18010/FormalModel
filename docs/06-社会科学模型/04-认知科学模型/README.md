@@ -29,17 +29,18 @@
   - [6.4.6 实现与应用 / Implementation and Applications](#646-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [人工智能 / Artificial Intelligence](#人工智能--artificial-intelligence)
       - [人机交互 / Human-Computer Interaction](#人机交互--human-computer-interaction)
       - [认知增强 / Cognitive Enhancement](#认知增强--cognitive-enhancement)
-  - [参考文献 / References](#参考文献--references)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [社会科学模型 / Social Science Models](#社会科学模型--social-science-models)
     - [生命科学模型 / Life Science Models](#生命科学模型--life-science-models)
     - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
     - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
     - [基础理论 / Basic Theory](#基础理论--basic-theory)
+  - [参考文献 / References](#参考文献--references)
 
 ---
 
@@ -864,6 +865,367 @@ example = do
     putStrLn $ "努力水平: " ++ show effortLevel
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using Statistics
+using LinearAlgebra
+
+"""
+感知模型结构体
+"""
+mutable struct PerceptionModel
+    sensitivity::Float64
+    threshold::Float64
+    noise_level::Float64
+
+    function PerceptionModel()
+        new(1.0, 0.5, 0.1)
+    end
+end
+
+"""
+视觉感知
+"""
+function visual_perception(model::PerceptionModel, stimulus_strength::Float64)::Float64
+    signal = model.sensitivity * stimulus_strength
+    noise = model.noise_level * randn()
+    response = signal + noise
+    return response > model.threshold ? response : 0.0
+end
+
+"""
+听觉感知
+"""
+function auditory_perception(model::PerceptionModel, frequency::Float64, amplitude::Float64)::Float64
+    # 简化的听觉感知模型
+    perceived = amplitude * exp(-abs(frequency - 1000.0) / 500.0)
+    return perceived > model.threshold ? perceived : 0.0
+end
+
+"""
+期望效用理论
+"""
+mutable struct ExpectedUtilityModel
+    utility_function::Function
+
+    function ExpectedUtilityModel()
+        utility = x -> sqrt(x)  # 风险厌恶效用函数
+        new(utility)
+    end
+end
+
+"""
+计算期望效用
+"""
+function calculate_expected_utility(model::ExpectedUtilityModel, outcomes::Vector{Float64},
+                                   probabilities::Vector{Float64})::Float64
+    if length(outcomes) != length(probabilities)
+        return 0.0
+    end
+
+    expected_utility = 0.0
+    for (outcome, prob) in zip(outcomes, probabilities)
+        expected_utility += prob * model.utility_function(outcome)
+    end
+
+    return expected_utility
+end
+
+"""
+前景理论模型
+"""
+mutable struct ProspectTheoryModel
+    alpha::Float64  # 收益的风险态度
+    beta::Float64   # 损失的风险态度
+    lambda::Float64  # 损失厌恶系数
+    gamma::Float64  # 概率权重参数
+
+    function ProspectTheoryModel()
+        new(0.88, 0.88, 2.25, 0.65)
+    end
+end
+
+"""
+价值函数
+"""
+function value_function(model::ProspectTheoryModel, x::Float64)::Float64
+    if x >= 0
+        return x^model.alpha
+    else
+        return -model.lambda * (-x)^model.beta
+    end
+end
+
+"""
+权重函数
+"""
+function weight_function(model::ProspectTheoryModel, p::Float64)::Float64
+    gamma = model.gamma
+    return p^gamma / (p^gamma + (1 - p)^gamma)^(1.0 / gamma)
+end
+
+"""
+计算前景值
+"""
+function calculate_prospect_value(model::ProspectTheoryModel, outcomes::Vector{Float64},
+                                 probabilities::Vector{Float64})::Float64
+    if length(outcomes) != length(probabilities)
+        return 0.0
+    end
+
+    prospect_value = 0.0
+    for (outcome, prob) in zip(outcomes, probabilities)
+        weight = weight_function(model, prob)
+        value = value_function(model, outcome)
+        prospect_value += weight * value
+    end
+
+    return prospect_value
+end
+
+"""
+问题解决模型结构体
+"""
+mutable struct ProblemSolvingModel
+    search_depth::Int
+    heuristic_function::Function
+
+    function ProblemSolvingModel()
+        heuristic = (current, goal) -> begin
+            # 简化的启发式函数：计算字符串差异
+            diff = 0
+            max_len = max(length(current), length(goal))
+            for i in 1:max_len
+                c1 = i <= length(current) ? current[i] : ' '
+                c2 = i <= length(goal) ? goal[i] : ' '
+                if c1 != c2
+                    diff += 1
+                end
+            end
+            return Float64(diff)
+        end
+        new(5, heuristic)
+    end
+end
+
+"""
+A*搜索算法
+"""
+function a_star_search(model::ProblemSolvingModel, start::String, goal::String,
+                      successors::Function)::Union{Vector{String}, Nothing}
+    open_set = [start]
+    came_from = Dict{String, String}()
+    g_score = Dict(start => 0.0)
+    f_score = Dict(start => model.heuristic_function(start, goal))
+
+    while !isempty(open_set)
+        # 找到f_score最小的节点
+        current = argmin(node -> get(f_score, node, Inf), open_set)
+
+        if current == goal
+            return reconstruct_path(came_from, current)
+        end
+
+        filter!(x -> x != current, open_set)
+
+        for neighbor in successors(current)
+            tentative_g_score = get(g_score, current, Inf) + 1.0
+
+            if tentative_g_score < get(g_score, neighbor, Inf)
+                came_from[neighbor] = current
+                g_score[neighbor] = tentative_g_score
+                f_score[neighbor] = tentative_g_score + model.heuristic_function(neighbor, goal)
+
+                if !(neighbor in open_set)
+                    push!(open_set, neighbor)
+                end
+            end
+        end
+    end
+
+    return nothing
+end
+
+"""
+重构路径
+"""
+function reconstruct_path(came_from::Dict{String, String}, current::String)::Vector{String}
+    path = [current]
+    while haskey(came_from, current)
+        current = came_from[current]
+        pushfirst!(path, current)
+    end
+    return path
+end
+
+"""
+元认知模型结构体
+"""
+mutable struct MetacognitiveModel
+    confidence_threshold::Float64
+    learning_rate::Float64
+    strategy_preferences::Dict{String, Float64}
+
+    function MetacognitiveModel()
+        strategies = Dict(
+            "rehearsal" => 0.3,
+            "elaboration" => 0.5,
+            "organization" => 0.2
+        )
+        new(0.7, 0.1, strategies)
+    end
+end
+
+"""
+学习判断
+"""
+function learning_judgment(model::MetacognitiveModel, performance::Float64,
+                           study_time::Float64)::Float64
+    # 基于表现和学习时间的学习判断
+    base_confidence = performance
+    time_factor = min(1.0, study_time / 10.0)
+    judgment = base_confidence * (1.0 + model.learning_rate * time_factor)
+    return clamp(judgment, 0.0, 1.0)
+end
+
+"""
+选择策略
+"""
+function select_strategy(model::MetacognitiveModel, task_difficulty::Float64)::String
+    # 根据任务难度选择策略
+    if task_difficulty < 0.3
+        return "rehearsal"
+    elseif task_difficulty < 0.7
+        return "elaboration"
+    else
+        return "organization"
+    end
+end
+
+"""
+调整努力水平
+"""
+function adjust_effort(model::MetacognitiveModel, current_performance::Float64,
+                      target_performance::Float64, difficulty::Float64)::Float64
+    gap = target_performance - current_performance
+    base_effort = 0.5
+    effort_adjustment = gap * model.learning_rate * (1.0 + difficulty)
+    return clamp(base_effort + effort_adjustment, 0.0, 1.0)
+end
+
+"""
+类比推理模型
+"""
+mutable struct AnalogicalReasoningModel
+    similarity_threshold::Float64
+
+    function AnalogicalReasoningModel()
+        new(0.6)
+    end
+end
+
+"""
+计算相似度
+"""
+function calculate_similarity(model::AnalogicalReasoningModel, source::Dict{String, Any},
+                             target::Dict{String, Any})::Float64
+    common_keys = intersect(keys(source), keys(target))
+    if isempty(common_keys)
+        return 0.0
+    end
+
+    similarities = Float64[]
+    for key in common_keys
+        val1 = source[key]
+        val2 = target[key]
+        if val1 == val2
+            push!(similarities, 1.0)
+        elseif typeof(val1) == typeof(val2) && isa(val1, Number)
+            # 数值相似度
+            sim = 1.0 - abs(val1 - val2) / (abs(val1) + abs(val2) + 1e-10)
+            push!(similarities, max(0.0, sim))
+        else
+            push!(similarities, 0.0)
+        end
+    end
+
+    return mean(similarities)
+end
+
+"""
+判断是否可类比
+"""
+function is_analogous(model::AnalogicalReasoningModel, source::Dict{String, Any},
+                     target::Dict{String, Any})::Bool
+    similarity = calculate_similarity(model, source, target)
+    return similarity >= model.similarity_threshold
+end
+
+# 示例：认知科学模型使用
+function cognitive_science_example()
+    # 感知模型
+    perception = PerceptionModel()
+    visual_response = visual_perception(perception, 0.8)
+    auditory_response = auditory_perception(perception, 1200.0, 0.6)
+    println("Visual response: $visual_response, Auditory response: $auditory_response")
+
+    # 期望效用理论
+    eu_model = ExpectedUtilityModel()
+    outcomes = [100.0, 50.0, 0.0]
+    probabilities = [0.3, 0.5, 0.2]
+    eu = calculate_expected_utility(eu_model, outcomes, probabilities)
+    println("Expected utility: $eu")
+
+    # 前景理论
+    pt_model = ProspectTheoryModel()
+    pt_value = calculate_prospect_value(pt_model, outcomes, probabilities)
+    println("Prospect value: $pt_value")
+
+    # 问题解决模型
+    problem_solving = ProblemSolvingModel()
+    successors_func = (state) -> begin
+        # 简化的后继函数
+        if state == "start"
+            return ["middle1", "middle2"]
+        elseif state == "middle1"
+            return ["goal"]
+        elseif state == "middle2"
+            return ["goal"]
+        else
+            return String[]
+        end
+    end
+
+    path = a_star_search(problem_solving, "start", "goal", successors_func)
+    println("Solution path: $path")
+
+    # 元认知模型
+    metacognitive = MetacognitiveModel()
+    learning_judgment_val = learning_judgment(metacognitive, 0.7, 5.0)
+    selected_strategy = select_strategy(metacognitive, 0.5)
+    effort_level = adjust_effort(metacognitive, 0.6, 0.8, 0.9)
+    println("Learning judgment: $learning_judgment_val")
+    println("Selected strategy: $selected_strategy")
+    println("Effort level: $effort_level")
+
+    # 类比推理
+    analogical = AnalogicalReasoningModel()
+    source = Dict("shape" => "circle", "size" => 10.0, "color" => "red")
+    target = Dict("shape" => "circle", "size" => 12.0, "color" => "blue")
+    similarity = calculate_similarity(analogical, source, target)
+    is_analog = is_analogous(analogical, source, target)
+    println("Similarity: $similarity, Is analogous: $is_analog")
+
+    return Dict(
+        "expected_utility" => eu,
+        "prospect_value" => pt_value,
+        "solution_path" => path,
+        "learning_judgment" => learning_judgment_val
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 人工智能 / Artificial Intelligence
@@ -928,5 +1290,6 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

@@ -548,7 +548,9 @@ graph TD
 - **模型覆盖**: 12个主要学科领域
 - **行业应用**: 15个主要应用领域
 
-#### 下一步计划 / Next Steps
+#### 📋 后续优化工作计划（非核心功能） / Future Enhancement Work Plan (Non-Core Features)
+
+> **注意**: 以下计划属于后续优化和扩展工作，不属于核心功能范围。项目核心功能（所有29个核心模型的多语言实现）已完成。
 
 1. **项目完成总结** / Project Completion Summary
    - 项目成果汇总

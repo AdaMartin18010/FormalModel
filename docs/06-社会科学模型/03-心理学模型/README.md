@@ -29,6 +29,7 @@
   - [6.3.6 实现与应用 / Implementation and Applications](#636-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [临床心理学 / Clinical Psychology](#临床心理学--clinical-psychology)
       - [教育心理学 / Educational Psychology](#教育心理学--educational-psychology)
@@ -759,6 +760,354 @@ example = do
     putStrLn $ "道德水平: " ++ show (moralLevel development)
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using Statistics
+using LinearAlgebra
+
+"""
+记忆模型结构体
+"""
+mutable struct MemoryModel
+    short_term_capacity::Int
+    long_term_strength::Float64
+    decay_rate::Float64
+    consolidation_rate::Float64
+
+    function MemoryModel()
+        new(7, 0.5, 0.1, 0.05)
+    end
+end
+
+"""
+编码到短时记忆
+"""
+function encode_to_short_term(memory::MemoryModel, item::String)::Bool
+    return memory.short_term_capacity > 0
+end
+
+"""
+巩固到长时记忆
+"""
+function consolidate_to_long_term(memory::MemoryModel, strength::Float64)::Float64
+    new_strength = memory.long_term_strength + memory.consolidation_rate * strength
+    memory.long_term_strength = min(1.0, new_strength)
+    return memory.long_term_strength
+end
+
+"""
+记忆衰减
+"""
+function decay_memory(memory::MemoryModel, time::Float64)::Float64
+    return memory.long_term_strength * exp(-memory.decay_rate * time)
+end
+
+"""
+学习模型结构体
+"""
+mutable struct LearningModel
+    reinforcement_rate::Float64
+    extinction_rate::Float64
+    generalization_sigma::Float64
+
+    function LearningModel()
+        new(0.1, 0.05, 1.0)
+    end
+end
+
+"""
+经典条件反射
+"""
+function classical_conditioning(model::LearningModel, cs_strength::Float64, us_strength::Float64)::Float64
+    alpha = 0.1
+    beta = 0.1
+    lambda = us_strength
+    return alpha * beta * (lambda - cs_strength)
+end
+
+"""
+操作性条件反射
+"""
+function operant_conditioning(model::LearningModel, response_strength::Float64, reinforcement::Float64)::Float64
+    theta = 0.5
+    probability = 1.0 / (1.0 + exp(-(response_strength - theta)))
+    return probability * reinforcement
+end
+
+"""
+消退
+"""
+function extinction(model::LearningModel, initial_strength::Float64, time::Float64)::Float64
+    return initial_strength * exp(-model.extinction_rate * time)
+end
+
+"""
+人格模型结构体（大五人格）
+"""
+mutable struct PersonalityModel
+    openness::Float64
+    conscientiousness::Float64
+    extraversion::Float64
+    agreeableness::Float64
+    neuroticism::Float64
+
+    function PersonalityModel()
+        new(0.5, 0.5, 0.5, 0.5, 0.5)
+    end
+end
+
+"""
+计算大五人格分数
+"""
+function calculate_big_five(personality::PersonalityModel)::Vector{Float64}
+    return [personality.openness,
+            personality.conscientiousness,
+            personality.extraversion,
+            personality.agreeableness,
+            personality.neuroticism]
+end
+
+"""
+计算人格兼容性
+"""
+function calculate_personality_compatibility(p1::PersonalityModel, p2::PersonalityModel)::Float64
+    differences = [
+        abs(p1.openness - p2.openness),
+        abs(p1.conscientiousness - p2.conscientiousness),
+        abs(p1.extraversion - p2.extraversion),
+        abs(p1.agreeableness - p2.agreeableness),
+        abs(p1.neuroticism - p2.neuroticism)
+    ]
+
+    avg_difference = mean(differences)
+    return 1.0 - avg_difference
+end
+
+"""
+情绪模型结构体（VAD模型：效价-唤醒-支配）
+"""
+mutable struct EmotionModel
+    valence::Float64  # 效价：-1（负面）到1（正面）
+    arousal::Float64  # 唤醒：0（低）到1（高）
+    dominance::Float64  # 支配：0（低）到1（高）
+
+    function EmotionModel()
+        new(0.0, 0.5, 0.5)
+    end
+end
+
+"""
+更新情绪
+"""
+function update_emotion(emotion::EmotionModel, event_valence::Float64, event_arousal::Float64)
+    learning_rate = 0.1
+    emotion.valence += learning_rate * (event_valence - emotion.valence)
+    emotion.arousal += learning_rate * (event_arousal - emotion.arousal)
+
+    # 限制在有效范围内
+    emotion.valence = clamp(emotion.valence, -1.0, 1.0)
+    emotion.arousal = clamp(emotion.arousal, 0.0, 1.0)
+    emotion.dominance = clamp(emotion.dominance, 0.0, 1.0)
+end
+
+"""
+计算情绪距离
+"""
+function calculate_emotion_distance(e1::EmotionModel, e2::EmotionModel)::Float64
+    return sqrt((e1.valence - e2.valence)^2 +
+                (e1.arousal - e2.arousal)^2 +
+                (e1.dominance - e2.dominance)^2)
+end
+
+"""
+注意力模型结构体
+"""
+mutable struct AttentionModel
+    capacity::Float64
+    current_load::Float64
+    filter_threshold::Float64
+
+    function AttentionModel()
+        new(1.0, 0.0, 0.3)
+    end
+end
+
+"""
+分配注意力
+"""
+function allocate_attention(attention::AttentionModel, task_demand::Float64)::Float64
+    available = attention.capacity - attention.current_load
+    allocated = min(available, task_demand)
+    attention.current_load += allocated
+    return allocated
+end
+
+"""
+释放注意力
+"""
+function release_attention(attention::AttentionModel, amount::Float64)
+    attention.current_load = max(0.0, attention.current_load - amount)
+end
+
+"""
+过滤刺激
+"""
+function filter_stimulus(attention::AttentionModel, stimulus_strength::Float64)::Bool
+    return stimulus_strength > attention.filter_threshold
+end
+
+"""
+发展心理学模型结构体
+"""
+mutable struct DevelopmentalModel
+    age::Float64
+    cognitive_level::Float64
+    social_level::Float64
+    moral_level::Float64
+
+    function DevelopmentalModel(age::Float64)
+        new(age, 0.0, 0.0, 0.0)
+    end
+end
+
+"""
+更新发展
+"""
+function update_development(model::DevelopmentalModel, dt::Float64, experiences::Vector{Float64})
+    # 认知发展
+    cognitive_input = length(experiences) > 0 ? experiences[1] : 0.0
+    model.cognitive_level += 0.1 * cognitive_input * dt
+
+    # 社会发展
+    social_input = length(experiences) > 1 ? experiences[2] : 0.0
+    model.social_level += 0.1 * social_input * dt
+
+    # 道德发展
+    moral_input = length(experiences) > 2 ? experiences[3] : 0.0
+    model.moral_level += 0.1 * moral_input * dt
+
+    model.age += dt
+
+    # 限制在有效范围内
+    model.cognitive_level = clamp(model.cognitive_level, 0.0, 1.0)
+    model.social_level = clamp(model.social_level, 0.0, 1.0)
+    model.moral_level = clamp(model.moral_level, 0.0, 1.0)
+end
+
+"""
+获取发展阶段
+"""
+function get_developmental_stage(model::DevelopmentalModel)::String
+    if model.age < 2.0
+        return "Infancy"
+    elseif model.age < 6.0
+        return "Early Childhood"
+    elseif model.age < 12.0
+        return "Middle Childhood"
+    elseif model.age < 18.0
+        return "Adolescence"
+    else
+        return "Adulthood"
+    end
+end
+
+"""
+认知负荷模型
+"""
+mutable struct CognitiveLoadModel
+    intrinsic_load::Float64
+    extraneous_load::Float64
+    germane_load::Float64
+
+    function CognitiveLoadModel()
+        new(0.3, 0.2, 0.1)
+    end
+end
+
+"""
+计算总认知负荷
+"""
+function calculate_total_load(load::CognitiveLoadModel)::Float64
+    return load.intrinsic_load + load.extraneous_load + load.germane_load
+end
+
+"""
+判断是否超载
+"""
+function is_overloaded(load::CognitiveLoadModel, capacity::Float64 = 1.0)::Bool
+    return calculate_total_load(load) > capacity
+end
+
+# 示例：心理学模型使用
+function psychological_example()
+    # 记忆模型
+    memory = MemoryModel()
+    encoded = encode_to_short_term(memory, "item1")
+    strength = consolidate_to_long_term(memory, 0.8)
+    decayed = decay_memory(memory, 1.0)
+    println("Memory strength: $strength, decayed: $decayed")
+
+    # 学习模型
+    learning = LearningModel()
+    cs_strength = classical_conditioning(learning, 0.3, 0.9)
+    operant_strength = operant_conditioning(learning, 0.6, 0.8)
+    extinguished = extinction(learning, 0.7, 2.0)
+    println("CS strength: $cs_strength, operant: $operant_strength, extinguished: $extinguished")
+
+    # 人格模型
+    personality1 = PersonalityModel()
+    personality1.openness = 0.8
+    personality1.extraversion = 0.7
+
+    personality2 = PersonalityModel()
+    personality2.openness = 0.6
+    personality2.extraversion = 0.5
+
+    big_five = calculate_big_five(personality1)
+    compatibility = calculate_personality_compatibility(personality1, personality2)
+    println("Big Five: $big_five")
+    println("Compatibility: $compatibility")
+
+    # 情绪模型
+    emotion = EmotionModel()
+    update_emotion(emotion, 0.7, 0.8)
+    println("Emotion - Valence: $(emotion.valence), Arousal: $(emotion.arousal)")
+
+    emotion2 = EmotionModel()
+    emotion2.valence = 0.3
+    emotion2.arousal = 0.4
+    distance = calculate_emotion_distance(emotion, emotion2)
+    println("Emotion distance: $distance")
+
+    # 注意力模型
+    attention = AttentionModel()
+    allocated = allocate_attention(attention, 0.6)
+    filtered = filter_stimulus(attention, 0.5)
+    println("Attention allocated: $allocated, filtered: $filtered")
+
+    # 发展模型
+    development = DevelopmentalModel(12.0)
+    update_development(development, 1.0, [0.5, 0.7, 0.3])
+    stage = get_developmental_stage(development)
+    println("Developmental stage: $stage")
+    println("Cognitive: $(development.cognitive_level), Social: $(development.social_level), Moral: $(development.moral_level)")
+
+    # 认知负荷模型
+    cognitive_load = CognitiveLoadModel()
+    total_load = calculate_total_load(cognitive_load)
+    overloaded = is_overloaded(cognitive_load)
+    println("Total cognitive load: $total_load, overloaded: $overloaded")
+
+    return Dict(
+        "memory_strength" => strength,
+        "personality_compatibility" => compatibility,
+        "emotion_distance" => distance,
+        "developmental_stage" => stage
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 临床心理学 / Clinical Psychology
@@ -821,5 +1170,6 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

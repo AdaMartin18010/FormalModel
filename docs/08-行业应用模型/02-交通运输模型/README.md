@@ -32,6 +32,7 @@
   - [8.2.5 实现与应用 / Implementation and Applications](#825-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [城市交通管理 / Urban Traffic Management](#城市交通管理--urban-traffic-management)
       - [智能交通系统 / Intelligent Transportation Systems](#智能交通系统--intelligent-transportation-systems)
@@ -890,6 +891,388 @@ example = do
     putStrLn $ "北向延误: " ++ show delay ++ " 秒"
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using Statistics
+using LinearAlgebra
+
+"""
+交通流模型结构体
+"""
+mutable struct TrafficFlowModel
+    free_flow_speed::Float64
+    jam_density::Float64
+    critical_density::Float64
+
+    function TrafficFlowModel(free_flow_speed::Float64, jam_density::Float64)
+        critical_density = jam_density / 2.0
+        new(free_flow_speed, jam_density, critical_density)
+    end
+end
+
+"""
+速度-密度关系（Greenshields模型）
+"""
+function speed_density_relationship(model::TrafficFlowModel, density::Float64)::Float64
+    if density >= model.jam_density
+        return 0.0
+    end
+    return model.free_flow_speed * (1.0 - density / model.jam_density)
+end
+
+"""
+流量-密度关系
+"""
+function flow_density_relationship(model::TrafficFlowModel, density::Float64)::Float64
+    speed = speed_density_relationship(model, density)
+    return density * speed
+end
+
+"""
+路径规划图结构体
+"""
+mutable struct RoutePlanningGraph
+    graph::Dict{String, Dict{String, Float64}}
+    heuristic::Dict{String, Float64}
+
+    function RoutePlanningGraph()
+        new(Dict{String, Dict{String, Float64}}(), Dict{String, Float64}())
+    end
+end
+
+"""
+添加边
+"""
+function add_edge(graph::RoutePlanningGraph, from::String, to::String, weight::Float64)
+    if !haskey(graph.graph, from)
+        graph.graph[from] = Dict{String, Float64}()
+    end
+    graph.graph[from][to] = weight
+
+    if !haskey(graph.graph, to)
+        graph.graph[to] = Dict{String, Float64}()
+    end
+    graph.graph[to][from] = weight
+    return graph
+end
+
+"""
+添加启发式值
+"""
+function add_heuristic(graph::RoutePlanningGraph, node::String, h_value::Float64)
+    graph.heuristic[node] = h_value
+    return graph
+end
+
+"""
+Dijkstra最短路径
+"""
+function dijkstra_shortest_path(graph::RoutePlanningGraph, start::String,
+                               end_node::String)::Union{Tuple{Float64, Vector{String}}, Nothing}
+    distances = Dict{String, Float64}()
+    previous = Dict{String, String}()
+    visited = Set{String}()
+
+    # 初始化距离
+    for node in keys(graph.graph)
+        distances[node] = Inf
+    end
+    distances[start] = 0.0
+
+    while !(end_node in visited)
+        # 找到未访问节点中距离最小的
+        unvisited = [node for node in keys(distances) if !(node in visited)]
+        if isempty(unvisited)
+            return nothing
+        end
+
+        current = argmin(node -> distances[node], unvisited)
+
+        if current == end_node
+            break
+        end
+
+        push!(visited, current)
+
+        # 更新邻居距离
+        if haskey(graph.graph, current)
+            for (neighbor, weight) in graph.graph[current]
+                if !(neighbor in visited)
+                    new_distance = distances[current] + weight
+                    if new_distance < get(distances, neighbor, Inf)
+                        distances[neighbor] = new_distance
+                        previous[neighbor] = current
+                    end
+                end
+            end
+        end
+    end
+
+    # 重建路径
+    path = String[]
+    current = end_node
+    while current != start
+        pushfirst!(path, current)
+        if haskey(previous, current)
+            current = previous[current]
+        else
+            return nothing
+        end
+    end
+    pushfirst!(path, start)
+
+    return (distances[end_node], path)
+end
+
+"""
+A*搜索
+"""
+function a_star_search(graph::RoutePlanningGraph, start::String,
+                      end_node::String)::Union{Tuple{Float64, Vector{String}}, Nothing}
+    open_set = [start]
+    g_score = Dict(start => 0.0)
+    f_score = Dict(start => get(graph.heuristic, start, 0.0))
+    came_from = Dict{String, String}()
+
+    while !isempty(open_set)
+        # 找到f_score最小的节点
+        current = argmin(node -> get(f_score, node, Inf), open_set)
+
+        if current == end_node
+            # 重建路径
+            path = String[]
+            current_node = end_node
+            while current_node != start
+                pushfirst!(path, current_node)
+                current_node = came_from[current_node]
+            end
+            pushfirst!(path, start)
+            return (g_score[end_node], path)
+        end
+
+        filter!(x -> x != current, open_set)
+
+        if haskey(graph.graph, current)
+            for (neighbor, weight) in graph.graph[current]
+                tentative_g_score = get(g_score, current, Inf) + weight
+
+                if tentative_g_score < get(g_score, neighbor, Inf)
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g_score
+                    f_score[neighbor] = tentative_g_score + get(graph.heuristic, neighbor, 0.0)
+                    if !(neighbor in open_set)
+                        push!(open_set, neighbor)
+                    end
+                end
+            end
+        end
+    end
+
+    return nothing
+end
+
+"""
+公共交通模型结构体
+"""
+mutable struct PublicTransitModel
+    routes::Dict{String, Vector{String}}
+    frequencies::Dict{String, Float64}
+    travel_times::Dict{Tuple{String, String}, Float64}
+
+    function PublicTransitModel()
+        new(Dict{String, Vector{String}}(), Dict{String, Float64}(),
+            Dict{Tuple{String, String}, Float64}())
+    end
+end
+
+"""
+添加路线
+"""
+function add_route(transit::PublicTransitModel, route_id::String,
+                  stops::Vector{String}, frequency::Float64)
+    transit.routes[route_id] = stops
+    transit.frequencies[route_id] = frequency
+
+    # 计算站点间旅行时间（简化）
+    for i in 1:length(stops)-1
+        transit.travel_times[(stops[i], stops[i+1])] = 5.0  # 简化：5分钟
+    end
+
+    return transit
+end
+
+"""
+计算等待时间
+"""
+function calculate_wait_time(transit::PublicTransitModel, route_id::String)::Float64
+    frequency = get(transit.frequencies, route_id, 0.0)
+    return frequency > 0 ? 1.0 / frequency : Inf
+end
+
+"""
+计算总旅行时间
+"""
+function calculate_total_travel_time(transit::PublicTransitModel, origin::String,
+                                    destination::String)::Float64
+    total_time = 0.0
+
+    # 找到包含起点和终点的路线
+    for (route_id, stops) in transit.routes
+        if origin in stops && destination in stops
+            origin_idx = findfirst(x -> x == origin, stops)
+            dest_idx = findfirst(x -> x == destination, stops)
+
+            if origin_idx !== nothing && dest_idx !== nothing && origin_idx < dest_idx
+                for i in origin_idx:dest_idx-1
+                    edge = (stops[i], stops[i+1])
+                    total_time += get(transit.travel_times, edge, 5.0)
+                end
+                return total_time + calculate_wait_time(transit, route_id)
+            end
+        end
+    end
+
+    return Inf
+end
+
+"""
+交通信号模型结构体
+"""
+mutable struct TrafficSignalModel
+    intersections::Dict{String, Vector{String}}
+    cycle_lengths::Dict{String, Float64}
+    green_splits::Dict{String, Vector{Float64}}
+
+    function TrafficSignalModel()
+        new(Dict{String, Vector{String}}(), Dict{String, Float64}(),
+            Dict{String, Vector{Float64}}())
+    end
+end
+
+"""
+添加交叉口
+"""
+function add_intersection(signal::TrafficSignalModel, intersection_id::String,
+                         approaches::Vector{String})
+    signal.intersections[intersection_id] = approaches
+    return signal
+end
+
+"""
+设置周期长度
+"""
+function set_cycle_length(signal::TrafficSignalModel, intersection_id::String,
+                         cycle_length::Float64)
+    signal.cycle_lengths[intersection_id] = cycle_length
+    return signal
+end
+
+"""
+优化信号配时
+"""
+function optimize_signal_timing(signal::TrafficSignalModel, intersection_id::String,
+                               flows::Vector{Float64})::Vector{Float64}
+    total_flow = sum(flows)
+    if total_flow == 0
+        n = length(flows)
+        return fill(1.0 / n, n)
+    end
+
+    # 简化的配时优化：按流量比例分配
+    splits = flows ./ total_flow
+    cycle_length = get(signal.cycle_lengths, intersection_id, 90.0)
+    green_times = splits .* cycle_length
+
+    signal.green_splits[intersection_id] = splits
+    return green_times
+end
+
+"""
+计算延误
+"""
+function calculate_delay(signal::TrafficSignalModel, intersection_id::String,
+                        approach::String)::Float64
+    approaches = get(signal.intersections, intersection_id, String[])
+    approach_idx = findfirst(x -> x == approach, approaches)
+
+    if approach_idx === nothing
+        return 0.0
+    end
+
+    splits = get(signal.green_splits, intersection_id, Float64[])
+    if isempty(splits) || approach_idx > length(splits)
+        return 0.0
+    end
+
+    cycle_length = get(signal.cycle_lengths, intersection_id, 90.0)
+    green_time = splits[approach_idx] * cycle_length
+    red_time = cycle_length - green_time
+
+    # 简化的延误计算
+    return red_time / 2.0
+end
+
+# 示例：交通运输模型使用
+function transportation_example()
+    # 交通流模型
+    traffic_flow = TrafficFlowModel(60.0, 200.0)
+    speed = speed_density_relationship(traffic_flow, 50.0)
+    flow = flow_density_relationship(traffic_flow, 50.0)
+    println("Speed at density 50: $speed km/h")
+    println("Flow at density 50: $flow veh/h")
+
+    # 路径规划
+    route_graph = RoutePlanningGraph()
+    add_edge(route_graph, "A", "B", 10.0)
+    add_edge(route_graph, "B", "C", 15.0)
+    add_edge(route_graph, "A", "C", 25.0)
+    add_heuristic(route_graph, "A", 0.0)
+    add_heuristic(route_graph, "B", 15.0)
+    add_heuristic(route_graph, "C", 0.0)
+
+    dijkstra_result = dijkstra_shortest_path(route_graph, "A", "C")
+    if dijkstra_result !== nothing
+        distance, path = dijkstra_result
+        println("Dijkstra path: $path, distance: $distance")
+    end
+
+    a_star_result = a_star_search(route_graph, "A", "C")
+    if a_star_result !== nothing
+        distance, path = a_star_result
+        println("A* path: $path, distance: $distance")
+    end
+
+    # 公共交通
+    transit = PublicTransitModel()
+    add_route(transit, "R1", ["A", "B", "C"], 4.0)
+    add_route(transit, "R2", ["B", "D", "E"], 6.0)
+
+    wait_time = calculate_wait_time(transit, "R1")
+    travel_time = calculate_total_travel_time(transit, "A", "C")
+    println("Wait time: $(wait_time * 60) minutes")
+    println("Total travel time: $(travel_time * 60) minutes")
+
+    # 交通信号
+    signal = TrafficSignalModel()
+    add_intersection(signal, "I1", ["North", "South", "East", "West"])
+    set_cycle_length(signal, "I1", 90.0)
+
+    flows = [800.0, 600.0, 400.0, 300.0]
+    splits = optimize_signal_timing(signal, "I1", flows)
+    delay = calculate_delay(signal, "I1", "North")
+    println("Green splits: $splits")
+    println("North delay: $delay seconds")
+
+    return Dict(
+        "flow" => flow,
+        "dijkstra_distance" => dijkstra_result !== nothing ? dijkstra_result[1] : 0.0,
+        "wait_time" => wait_time,
+        "delay" => delay
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 城市交通管理 / Urban Traffic Management
@@ -993,8 +1376,9 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*
 
 ---
 
@@ -1662,5 +2046,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

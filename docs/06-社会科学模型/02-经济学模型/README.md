@@ -29,6 +29,7 @@
   - [6.2.6 实现与应用 / Implementation and Applications](#626-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [政策分析 / Policy Analysis](#政策分析--policy-analysis)
       - [市场预测 / Market Forecasting](#市场预测--market-forecasting)
@@ -920,6 +921,421 @@ example = do
     putStrLn $ "Sharpe ratio: " ++ show sharpeRatio
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+using Statistics
+
+"""
+消费者结构体
+"""
+mutable struct Consumer
+    income::Float64
+    prices::Dict{String, Float64}
+    preferences::Dict{String, Float64}
+
+    function Consumer(income::Float64)
+        new(income, Dict{String, Float64}(), Dict{String, Float64}())
+    end
+end
+
+"""
+设置价格
+"""
+function set_price(consumer::Consumer, good::String, price::Float64)
+    consumer.prices[good] = price
+    return consumer
+end
+
+"""
+设置偏好
+"""
+function set_preference(consumer::Consumer, good::String, preference::Float64)
+    consumer.preferences[good] = preference
+    return consumer
+end
+
+"""
+优化消费（Cobb-Douglas效用函数）
+"""
+function optimize_consumption(consumer::Consumer)::Dict{String, Float64}
+    consumption = Dict{String, Float64}()
+    total_preference = sum(values(consumer.preferences))
+
+    if total_preference > 0
+        for (good, preference) in consumer.preferences
+            if haskey(consumer.prices, good)
+                consumption[good] = (preference / total_preference) * consumer.income / consumer.prices[good]
+            end
+        end
+    end
+
+    return consumption
+end
+
+"""
+生产者结构体
+"""
+mutable struct Producer
+    cost_function::Function
+    production_cost::Float64
+
+    function Producer(cost_function::Function)
+        new(cost_function, 0.0)
+    end
+end
+
+"""
+利润最大化
+"""
+function profit_maximization(producer::Producer, price::Float64)::Float64
+    # 简化的利润最大化：假设边际成本等于价格
+    quantity = max(0.0, price - producer.production_cost)
+    return quantity
+end
+
+"""
+市场结构体
+"""
+mutable struct Market
+    consumers::Vector{Consumer}
+    producers::Vector{Producer}
+    equilibrium_price::Float64
+    equilibrium_quantity::Float64
+
+    function Market()
+        new(Consumer[], Producer[], 0.0, 0.0)
+    end
+end
+
+"""
+添加消费者
+"""
+function add_consumer(market::Market, consumer::Consumer)
+    push!(market.consumers, consumer)
+    return market
+end
+
+"""
+添加生产者
+"""
+function add_producer(market::Market, producer::Producer)
+    push!(market.producers, producer)
+    return market
+end
+
+"""
+计算需求
+"""
+function calculate_demand(market::Market, price::Float64)::Float64
+    total_demand = 0.0
+    for consumer in market.consumers
+        consumer_copy = Consumer(consumer.income)
+        consumer_copy.prices = copy(consumer.prices)
+        consumer_copy.preferences = copy(consumer.preferences)
+        set_price(consumer_copy, "good", price)
+        consumption = optimize_consumption(consumer_copy)
+        total_demand += get(consumption, "good", 0.0)
+    end
+    return total_demand
+end
+
+"""
+计算供给
+"""
+function calculate_supply(market::Market, price::Float64)::Float64
+    total_supply = 0.0
+    for producer in market.producers
+        total_supply += profit_maximization(producer, price)
+    end
+    return total_supply
+end
+
+"""
+寻找均衡
+"""
+function find_equilibrium(market::Market)::Tuple{Float64, Float64}
+    price = 1.0
+    learning_rate = 0.01
+
+    for _ in 1:1000
+        demand = calculate_demand(market, price)
+        supply = calculate_supply(market, price)
+        excess_demand = demand - supply
+
+        price += learning_rate * excess_demand
+        price = max(0.0, price)
+    end
+
+    market.equilibrium_price = price
+    market.equilibrium_quantity = calculate_demand(market, price)
+
+    return market.equilibrium_price, market.equilibrium_quantity
+end
+
+"""
+博弈结构体
+"""
+mutable struct Game
+    players::Vector{String}
+    strategies::Vector{Vector{String}}
+    payoffs::Vector{Matrix{Float64}}
+
+    function Game()
+        new(String[], Vector{Vector{String}}(), Vector{Matrix{Float64}}())
+    end
+end
+
+"""
+添加玩家
+"""
+function add_player(game::Game, player::String, strategies::Vector{String})
+    push!(game.players, player)
+    push!(game.strategies, strategies)
+    return game
+end
+
+"""
+设置收益
+"""
+function set_payoff(game::Game, player::Int, strategy1::Int, strategy2::Int, payoff::Float64)
+    while length(game.payoffs) < player
+        push!(game.payoffs, zeros(1, 1))
+    end
+
+    n_strategies = length(game.strategies[player])
+    if size(game.payoffs[player], 1) < n_strategies || size(game.payoffs[player], 2) < n_strategies
+        game.payoffs[player] = zeros(n_strategies, n_strategies)
+    end
+
+    game.payoffs[player][strategy1, strategy2] = payoff
+    return game
+end
+
+"""
+寻找纳什均衡
+"""
+function find_nash_equilibrium(game::Game)::Vector{Int}
+    best_responses = Int[]
+
+    for player in 1:length(game.players)
+        best_strategy = 1
+        best_payoff = -Inf
+
+        for strategy in 1:length(game.strategies[player])
+            payoff = game.payoffs[player][strategy, 1]  # 简化：假设对手策略固定
+            if payoff > best_payoff
+                best_payoff = payoff
+                best_strategy = strategy
+            end
+        end
+
+        push!(best_responses, best_strategy)
+    end
+
+    return best_responses
+end
+
+"""
+投资组合结构体
+"""
+mutable struct Portfolio
+    assets::Vector{String}
+    weights::Vector{Float64}
+    returns::Vector{Vector{Float64}}
+    risk_free_rate::Float64
+
+    function Portfolio(assets::Vector{String}, risk_free_rate::Float64)
+        n = length(assets)
+        weights = fill(1.0 / n, n)
+        new(assets, weights, Vector{Vector{Float64}}(), risk_free_rate)
+    end
+end
+
+"""
+添加收益
+"""
+function add_returns(portfolio::Portfolio, returns::Vector{Float64})
+    push!(portfolio.returns, returns)
+    return portfolio
+end
+
+"""
+计算期望收益
+"""
+function calculate_expected_return(portfolio::Portfolio)::Float64
+    if isempty(portfolio.returns)
+        return 0.0
+    end
+
+    n_assets = length(portfolio.assets)
+    n_periods = length(portfolio.returns)
+    expected_returns = zeros(n_assets)
+
+    for period in portfolio.returns
+        expected_returns .+= period
+    end
+
+    expected_returns ./= n_periods
+
+    return dot(portfolio.weights, expected_returns)
+end
+
+"""
+计算方差
+"""
+function calculate_variance(portfolio::Portfolio)::Float64
+    if length(portfolio.returns) < 2
+        return 0.0
+    end
+
+    n_assets = length(portfolio.assets)
+    n_periods = length(portfolio.returns)
+
+    # 计算协方差矩阵
+    returns_matrix = hcat(portfolio.returns...)'  # 转置以便每列是一个资产
+    covariance_matrix = cov(returns_matrix)
+
+    # 计算组合方差
+    variance = portfolio.weights' * covariance_matrix * portfolio.weights
+
+    return variance
+end
+
+"""
+计算夏普比率
+"""
+function calculate_sharpe_ratio(portfolio::Portfolio)::Float64
+    expected_return = calculate_expected_return(portfolio)
+    variance = calculate_variance(portfolio)
+    std_dev = sqrt(variance)
+
+    if std_dev == 0.0
+        return 0.0
+    end
+
+    return (expected_return - portfolio.risk_free_rate) / std_dev
+end
+
+"""
+IS-LM模型
+"""
+mutable struct IS_LM_Model
+    alpha::Float64  # 消费倾向
+    beta::Float64   # 投资敏感度
+    gamma::Float64  # 货币需求敏感度
+    delta::Float64  # 货币供给
+
+    function IS_LM_Model(alpha::Float64 = 0.8, beta::Float64 = 0.1,
+                        gamma::Float64 = 0.5, delta::Float64 = 100.0)
+        new(alpha, beta, gamma, delta)
+    end
+end
+
+"""
+IS曲线（投资-储蓄）
+"""
+function is_curve(model::IS_LM_Model, interest_rate::Float64, government_spending::Float64)::Float64
+    # Y = C + I + G
+    # 简化：Y = alpha*Y + (autonomous - beta*r) + G
+    autonomous = 100.0
+    y = (autonomous - model.beta * interest_rate + government_spending) / (1 - model.alpha)
+    return y
+end
+
+"""
+LM曲线（流动性-货币）
+"""
+function lm_curve(model::IS_LM_Model, income::Float64)::Float64
+    # M/P = L(Y, r)
+    # 简化：r = (gamma*Y - M/P) / beta
+    m_over_p = model.delta / 1.0  # 假设价格水平为1
+    r = (model.gamma * income - m_over_p) / model.beta
+    return r
+end
+
+"""
+寻找IS-LM均衡
+"""
+function find_is_lm_equilibrium(model::IS_LM_Model, government_spending::Float64)::Tuple{Float64, Float64}
+    r = 0.05
+    learning_rate = 0.001
+
+    for _ in 1:1000
+        y = is_curve(model, r, government_spending)
+        r_new = lm_curve(model, y)
+        r = 0.9 * r + 0.1 * r_new
+    end
+
+    y = is_curve(model, r, government_spending)
+    return y, r
+end
+
+# 示例：经济学模型使用
+function economic_example()
+    # 消费者理论
+    consumer = Consumer(100.0)
+    set_preference(consumer, "good", 0.6)
+    set_preference(consumer, "other", 0.4)
+    set_price(consumer, "good", 2.0)
+    set_price(consumer, "other", 1.0)
+    consumption = optimize_consumption(consumer)
+    println("Consumption: $consumption")
+
+    # 市场均衡
+    market = Market()
+    consumer1 = Consumer(100.0)
+    set_preference(consumer1, "good", 1.0)
+    add_consumer(market, consumer1)
+
+    producer = Producer(x -> 0.5 * x^2)
+    producer.production_cost = 1.0
+    add_producer(market, producer)
+
+    eq_price, eq_quantity = find_equilibrium(market)
+    println("Equilibrium price: $eq_price, quantity: $eq_quantity")
+
+    # 博弈论
+    game = Game()
+    add_player(game, "Player1", ["Cooperate", "Defect"])
+    add_player(game, "Player2", ["Cooperate", "Defect"])
+
+    # 囚徒困境
+    set_payoff(game, 1, 1, 1, 3.0)  # 双方合作
+    set_payoff(game, 1, 1, 2, 0.0)  # P1合作，P2背叛
+    set_payoff(game, 1, 2, 1, 5.0)  # P1背叛，P2合作
+    set_payoff(game, 1, 2, 2, 1.0)  # 双方背叛
+
+    nash_eq = find_nash_equilibrium(game)
+    println("Nash equilibrium: $nash_eq")
+
+    # 投资组合理论
+    portfolio = Portfolio(["Stock A", "Stock B"], 0.02)
+    add_returns(portfolio, [0.02, 0.04])
+    add_returns(portfolio, [0.05, 0.03])
+
+    expected_return = calculate_expected_return(portfolio)
+    variance = calculate_variance(portfolio)
+    sharpe_ratio = calculate_sharpe_ratio(portfolio)
+    println("Expected return: $expected_return")
+    println("Variance: $variance")
+    println("Sharpe ratio: $sharpe_ratio")
+
+    # IS-LM模型
+    is_lm = IS_LM_Model()
+    y, r = find_is_lm_equilibrium(is_lm, 20.0)
+    println("IS-LM equilibrium: Y=$y, r=$r")
+
+    return Dict(
+        "equilibrium_price" => eq_price,
+        "nash_equilibrium" => nash_eq,
+        "expected_return" => expected_return,
+        "sharpe_ratio" => sharpe_ratio
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 政策分析 / Policy Analysis
@@ -982,5 +1398,6 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

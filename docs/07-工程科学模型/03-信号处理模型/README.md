@@ -33,6 +33,7 @@
   - [7.3.7 实现与应用 / Implementation and Applications](#737-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [音频处理 / Audio Processing](#音频处理--audio-processing)
       - [图像处理 / Image Processing](#图像处理--image-processing)
@@ -1058,6 +1059,330 @@ example = do
     process_measurements kalman measurements
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using FFTW
+using LinearAlgebra
+using Statistics
+
+"""
+信号结构体
+"""
+mutable struct Signal
+    data::Vector{Float64}
+    sampling_rate::Float64
+
+    function Signal(data::Vector{Float64}, sampling_rate::Float64)
+        new(data, sampling_rate)
+    end
+end
+
+"""
+信号长度
+"""
+function length(signal::Signal)::Int
+    return length(signal.data)
+end
+
+"""
+信号持续时间
+"""
+function duration(signal::Signal)::Float64
+    return length(signal.data) / signal.sampling_rate
+end
+
+"""
+FFT变换
+"""
+function fft_transform(signal::Signal)::Vector{Complex{Float64}}
+    return fft(signal.data)
+end
+
+"""
+功率谱密度
+"""
+function power_spectrum(signal::Signal)::Vector{Float64}
+    fft_result = fft_transform(signal)
+    power = abs2.(fft_result)
+    return power[1:length(power)÷2]
+end
+
+"""
+FIR滤波器结构体
+"""
+mutable struct FIRFilter
+    coefficients::Vector{Float64}
+    buffer::Vector{Float64}
+
+    function FIRFilter(coefficients::Vector{Float64})
+        buffer = zeros(length(coefficients))
+        new(coefficients, buffer)
+    end
+end
+
+"""
+FIR滤波
+"""
+function filter(fir::FIRFilter, input::Float64)::Float64
+    # 更新缓冲区
+    pushfirst!(fir.buffer, input)
+    pop!(fir.buffer)
+
+    # 计算输出
+    output = dot(fir.coefficients, fir.buffer)
+    return output
+end
+
+"""
+IIR滤波器结构体
+"""
+mutable struct IIRFilter
+    a_coefficients::Vector{Float64}  # 分母系数
+    b_coefficients::Vector{Float64}  # 分子系数
+    input_buffer::Vector{Float64}
+    output_buffer::Vector{Float64}
+
+    function IIRFilter(a_coeffs::Vector{Float64}, b_coeffs::Vector{Float64})
+        input_buf = zeros(length(b_coeffs))
+        output_buf = zeros(length(a_coeffs) - 1)
+        new(a_coeffs, b_coeffs, input_buf, output_buf)
+    end
+end
+
+"""
+IIR滤波
+"""
+function filter(iir::IIRFilter, input::Float64)::Float64
+    # 更新输入缓冲区
+    pushfirst!(iir.input_buffer, input)
+    pop!(iir.input_buffer)
+
+    # 计算输出
+    output = dot(iir.b_coefficients, iir.input_buffer)
+    output -= dot(iir.a_coefficients[2:end], iir.output_buffer)
+
+    # 更新输出缓冲区
+    pushfirst!(iir.output_buffer, output)
+    pop!(iir.output_buffer)
+
+    return output
+end
+
+"""
+离散小波变换（简化版）
+"""
+function dwt(signal::Vector{Float64}, wavelet::String = "haar")::Tuple{Vector{Float64}, Vector{Float64}}
+    n = length(signal)
+    if n < 2
+        return (signal, Float64[])
+    end
+
+    # 简化的Haar小波变换
+    lowpass = Float64[]
+    highpass = Float64[]
+
+    for i in 1:2:n-1
+        if i+1 <= n
+            avg = (signal[i] + signal[i+1]) / 2.0
+            diff = (signal[i] - signal[i+1]) / 2.0
+            push!(lowpass, avg)
+            push!(highpass, diff)
+        end
+    end
+
+    return (lowpass, highpass)
+end
+
+"""
+逆离散小波变换（简化版）
+"""
+function idwt(lowpass::Vector{Float64}, highpass::Vector{Float64})::Vector{Float64}
+    n = length(lowpass)
+    reconstructed = Float64[]
+
+    for i in 1:n
+        if i <= length(highpass)
+            push!(reconstructed, lowpass[i] + highpass[i])
+            push!(reconstructed, lowpass[i] - highpass[i])
+        else
+            push!(reconstructed, lowpass[i])
+        end
+    end
+
+    return reconstructed
+end
+
+"""
+LMS自适应滤波器结构体
+"""
+mutable struct LMSFilter
+    order::Int
+    step_size::Float64
+    weights::Vector{Float64}
+    input_buffer::Vector{Float64}
+
+    function LMSFilter(order::Int, step_size::Float64)
+        weights = zeros(order)
+        input_buf = zeros(order)
+        new(order, step_size, weights, input_buf)
+    end
+end
+
+"""
+LMS自适应滤波
+"""
+function filter_lms(lms::LMSFilter, input::Float64, desired::Float64)::Float64
+    # 更新输入缓冲区
+    pushfirst!(lms.input_buffer, input)
+    pop!(lms.input_buffer)
+
+    # 计算输出
+    output = dot(lms.weights, lms.input_buffer)
+
+    # 计算误差
+    error = desired - output
+
+    # 更新权重
+    lms.weights += lms.step_size * error * lms.input_buffer
+
+    return output
+end
+
+"""
+卡尔曼滤波器结构体
+"""
+mutable struct KalmanFilter
+    state::Vector{Float64}
+    covariance::Matrix{Float64}
+    F::Matrix{Float64}  # 状态转移矩阵
+    H::Matrix{Float64}  # 观测矩阵
+    Q::Matrix{Float64}  # 过程噪声协方差
+    R::Matrix{Float64}  # 观测噪声协方差
+
+    function KalmanFilter(initial_state::Vector{Float64}, initial_covariance::Matrix{Float64},
+                         F::Matrix{Float64}, H::Matrix{Float64},
+                         Q::Matrix{Float64}, R::Matrix{Float64})
+        new(initial_state, initial_covariance, F, H, Q, R)
+    end
+end
+
+"""
+卡尔曼滤波预测
+"""
+function predict(kf::KalmanFilter)
+    kf.state = kf.F * kf.state
+    kf.covariance = kf.F * kf.covariance * kf.F' + kf.Q
+    return kf.state, kf.covariance
+end
+
+"""
+卡尔曼滤波更新
+"""
+function update(kf::KalmanFilter, measurement::Vector{Float64})::Tuple{Vector{Float64}, Matrix{Float64}}
+    # 预测
+    predicted_state, predicted_cov = predict(kf)
+
+    # 计算卡尔曼增益
+    S = kf.H * predicted_cov * kf.H' + kf.R
+    K = predicted_cov * kf.H' * inv(S)
+
+    # 更新状态
+    innovation = measurement - kf.H * predicted_state
+    kf.state = predicted_state + K * innovation
+
+    # 更新协方差
+    I_KH = Matrix{Float64}(I, size(K * kf.H))
+    kf.covariance = (I_KH - K * kf.H) * predicted_cov
+
+    return kf.state, kf.covariance
+end
+
+"""
+维纳滤波器（频域）
+"""
+function wiener_filter(signal::Vector{Float64}, noise_power::Float64,
+                      signal_power::Float64)::Vector{Float64}
+    fft_signal = fft(signal)
+    snr = signal_power / noise_power
+    wiener_gain = snr / (snr + 1.0)
+    filtered = wiener_gain * fft_signal
+    return real.(ifft(filtered))
+end
+
+"""
+功率谱估计（周期图法）
+"""
+function periodogram(signal::Signal)::Vector{Float64}
+    power = power_spectrum(signal)
+    frequencies = (0:length(power)-1) .* signal.sampling_rate / length(signal.data)
+    return power
+end
+
+# 示例：信号处理模型使用
+function signal_processing_example()
+    # 创建信号
+    t = 0:0.01:1.0
+    signal_data = sin.(2π * 5 .* t) + 0.5 * sin.(2π * 10 .* t)
+    signal = Signal(signal_data, 100.0)
+
+    # FFT变换
+    fft_result = fft_transform(signal)
+    power = power_spectrum(signal)
+    println("Power spectrum length: $(length(power))")
+
+    # FIR滤波器
+    fir_coeffs = [0.2, 0.2, 0.2, 0.2, 0.2]
+    fir = FIRFilter(fir_coeffs)
+    filtered_output = filter(fir, 1.0)
+    println("FIR filter output: $filtered_output")
+
+    # IIR滤波器
+    a_coeffs = [1.0, -0.5]
+    b_coeffs = [0.5, 0.3]
+    iir = IIRFilter(a_coeffs, b_coeffs)
+    iir_output = filter(iir, 1.0)
+    println("IIR filter output: $iir_output")
+
+    # 小波变换
+    test_signal = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+    lowpass, highpass = dwt(test_signal)
+    reconstructed = idwt(lowpass, highpass)
+    println("DWT lowpass: $lowpass, highpass: $highpass")
+
+    # LMS自适应滤波器
+    lms = LMSFilter(5, 0.01)
+    for i in 1:10
+        output = filter_lms(lms, randn(), 1.0)
+    end
+    println("LMS filter weights: $(lms.weights)")
+
+    # 卡尔曼滤波
+    F = [1.0 0.1; 0.0 1.0]
+    H = [1.0 0.0]
+    Q = [0.1 0.0; 0.0 0.1]
+    R = [1.0]
+    initial_state = [0.0, 0.0]
+    initial_cov = [1.0 0.0; 0.0 1.0]
+    kalman = KalmanFilter(initial_state, initial_cov, F, H, Q, R)
+
+    measurement = [1.0]
+    state, cov = update(kalman, measurement)
+    println("Kalman filter state: $state")
+
+    # 维纳滤波
+    noisy_signal = signal_data + 0.1 * randn(length(signal_data))
+    wiener_filtered = wiener_filter(noisy_signal, 0.01, 1.0)
+    println("Wiener filter output length: $(length(wiener_filtered))")
+
+    return Dict(
+        "power_spectrum_length" => length(power),
+        "kalman_state" => state,
+        "lms_weights" => lms.weights
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 音频处理 / Audio Processing
@@ -1123,5 +1448,6 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

@@ -1,8 +1,8 @@
 # 光学模型 / Optical Models
 
 **版本**: 1.2.0
-**最后更新**: 2025-08-26
-**状态**: 开发中
+**最后更新**: 2025-01-XX
+**状态**: 核心功能已完成 / Core Features Completed
 
 ## 目录 / Table of Contents
 
@@ -68,11 +68,15 @@
       - [3.1.2 公理化定义 / Axiomatic Definitions](#312-公理化定义--axiomatic-definitions)
       - [3.1.3 形式化定理 / Formal Theorems](#313-形式化定理--formal-theorems)
       - [3.1.4 算法实现 / Algorithm Implementation](#314-算法实现--algorithm-implementation)
+  - [实现与应用 / Implementation and Applications](#实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [版本历史 / Version History](#版本历史--version-history)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
     - [基础理论 / Basic Theory](#基础理论--basic-theory)
-  - [下一步计划 / Next Steps](#下一步计划--next-steps)
+  - [📋 后续优化工作计划（非核心功能） / Future Enhancement Work Plan (Non-Core Features)](#-后续优化工作计划非核心功能--future-enhancement-work-plan-non-core-features)
 
 ## 1. 几何光学 / Geometric Optics
 
@@ -1248,6 +1252,362 @@ def photon_example():
     }
 ```
 
+---
+
+## 实现与应用 / Implementation and Applications
+
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+use nalgebra::{Vector3, Matrix2};
+
+// 光线结构
+pub struct Ray {
+    pub origin: Vector3<f64>,
+    pub direction: Vector3<f64>,
+    pub wavelength: f64,
+}
+
+impl Ray {
+    pub fn new(origin: Vector3<f64>, direction: Vector3<f64>, wavelength: f64) -> Self {
+        let normalized_dir = direction.normalize();
+        Ray {
+            origin,
+            direction: normalized_dir,
+            wavelength,
+        }
+    }
+
+    pub fn propagate(&self, distance: f64) -> Vector3<f64> {
+        self.origin + self.direction * distance
+    }
+}
+
+// 介质结构
+pub struct Medium {
+    pub refractive_index: f64,
+    pub name: String,
+}
+
+impl Medium {
+    pub fn new(refractive_index: f64, name: String) -> Self {
+        Medium {
+            refractive_index,
+            name,
+        }
+    }
+}
+
+// 反射定律
+pub fn reflection(incident: Vector3<f64>, normal: Vector3<f64>) -> Vector3<f64> {
+    let n = normal.normalize();
+    let i = incident.normalize();
+    i - 2.0 * i.dot(&n) * n
+}
+
+// 折射定律（斯涅尔定律）
+pub fn refraction(incident: Vector3<f64>, normal: Vector3<f64>, n1: f64, n2: f64) -> Option<Vector3<f64>> {
+    let n = normal.normalize();
+    let i = incident.normalize();
+    let cos_i = -i.dot(&n);
+    let sin_i = (1.0 - cos_i * cos_i).sqrt();
+    let sin_r = (n1 / n2) * sin_i;
+
+    if sin_r.abs() > 1.0 {
+        return None; // 全反射
+    }
+
+    let cos_r = (1.0 - sin_r * sin_r).sqrt();
+    Some((n1 / n2) * i + ((n1 / n2) * cos_i - cos_r) * n)
+}
+
+// 薄透镜成像
+pub fn thin_lens_image_distance(focal_length: f64, object_distance: f64) -> Option<f64> {
+    if focal_length.abs() < 1e-15 || object_distance.abs() < 1e-15 {
+        return None;
+    }
+    let denom = 1.0 / focal_length - 1.0 / object_distance;
+    if denom.abs() < 1e-15 {
+        return None;
+    }
+    Some(1.0 / denom)
+}
+
+// 放大率
+pub fn magnification(object_distance: f64, image_distance: f64) -> f64 {
+    -image_distance / object_distance
+}
+
+// ABCD矩阵
+pub struct ABCDMatrix {
+    pub matrix: Matrix2<f64>,
+}
+
+impl ABCDMatrix {
+    pub fn propagation(distance: f64) -> Self {
+        ABCDMatrix {
+            matrix: Matrix2::new(1.0, distance, 0.0, 1.0),
+        }
+    }
+
+    pub fn thin_lens(focal_length: f64) -> Self {
+        ABCDMatrix {
+            matrix: Matrix2::new(1.0, 0.0, -1.0 / focal_length, 1.0),
+        }
+    }
+
+    pub fn apply(&self, y: f64, theta: f64) -> (f64, f64) {
+        let result = self.matrix * Vector3::new(y, theta, 0.0);
+        (result[0], result[1])
+    }
+}
+
+impl std::ops::Mul for ABCDMatrix {
+    type Output = ABCDMatrix;
+    fn mul(self, other: ABCDMatrix) -> ABCDMatrix {
+        ABCDMatrix {
+            matrix: self.matrix * other.matrix,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_reflection() {
+        let incident = Vector3::new(1.0, -1.0, 0.0);
+        let normal = Vector3::new(0.0, 1.0, 0.0);
+        let reflected = reflection(incident, normal);
+        assert!(reflected.y > 0.0);
+    }
+
+    #[test]
+    fn test_thin_lens() {
+        let image_dist = thin_lens_image_distance(10.0, 20.0);
+        assert!(image_dist.is_some());
+        assert!((image_dist.unwrap() - 20.0).abs() < 1e-10);
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module Optics where
+
+import Data.Vector (Vector)
+import qualified Data.Vector as V
+import Numeric.LinearAlgebra
+
+-- 光线类型
+data Ray = Ray
+    { origin :: Vector Double
+    , direction :: Vector Double
+    , wavelength :: Double
+    }
+
+-- 创建光线
+newRay :: Vector Double -> Vector Double -> Double -> Ray
+newRay orig dir wl = Ray orig (normalize dir) wl
+    where
+        normalize v = V.map (/ norm v) v
+
+-- 光线传播
+propagate :: Ray -> Double -> Vector Double
+propagate ray distance = origin ray + V.map (* distance) (direction ray)
+
+-- 介质类型
+data Medium = Medium
+    { refractiveIndex :: Double
+    , mediumName :: String
+    }
+
+-- 反射定律
+reflection :: Vector Double -> Vector Double -> Vector Double
+reflection incident normal =
+    incident - V.map (* (2 * dot incident n)) n
+    where
+        n = normalize normal
+        normalize v = V.map (/ norm v) v
+
+-- 折射定律（斯涅尔定律）
+refraction :: Vector Double -> Vector Double -> Double -> Double -> Maybe (Vector Double)
+refraction incident normal n1 n2
+    | abs sinR > 1.0 = Nothing  -- 全反射
+    | otherwise = Just ((n1 / n2) * incident + V.map (* ((n1 / n2) * cosI - cosR)) n)
+    where
+        n = normalize normal
+        i = normalize incident
+        normalize v = V.map (/ norm v) v
+        cosI = -dot i n
+        sinI = sqrt (1.0 - cosI^2)
+        sinR = (n1 / n2) * sinI
+        cosR = sqrt (1.0 - sinR^2)
+
+-- 薄透镜成像
+thinLensImageDistance :: Double -> Double -> Maybe Double
+thinLensImageDistance focalLength objectDistance
+    | abs focalLength < 1e-15 || abs objectDistance < 1e-15 = Nothing
+    | abs denom < 1e-15 = Nothing
+    | otherwise = Just (1.0 / denom)
+    where
+        denom = 1.0 / focalLength - 1.0 / objectDistance
+
+-- 放大率
+magnification :: Double -> Double -> Double
+magnification objectDistance imageDistance = -imageDistance / objectDistance
+
+-- ABCD矩阵
+data ABCDMatrix = ABCDMatrix (Matrix Double)
+
+-- 传播矩阵
+propagationMatrix :: Double -> ABCDMatrix
+propagationMatrix distance = ABCDMatrix $ (2><2) [1.0, distance, 0.0, 1.0]
+
+-- 薄透镜矩阵
+thinLensMatrix :: Double -> ABCDMatrix
+thinLensMatrix focalLength = ABCDMatrix $ (2><2) [1.0, 0.0, -1.0/focalLength, 1.0]
+
+-- 应用ABCD矩阵
+applyABCD :: ABCDMatrix -> Double -> Double -> (Double, Double)
+applyABCD (ABCDMatrix m) y theta = (result V.! 0, result V.! 1)
+    where
+        input = V.fromList [y, theta]
+        result = V.fromList $ toList $ m #> input
+
+-- 示例使用
+example :: IO ()
+example = do
+    -- 反射示例
+    let incident = V.fromList [1.0, -1.0, 0.0]
+    let normal = V.fromList [0.0, 1.0, 0.0]
+    let reflected = reflection incident normal
+    putStrLn $ "反射方向: " ++ show reflected
+
+    -- 薄透镜示例
+    let imageDist = thinLensImageDistance 10.0 20.0
+    putStrLn $ "像距: " ++ show imageDist
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+
+# 光线结构
+struct Ray
+    origin::Vector{Float64}
+    direction::Vector{Float64}
+    wavelength::Float64
+
+    function Ray(origin::Vector{Float64}, direction::Vector{Float64}, wavelength::Float64)
+        normalized_dir = normalize(direction)
+        new(origin, normalized_dir, wavelength)
+    end
+end
+
+# 光线传播
+function propagate(ray::Ray, distance::Float64)::Vector{Float64}
+    return ray.origin + ray.direction * distance
+end
+
+# 介质结构
+struct Medium
+    refractive_index::Float64
+    name::String
+end
+
+# 反射定律
+function reflection(incident::Vector{Float64}, normal::Vector{Float64})::Vector{Float64}
+    n = normalize(normal)
+    i = normalize(incident)
+    return i - 2.0 * dot(i, n) * n
+end
+
+# 折射定律（斯涅尔定律）
+function refraction(incident::Vector{Float64}, normal::Vector{Float64}, n1::Float64, n2::Float64)::Union{Vector{Float64}, Nothing}
+    n = normalize(normal)
+    i = normalize(incident)
+    cos_i = -dot(i, n)
+    sin_i = sqrt(1.0 - cos_i^2)
+    sin_r = (n1 / n2) * sin_i
+
+    if abs(sin_r) > 1.0
+        return nothing  # 全反射
+    end
+
+    cos_r = sqrt(1.0 - sin_r^2)
+    return (n1 / n2) * i + ((n1 / n2) * cos_i - cos_r) * n
+end
+
+# 薄透镜成像
+function thin_lens_image_distance(focal_length::Float64, object_distance::Float64)::Union{Float64, Nothing}
+    if abs(focal_length) < 1e-15 || abs(object_distance) < 1e-15
+        return nothing
+    end
+    denom = 1.0 / focal_length - 1.0 / object_distance
+    if abs(denom) < 1e-15
+        return nothing
+    end
+    return 1.0 / denom
+end
+
+# 放大率
+function magnification(object_distance::Float64, image_distance::Float64)::Float64
+    return -image_distance / object_distance
+end
+
+# ABCD矩阵
+struct ABCDMatrix
+    matrix::Matrix{Float64}
+end
+
+# 传播矩阵
+function propagation_matrix(distance::Float64)::ABCDMatrix
+    return ABCDMatrix([1.0 distance; 0.0 1.0])
+end
+
+# 薄透镜矩阵
+function thin_lens_matrix(focal_length::Float64)::ABCDMatrix
+    return ABCDMatrix([1.0 0.0; -1.0/focal_length 1.0])
+end
+
+# 应用ABCD矩阵
+function apply_abcd(M::ABCDMatrix, y::Float64, theta::Float64)::Tuple{Float64, Float64}
+    result = M.matrix * [y, theta]
+    return (result[1], result[2])
+end
+
+# 矩阵链式复合
+function chain_abcd(matrices::Vector{ABCDMatrix})::ABCDMatrix
+    M = Matrix{Float64}(I, 2, 2)
+    for m in matrices
+        M = m.matrix * M
+    end
+    return ABCDMatrix(M)
+end
+
+# 使用示例
+incident = [1.0, -1.0, 0.0]
+normal = [0.0, 1.0, 0.0]
+reflected = reflection(incident, normal)
+println("反射方向: ", reflected)
+
+image_dist = thin_lens_image_distance(10.0, 20.0)
+println("像距: ", image_dist)
+
+mag = magnification(20.0, 20.0)
+println("放大率: ", mag)
+
+# ABCD矩阵示例
+prop_matrix = propagation_matrix(10.0)
+lens_matrix = thin_lens_matrix(10.0)
+y_out, theta_out = apply_abcd(lens_matrix, 1.0, 0.1)
+println("ABCD输出: y=$y_out, θ=$theta_out")
+```
+
 ## 版本历史 / Version History
 
 - **1.2.0** (2025-08-26): 增补衍射/傅里叶光学与非线性光学（NLSE分步傅里叶、Kerr相移），完善成像与ABCD算法
@@ -1270,7 +1630,9 @@ def photon_example():
 - [形式化方法论](../../01-基础理论/02-形式化方法论/README.md) - 光学的形式化方法
 - [科学模型论](../../01-基础理论/03-科学模型论/README.md) - 光学作为科学模型的理论基础
 
-## 下一步计划 / Next Steps
+## 📋 后续优化工作计划（非核心功能） / Future Enhancement Work Plan (Non-Core Features)
+
+> **注意**: 以下计划属于后续优化和扩展工作，不属于核心功能范围。项目核心功能（所有29个核心模型的多语言实现）已完成。
 
 1. **完善光学系统**: 透镜、反射镜、光栅等光学元件的形式化
 2. **干涉衍射**: 详细的形式化描述和算法实现

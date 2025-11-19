@@ -33,6 +33,7 @@
   - [7.1.7 实现与应用 / Implementation and Applications](#717-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [运筹学 / Operations Research](#运筹学--operations-research)
       - [工程设计 / Engineering Design](#工程设计--engineering-design)
@@ -956,6 +957,406 @@ example = do
     infinity = 1e10
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+using Random
+using Statistics
+
+"""
+线性规划模型结构体
+"""
+mutable struct LinearProgrammingModel
+    objective::Vector{Float64}
+    constraints::Matrix{Float64}
+    rhs::Vector{Float64}
+    sense::Vector{String}  # "<=", ">=", "=="
+
+    function LinearProgrammingModel(objective::Vector{Float64}, constraints::Matrix{Float64},
+                                   rhs::Vector{Float64}, sense::Vector{String})
+        new(objective, constraints, rhs, sense)
+    end
+end
+
+"""
+梯度下降（无约束优化）
+"""
+function gradient_descent(f::Function, grad_f::Function, x0::Vector{Float64},
+                         learning_rate::Float64 = 0.01, max_iter::Int = 1000,
+                         tolerance::Float64 = 1e-6)::Vector{Float64}
+    x = copy(x0)
+    for _ in 1:max_iter
+        gradient = grad_f(x)
+        x_new = x - learning_rate * gradient
+        if norm(x_new - x) < tolerance
+            break
+        end
+        x = x_new
+    end
+    return x
+end
+
+"""
+背包问题（动态规划）
+"""
+function knapsack_dp(weights::Vector{Int}, values::Vector{Int}, capacity::Int)::Tuple{Int, Vector{Int}}
+    n = length(weights)
+    dp = zeros(Int, capacity + 1)
+    items = Vector{Int}[]
+
+    for i in 1:n
+        for w in capacity:-1:weights[i]
+            if dp[w] < dp[w - weights[i]] + values[i]
+                dp[w] = dp[w - weights[i]] + values[i]
+            end
+        end
+    end
+
+    # 回溯找到选择的物品
+    selected = Int[]
+    w = capacity
+    for i in n:-1:1
+        if w >= weights[i] && dp[w] == dp[w - weights[i]] + values[i]
+            push!(selected, i)
+            w -= weights[i]
+        end
+    end
+
+    return dp[capacity], reverse(selected)
+end
+
+"""
+遗传算法结构体
+"""
+mutable struct GeneticAlgorithm
+    population_size::Int
+    chromosome_length::Int
+    mutation_rate::Float64
+    crossover_rate::Float64
+    population::Vector{Vector{Bool}}
+    fitness_function::Function
+
+    function GeneticAlgorithm(population_size::Int, chromosome_length::Int,
+                             fitness_function::Function)
+        population = [rand(Bool, chromosome_length) for _ in 1:population_size]
+        new(population_size, chromosome_length, 0.01, 0.8, population, fitness_function)
+    end
+end
+
+"""
+适应度计算
+"""
+function fitness(ga::GeneticAlgorithm, chromosome::Vector{Bool})::Float64
+    return ga.fitness_function(chromosome)
+end
+
+"""
+选择（轮盘赌选择）
+"""
+function selection(ga::GeneticAlgorithm)::Vector{Vector{Bool}}
+    fitnesses = [fitness(ga, chrom) for chrom in ga.population]
+    total_fitness = sum(fitnesses)
+
+    if total_fitness == 0
+        return ga.population
+    end
+
+    probabilities = fitnesses ./ total_fitness
+    new_population = Vector{Vector{Bool}}()
+
+    for _ in 1:ga.population_size
+        r = rand()
+        cumsum = 0.0
+        for (i, prob) in enumerate(probabilities)
+            cumsum += prob
+            if cumsum >= r
+                push!(new_population, copy(ga.population[i]))
+                break
+            end
+        end
+    end
+
+    return new_population
+end
+
+"""
+交叉
+"""
+function crossover(ga::GeneticAlgorithm, parent1::Vector{Bool}, parent2::Vector{Bool})::Tuple{Vector{Bool}, Vector{Bool}}
+    if rand() > ga.crossover_rate
+        return (copy(parent1), copy(parent2))
+    end
+
+    crossover_point = rand(1:ga.chromosome_length-1)
+    child1 = [parent1[1:crossover_point]; parent2[crossover_point+1:end]]
+    child2 = [parent2[1:crossover_point]; parent1[crossover_point+1:end]]
+
+    return (child1, child2)
+end
+
+"""
+变异
+"""
+function mutation(ga::GeneticAlgorithm, chromosome::Vector{Bool})::Vector{Bool}
+    mutated = copy(chromosome)
+    for i in 1:length(mutated)
+        if rand() < ga.mutation_rate
+            mutated[i] = !mutated[i]
+        end
+    end
+    return mutated
+end
+
+"""
+进化一代
+"""
+function evolve_generation(ga::GeneticAlgorithm)
+    selected = selection(ga)
+    new_population = Vector{Vector{Bool}}()
+
+    for i in 1:2:ga.population_size-1
+        child1, child2 = crossover(ga, selected[i], selected[i+1])
+        push!(new_population, mutation(ga, child1))
+        push!(new_population, mutation(ga, child2))
+    end
+
+    ga.population = new_population
+    return ga
+end
+
+"""
+模拟退火结构体
+"""
+mutable struct SimulatedAnnealing
+    temperature::Float64
+    min_temperature::Float64
+    cooling_rate::Float64
+    current_solution::Vector{Float64}
+    energy_function::Function
+
+    function SimulatedAnnealing(initial_temp::Float64, min_temp::Float64,
+                               cooling_rate::Float64, initial_solution::Vector{Float64},
+                               energy_function::Function)
+        new(initial_temp, min_temp, cooling_rate, initial_solution, energy_function)
+    end
+end
+
+"""
+生成邻域解
+"""
+function generate_neighbor(solution::Vector{Float64}, step_size::Float64 = 0.1)::Vector{Float64}
+    neighbor = copy(solution)
+    idx = rand(1:length(neighbor))
+    neighbor[idx] += step_size * (2 * rand() - 1)
+    return neighbor
+end
+
+"""
+模拟退火优化
+"""
+function optimize_sa(sa::SimulatedAnnealing, max_iter::Int = 1000)::Tuple{Vector{Float64}, Float64}
+    best_solution = copy(sa.current_solution)
+    best_energy = sa.energy_function(best_solution)
+    current_solution = copy(sa.current_solution)
+    current_energy = best_energy
+
+    for iter in 1:max_iter
+        if sa.temperature < sa.min_temperature
+            break
+        end
+
+        neighbor = generate_neighbor(current_solution)
+        neighbor_energy = sa.energy_function(neighbor)
+
+        delta = neighbor_energy - current_energy
+
+        if delta < 0 || rand() < exp(-delta / sa.temperature)
+            current_solution = neighbor
+            current_energy = neighbor_energy
+
+            if current_energy < best_energy
+                best_solution = copy(current_solution)
+                best_energy = current_energy
+            end
+        end
+
+        sa.temperature *= sa.cooling_rate
+    end
+
+    return best_solution, best_energy
+end
+
+"""
+粒子群优化结构体
+"""
+mutable struct ParticleSwarmOptimization
+    particles::Vector{Vector{Float64}}
+    velocities::Vector{Vector{Float64}}
+    personal_best::Vector{Vector{Float64}}
+    personal_best_scores::Vector{Float64}
+    global_best::Vector{Float64}
+    global_best_score::Float64
+    fitness_function::Function
+    w::Float64  # 惯性权重
+    c1::Float64  # 个体学习因子
+    c2::Float64  # 社会学习因子
+
+    function ParticleSwarmOptimization(n_particles::Int, dim::Int, fitness_function::Function,
+                                       bounds::Tuple{Float64, Float64} = (-10.0, 10.0))
+        particles = [rand(bounds[1]:0.01:bounds[2], dim) for _ in 1:n_particles]
+        velocities = [zeros(dim) for _ in 1:n_particles]
+        personal_best = copy(particles)
+        personal_best_scores = [fitness_function(p) for p in particles]
+        global_best_idx = argmin(personal_best_scores)
+        global_best = copy(particles[global_best_idx])
+        global_best_score = personal_best_scores[global_best_idx]
+        new(particles, velocities, personal_best, personal_best_scores,
+            global_best, global_best_score, fitness_function, 0.7, 1.5, 1.5)
+    end
+end
+
+"""
+更新粒子
+"""
+function update_particle(pso::ParticleSwarmOptimization, particle_idx::Int)
+    particle = pso.particles[particle_idx]
+    velocity = pso.velocities[particle_idx]
+    personal_best = pso.personal_best[particle_idx]
+
+    # 更新速度
+    r1 = rand(length(particle))
+    r2 = rand(length(particle))
+    pso.velocities[particle_idx] = (pso.w .* velocity +
+                                   pso.c1 .* r1 .* (personal_best .- particle) +
+                                   pso.c2 .* r2 .* (pso.global_best .- particle))
+
+    # 更新位置
+    pso.particles[particle_idx] = particle .+ pso.velocities[particle_idx]
+
+    # 更新个体最优
+    new_score = pso.fitness_function(pso.particles[particle_idx])
+    if new_score < pso.personal_best_scores[particle_idx]
+        pso.personal_best[particle_idx] = copy(pso.particles[particle_idx])
+        pso.personal_best_scores[particle_idx] = new_score
+
+        # 更新全局最优
+        if new_score < pso.global_best_score
+            pso.global_best = copy(pso.particles[particle_idx])
+            pso.global_best_score = new_score
+        end
+    end
+end
+
+"""
+PSO优化
+"""
+function optimize_pso(pso::ParticleSwarmOptimization, max_iter::Int = 100)::Tuple{Vector{Float64}, Float64}
+    for iter in 1:max_iter
+        for i in 1:length(pso.particles)
+            update_particle(pso, i)
+        end
+    end
+    return pso.global_best, pso.global_best_score
+end
+
+"""
+最短路径（Dijkstra算法）
+"""
+function dijkstra_shortest_path(graph::Dict{Tuple{Int, Int}, Float64}, start::Int, n_nodes::Int)::Vector{Float64}
+    distances = fill(Inf, n_nodes)
+    distances[start] = 0.0
+    visited = falses(n_nodes)
+
+    for _ in 1:n_nodes
+        # 找到未访问的最近节点
+        u = -1
+        min_dist = Inf
+        for v in 1:n_nodes
+            if !visited[v] && distances[v] < min_dist
+                min_dist = distances[v]
+                u = v
+            end
+        end
+
+        if u == -1
+            break
+        end
+
+        visited[u] = true
+
+        # 更新邻居节点距离
+        for v in 1:n_nodes
+            if haskey(graph, (u, v)) && !visited[v]
+                alt = distances[u] + graph[(u, v)]
+                if alt < distances[v]
+                    distances[v] = alt
+                end
+            end
+        end
+    end
+
+    return distances
+end
+
+# 示例：优化模型使用
+function optimization_example()
+    # 梯度下降
+    f = x -> sum(x.^2)
+    grad_f = x -> 2 * x
+    x0 = [5.0, 5.0]
+    x_opt = gradient_descent(f, grad_f, x0)
+    println("Gradient descent optimum: $x_opt")
+
+    # 背包问题
+    weights = [2, 3, 4, 5]
+    values = [3, 4, 5, 6]
+    capacity = 8
+    max_value, selected = knapsack_dp(weights, values, capacity)
+    println("Knapsack max value: $max_value, selected items: $selected")
+
+    # 遗传算法
+    fitness_func = chrom -> sum(chrom)
+    ga = GeneticAlgorithm(20, 10, fitness_func)
+    for _ in 1:50
+        evolve_generation(ga)
+    end
+    best_chrom = argmax([fitness(ga, chrom) for chrom in ga.population])
+    println("GA best fitness: $(fitness(ga, ga.population[best_chrom]))")
+
+    # 模拟退火
+    energy_func = x -> sum(x.^2)
+    initial_sol = [5.0, 5.0]
+    sa = SimulatedAnnealing(100.0, 0.01, 0.95, initial_sol, energy_func)
+    best_sol, best_energy = optimize_sa(sa, 1000)
+    println("SA best solution: $best_sol, best energy: $best_energy")
+
+    # 粒子群优化
+    pso_fitness = x -> sum(x.^2)
+    pso = ParticleSwarmOptimization(20, 2, pso_fitness)
+    pso_best, pso_score = optimize_pso(pso, 100)
+    println("PSO best solution: $pso_best, best score: $pso_score")
+
+    # 最短路径
+    graph = Dict(
+        (1, 2) => 4.0,
+        (1, 3) => 2.0,
+        (2, 3) => 1.0,
+        (2, 4) => 5.0,
+        (3, 4) => 8.0
+    )
+    distances = dijkstra_shortest_path(graph, 1, 4)
+    println("Shortest distances: $distances")
+
+    return Dict(
+        "gradient_descent" => x_opt,
+        "knapsack_value" => max_value,
+        "sa_energy" => best_energy,
+        "pso_score" => pso_score
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 运筹学 / Operations Research
@@ -1023,5 +1424,6 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

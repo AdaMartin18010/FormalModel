@@ -32,6 +32,10 @@
     - [电介质 / Dielectrics](#电介质--dielectrics)
     - [磁介质 / Magnetic Media](#磁介质--magnetic-media)
     - [色散关系 / Dispersion Relations](#色散关系--dispersion-relations)
+  - [2.5.8 实现与应用 / Implementation and Applications](#258-实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
     - [基础理论 / Basic Theory](#基础理论--basic-theory)
@@ -6458,6 +6462,326 @@ def dispersion_example():
             group_velocities, attenuation_coeffs, causality_check, verification)
 ```
 
+---
+
+## 2.5.8 实现与应用 / Implementation and Applications
+
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+use nalgebra::{Vector3, Matrix3};
+
+// 库仑常数
+const K_E: f64 = 8.9875517923e9; // N⋅m²/C²
+const EPSILON_0: f64 = 8.8541878128e-12; // F/m
+const MU_0: f64 = 1.25663706212e-6; // H/m
+const C: f64 = 299792458.0; // m/s
+
+// 库仑定律
+pub fn coulomb_force(q1: f64, q2: f64, r1: Vector3<f64>, r2: Vector3<f64>) -> Vector3<f64> {
+    let r_vec = r2 - r1;
+    let r = r_vec.norm();
+    if r < 1e-10 {
+        return Vector3::zeros();
+    }
+    let r_hat = r_vec / r;
+    K_E * q1 * q2 / (r * r) * r_hat
+}
+
+// 电场计算
+pub fn electric_field(charge: f64, position: Vector3<f64>, observation_point: Vector3<f64>) -> Vector3<f64> {
+    let r_vec = observation_point - position;
+    let r = r_vec.norm();
+    if r < 1e-10 {
+        return Vector3::zeros();
+    }
+    let r_hat = r_vec / r;
+    K_E * charge / (r * r) * r_hat
+}
+
+// 多个电荷的电场叠加
+pub fn total_electric_field(charges: &[(f64, Vector3<f64>)], observation_point: Vector3<f64>) -> Vector3<f64> {
+    charges.iter()
+        .map(|(q, pos)| electric_field(*q, *pos, observation_point))
+        .sum()
+}
+
+// 磁场计算（毕奥-萨伐尔定律）
+pub fn magnetic_field(current: f64, dl: Vector3<f64>, r: Vector3<f64>) -> Vector3<f64> {
+    let r_norm = r.norm();
+    if r_norm < 1e-10 {
+        return Vector3::zeros();
+    }
+    MU_0 / (4.0 * std::f64::consts::PI) * current * dl.cross(&r) / (r_norm * r_norm * r_norm)
+}
+
+// 洛伦兹力
+pub fn lorentz_force(charge: f64, velocity: Vector3<f64>, electric_field: Vector3<f64>, magnetic_field: Vector3<f64>) -> Vector3<f64> {
+    charge * (electric_field + velocity.cross(&magnetic_field))
+}
+
+// 电磁场能量密度
+pub fn electromagnetic_energy_density(electric_field: Vector3<f64>, magnetic_field: Vector3<f64>) -> f64 {
+    0.5 * EPSILON_0 * electric_field.norm_squared() + 0.5 / MU_0 * magnetic_field.norm_squared()
+}
+
+// 坡印廷矢量（能流密度）
+pub fn poynting_vector(electric_field: Vector3<f64>, magnetic_field: Vector3<f64>) -> Vector3<f64> {
+    1.0 / MU_0 * electric_field.cross(&magnetic_field)
+}
+
+// 平面电磁波
+pub struct PlaneWave {
+    amplitude: f64,
+    frequency: f64,
+    wave_vector: Vector3<f64>,
+    polarization: Vector3<f64>,
+}
+
+impl PlaneWave {
+    pub fn new(amplitude: f64, frequency: f64, wave_vector: Vector3<f64>, polarization: Vector3<f64>) -> Self {
+        PlaneWave {
+            amplitude,
+            frequency,
+            wave_vector,
+            polarization,
+        }
+    }
+
+    pub fn electric_field(&self, position: Vector3<f64>, time: f64) -> Vector3<f64> {
+        let k_dot_r = self.wave_vector.dot(&position);
+        let phase = self.wave_vector.norm() * k_dot_r - 2.0 * std::f64::consts::PI * self.frequency * time;
+        self.amplitude * self.polarization * phase.cos()
+    }
+
+    pub fn magnetic_field(&self, position: Vector3<f64>, time: f64) -> Vector3<f64> {
+        let e_field = self.electric_field(position, time);
+        let k_hat = self.wave_vector.normalize();
+        k_hat.cross(&e_field) / C
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_coulomb_force() {
+        let q1 = 1e-6;
+        let q2 = 1e-6;
+        let r1 = Vector3::new(0.0, 0.0, 0.0);
+        let r2 = Vector3::new(1.0, 0.0, 0.0);
+        let force = coulomb_force(q1, q2, r1, r2);
+        assert!(force.norm() > 0.0);
+    }
+
+    #[test]
+    fn test_lorentz_force() {
+        let charge = 1e-6;
+        let velocity = Vector3::new(1.0, 0.0, 0.0);
+        let e_field = Vector3::new(0.0, 1.0, 0.0);
+        let b_field = Vector3::new(0.0, 0.0, 1.0);
+        let force = lorentz_force(charge, velocity, e_field, b_field);
+        assert!(force.norm() > 0.0);
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module Electromagnetism where
+
+import Data.Vector (Vector)
+import qualified Data.Vector as V
+import Numeric.LinearAlgebra
+
+-- 物理常数
+k_e :: Double
+k_e = 8.9875517923e9  -- N⋅m²/C²
+
+epsilon_0 :: Double
+epsilon_0 = 8.8541878128e-12  -- F/m
+
+mu_0 :: Double
+mu_0 = 1.25663706212e-6  -- H/m
+
+c :: Double
+c = 299792458.0  -- m/s
+
+-- 库仑定律
+coulombForce :: Double -> Double -> Vector Double -> Vector Double -> Vector Double
+coulombForce q1 q2 r1 r2
+    | r < 1e-10 = V.fromList [0, 0, 0]
+    | otherwise = V.map (* (k_e * q1 * q2 / (r^2))) r_hat
+    where
+        r_vec = r2 - r1
+        r = norm r_vec
+        r_hat = V.map (/ r) r_vec
+
+-- 电场计算
+electricField :: Double -> Vector Double -> Vector Double -> Vector Double
+electricField charge position observationPoint
+    | r < 1e-10 = V.fromList [0, 0, 0]
+    | otherwise = V.map (* (k_e * charge / (r^2))) r_hat
+    where
+        r_vec = observationPoint - position
+        r = norm r_vec
+        r_hat = V.map (/ r) r_vec
+
+-- 多个电荷的电场叠加
+totalElectricField :: [(Double, Vector Double)] -> Vector Double -> Vector Double
+totalElectricField charges observationPoint =
+    V.sum [electricField q pos observationPoint | (q, pos) <- charges]
+
+-- 洛伦兹力
+lorentzForce :: Double -> Vector Double -> Vector Double -> Vector Double -> Vector Double
+lorentzForce charge velocity eField bField =
+    V.map (* charge) (eField + crossProduct velocity bField)
+
+-- 电磁场能量密度
+electromagneticEnergyDensity :: Vector Double -> Vector Double -> Double
+electromagneticEnergyDensity eField bField =
+    0.5 * epsilon_0 * (norm eField)^2 + 0.5 / mu_0 * (norm bField)^2
+
+-- 坡印廷矢量
+poyntingVector :: Vector Double -> Vector Double -> Vector Double
+poyntingVector eField bField = V.map (/ mu_0) (crossProduct eField bField)
+
+-- 辅助函数：向量叉积
+crossProduct :: Vector Double -> Vector Double -> Vector Double
+crossProduct v1 v2 = V.fromList [
+    v1 V.! 1 * v2 V.! 2 - v1 V.! 2 * v2 V.! 1,
+    v1 V.! 2 * v2 V.! 0 - v1 V.! 0 * v2 V.! 2,
+    v1 V.! 0 * v2 V.! 1 - v1 V.! 1 * v2 V.! 0
+]
+
+-- 示例使用
+example :: IO ()
+example = do
+    -- 库仑力示例
+    let q1 = 1e-6
+    let q2 = 1e-6
+    let r1 = V.fromList [0, 0, 0]
+    let r2 = V.fromList [1, 0, 0]
+    let force = coulombForce q1 q2 r1 r2
+    putStrLn $ "库仑力: " ++ show force
+
+    -- 电场示例
+    let charge = 1e-6
+    let position = V.fromList [0, 0, 0]
+    let observation = V.fromList [1, 0, 0]
+    let eField = electricField charge position observation
+    putStrLn $ "电场: " ++ show eField
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+
+# 物理常数
+const K_E = 8.9875517923e9  # N⋅m²/C²
+const EPSILON_0 = 8.8541878128e-12  # F/m
+const MU_0 = 1.25663706212e-6  # H/m
+const C = 299792458.0  # m/s
+
+# 库仑定律
+function coulomb_force(q1::Float64, q2::Float64, r1::Vector{Float64}, r2::Vector{Float64})::Vector{Float64}
+    r_vec = r2 - r1
+    r = norm(r_vec)
+    if r < 1e-10
+        return zeros(3)
+    end
+    r_hat = r_vec / r
+    return K_E * q1 * q2 / (r^2) * r_hat
+end
+
+# 电场计算
+function electric_field(charge::Float64, position::Vector{Float64}, observation_point::Vector{Float64})::Vector{Float64}
+    r_vec = observation_point - position
+    r = norm(r_vec)
+    if r < 1e-10
+        return zeros(3)
+    end
+    r_hat = r_vec / r
+    return K_E * charge / (r^2) * r_hat
+end
+
+# 多个电荷的电场叠加
+function total_electric_field(charges::Vector{Tuple{Float64, Vector{Float64}}}, observation_point::Vector{Float64})::Vector{Float64}
+    return sum([electric_field(q, pos, observation_point) for (q, pos) in charges])
+end
+
+# 磁场计算（毕奥-萨伐尔定律）
+function magnetic_field(current::Float64, dl::Vector{Float64}, r::Vector{Float64})::Vector{Float64}
+    r_norm = norm(r)
+    if r_norm < 1e-10
+        return zeros(3)
+    end
+    return MU_0 / (4π) * current * cross(dl, r) / (r_norm^3)
+end
+
+# 洛伦兹力
+function lorentz_force(charge::Float64, velocity::Vector{Float64}, electric_field::Vector{Float64}, magnetic_field::Vector{Float64})::Vector{Float64}
+    return charge * (electric_field + cross(velocity, magnetic_field))
+end
+
+# 电磁场能量密度
+function electromagnetic_energy_density(electric_field::Vector{Float64}, magnetic_field::Vector{Float64})::Float64
+    return 0.5 * EPSILON_0 * norm(electric_field)^2 + 0.5 / MU_0 * norm(magnetic_field)^2
+end
+
+# 坡印廷矢量（能流密度）
+function poynting_vector(electric_field::Vector{Float64}, magnetic_field::Vector{Float64})::Vector{Float64}
+    return 1.0 / MU_0 * cross(electric_field, magnetic_field)
+end
+
+# 平面电磁波
+mutable struct PlaneWave
+    amplitude::Float64
+    frequency::Float64
+    wave_vector::Vector{Float64}
+    polarization::Vector{Float64}
+end
+
+function electric_field(wave::PlaneWave, position::Vector{Float64}, time::Float64)::Vector{Float64}
+    k_dot_r = dot(wave.wave_vector, position)
+    phase = norm(wave.wave_vector) * k_dot_r - 2π * wave.frequency * time
+    return wave.amplitude * wave.polarization * cos(phase)
+end
+
+function magnetic_field(wave::PlaneWave, position::Vector{Float64}, time::Float64)::Vector{Float64}
+    e_field = electric_field(wave, position, time)
+    k_hat = normalize(wave.wave_vector)
+    return cross(k_hat, e_field) / C
+end
+
+# 使用示例
+q1 = 1e-6
+q2 = 1e-6
+r1 = [0.0, 0.0, 0.0]
+r2 = [1.0, 0.0, 0.0]
+force = coulomb_force(q1, q2, r1, r2)
+println("库仑力: ", force)
+
+charge = 1e-6
+position = [0.0, 0.0, 0.0]
+observation = [1.0, 0.0, 0.0]
+e_field = electric_field(charge, position, observation)
+println("电场: ", e_field)
+
+velocity = [1.0, 0.0, 0.0]
+b_field = [0.0, 0.0, 1.0]
+l_force = lorentz_force(charge, velocity, e_field, b_field)
+println("洛伦兹力: ", l_force)
+
+energy_density = electromagnetic_energy_density(e_field, b_field)
+println("电磁场能量密度: ", energy_density)
+```
+
+---
+
 ## 相关模型 / Related Models
 
 ### 物理科学模型 / Physical Science Models
@@ -6476,5 +6800,6 @@ def dispersion_example():
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 6.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

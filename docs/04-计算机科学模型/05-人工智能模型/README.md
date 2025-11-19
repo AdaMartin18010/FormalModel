@@ -44,6 +44,7 @@
       - [推荐系统 / Recommendation Systems](#推荐系统--recommendation-systems)
   - [4.5.9 算法实现 / Algorithm Implementation](#459-算法实现--algorithm-implementation)
     - [机器学习基础算法 / Basic Machine Learning Algorithms](#机器学习基础算法--basic-machine-learning-algorithms)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
     - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
@@ -1245,6 +1246,302 @@ if __name__ == "__main__":
     ai_models_verification()
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+using Statistics
+using Random
+
+# 线性回归模型
+mutable struct LinearRegression
+    weights::Vector{Float64}
+    bias::Float64
+    learning_rate::Float64
+    max_iterations::Int
+    cost_history::Vector{Float64}
+
+    function LinearRegression(input_size::Int, learning_rate::Float64=0.01, max_iterations::Int=1000)
+        new(zeros(input_size), 0.0, learning_rate, max_iterations, Float64[])
+    end
+end
+
+function predict(lr::LinearRegression, X::Matrix{Float64})::Vector{Float64}
+    return X * lr.weights .+ lr.bias
+end
+
+function fit!(lr::LinearRegression, X::Matrix{Float64}, y::Vector{Float64})
+    n_samples, n_features = size(X)
+
+    for iteration in 1:lr.max_iterations
+        # 前向传播
+        y_pred = predict(lr, X)
+
+        # 计算损失
+        cost = mean((y_pred .- y).^2)
+        push!(lr.cost_history, cost)
+
+        # 计算梯度
+        dw = (2 / n_samples) * X' * (y_pred .- y)
+        db = (2 / n_samples) * sum(y_pred .- y)
+
+        # 更新参数
+        lr.weights .-= lr.learning_rate .* dw
+        lr.bias -= lr.learning_rate * db
+
+        # 早停
+        if iteration > 1 && abs(lr.cost_history[end] - lr.cost_history[end-1]) < 1e-6
+            break
+        end
+    end
+end
+
+function score(lr::LinearRegression, X::Matrix{Float64}, y::Vector{Float64})::Float64
+    y_pred = predict(lr, X)
+    ss_res = sum((y .- y_pred).^2)
+    ss_tot = sum((y .- mean(y)).^2)
+    return 1 - (ss_res / ss_tot)
+end
+
+# 逻辑回归模型
+mutable struct LogisticRegression
+    weights::Vector{Float64}
+    bias::Float64
+    learning_rate::Float64
+    max_iterations::Int
+    cost_history::Vector{Float64}
+
+    function LogisticRegression(input_size::Int, learning_rate::Float64=0.01, max_iterations::Int=1000)
+        new(zeros(input_size), 0.0, learning_rate, max_iterations, Float64[])
+    end
+end
+
+function sigmoid(z::Vector{Float64})::Vector{Float64}
+    return 1.0 ./ (1.0 .+ exp.(-clamp.(z, -500, 500)))
+end
+
+function predict(lr::LogisticRegression, X::Matrix{Float64})::Vector{Float64}
+    z = X * lr.weights .+ lr.bias
+    return sigmoid(z)
+end
+
+function predict_classes(lr::LogisticRegression, X::Matrix{Float64}, threshold::Float64=0.5)::Vector{Int}
+    return Int.(predict(lr, X) .>= threshold)
+end
+
+function fit!(lr::LogisticRegression, X::Matrix{Float64}, y::Vector{Float64})
+    n_samples, n_features = size(X)
+
+    for iteration in 1:lr.max_iterations
+        # 前向传播
+        z = X * lr.weights .+ lr.bias
+        y_pred = sigmoid(z)
+
+        # 计算损失（交叉熵）
+        epsilon = 1e-15
+        cost = -mean(y .* log.(y_pred .+ epsilon) .+ (1 .- y) .* log.(1 .- y_pred .+ epsilon))
+        push!(lr.cost_history, cost)
+
+        # 计算梯度
+        dw = (1 / n_samples) * X' * (y_pred .- y)
+        db = (1 / n_samples) * sum(y_pred .- y)
+
+        # 更新参数
+        lr.weights .-= lr.learning_rate .* dw
+        lr.bias -= lr.learning_rate * db
+
+        # 早停
+        if iteration > 1 && abs(lr.cost_history[end] - lr.cost_history[end-1]) < 1e-6
+            break
+        end
+    end
+end
+
+function accuracy(lr::LogisticRegression, X::Matrix{Float64}, y::Vector{Int})::Float64
+    y_pred = predict_classes(lr, X)
+    return mean(y_pred .== y)
+end
+
+# 神经网络
+mutable struct NeuralNetwork
+    layers::Vector{Int}
+    weights::Vector{Matrix{Float64}}
+    biases::Vector{Vector{Float64}}
+    learning_rate::Float64
+
+    function NeuralNetwork(layers::Vector{Int}, learning_rate::Float64=0.1)
+        weights = [randn(layers[i+1], layers[i]) * 0.1 for i in 1:length(layers)-1]
+        biases = [zeros(layers[i+1]) for i in 1:length(layers)-1]
+        new(layers, weights, biases, learning_rate)
+    end
+end
+
+function sigmoid(x::Float64)::Float64
+    return 1.0 / (1.0 + exp(-clamp(x, -500, 500)))
+end
+
+function sigmoid_derivative(x::Float64)::Float64
+    s = sigmoid(x)
+    return s * (1.0 - s)
+end
+
+function forward(nn::NeuralNetwork, input::Vector{Float64})::Tuple{Vector{Vector{Float64}}, Vector{Vector{Float64}}}
+    activations = [input]
+    zs = Vector{Vector{Float64}}()
+
+    current = input
+    for i in 1:length(nn.weights)
+        z = nn.weights[i] * current .+ nn.biases[i]
+        push!(zs, z)
+        current = sigmoid.(z)
+        push!(activations, current)
+    end
+
+    return (activations, zs)
+end
+
+function backward!(nn::NeuralNetwork, activations::Vector{Vector{Float64}}, zs::Vector{Vector{Float64}}, y::Vector{Float64})
+    m = length(y)
+
+    # 输出层误差
+    delta = (activations[end] .- y) .* sigmoid_derivative.(zs[end])
+
+    # 反向传播
+    for i in length(nn.weights):-1:1
+        # 计算梯度
+        dw = (1 / m) * delta * activations[i]'
+        db = (1 / m) * delta
+
+        # 更新权重和偏置
+        nn.weights[i] .-= nn.learning_rate .* dw
+        nn.biases[i] .-= nn.learning_rate .* db
+
+        # 计算前一层误差
+        if i > 1
+            delta = (nn.weights[i]' * delta) .* sigmoid_derivative.(zs[i-1])
+        end
+    end
+end
+
+function train!(nn::NeuralNetwork, X::Matrix{Float64}, y::Matrix{Float64}, epochs::Int)
+    for epoch in 1:epochs
+        for i in 1:size(X, 1)
+            input = X[i, :]
+            target = y[i, :]
+
+            activations, zs = forward(nn, input)
+            backward!(nn, activations, zs, target)
+        end
+    end
+end
+
+function predict(nn::NeuralNetwork, X::Matrix{Float64})::Matrix{Float64}
+    predictions = Matrix{Float64}(undef, size(X, 1), nn.layers[end])
+    for i in 1:size(X, 1)
+        activations, _ = forward(nn, X[i, :])
+        predictions[i, :] = activations[end]
+    end
+    return predictions
+end
+
+function predict_classes(nn::NeuralNetwork, X::Matrix{Float64}, threshold::Float64=0.5)::Vector{Int}
+    predictions = predict(nn, X)
+    return [argmax(predictions[i, :]) - 1 for i in 1:size(X, 1)]
+end
+
+# Q-Learning
+mutable struct QLearning
+    q_table::Matrix{Float64}
+    learning_rate::Float64
+    discount_factor::Float64
+    epsilon::Float64
+    epsilon_decay::Float64
+    epsilon_min::Float64
+
+    function QLearning(state_size::Int, action_size::Int, learning_rate::Float64=0.1,
+                      discount_factor::Float64=0.95, epsilon::Float64=1.0,
+                      epsilon_decay::Float64=0.995, epsilon_min::Float64=0.01)
+        new(zeros(state_size, action_size), learning_rate, discount_factor,
+            epsilon, epsilon_decay, epsilon_min)
+    end
+end
+
+function choose_action(q_learning::QLearning, state::Int)::Int
+    if rand() < q_learning.epsilon
+        return rand(1:size(q_learning.q_table, 2))
+    else
+        return argmax(q_learning.q_table[state, :])
+    end
+end
+
+function update!(q_learning::QLearning, state::Int, action::Int, reward::Float64, next_state::Int)
+    current_q = q_learning.q_table[state, action]
+    max_next_q = maximum(q_learning.q_table[next_state, :])
+    new_q = current_q + q_learning.learning_rate * (reward + q_learning.discount_factor * max_next_q - current_q)
+    q_learning.q_table[state, action] = new_q
+
+    # 衰减epsilon
+    if q_learning.epsilon > q_learning.epsilon_min
+        q_learning.epsilon *= q_learning.epsilon_decay
+    end
+end
+
+function get_policy(q_learning::QLearning)::Vector{Int}
+    return [argmax(q_learning.q_table[i, :]) for i in 1:size(q_learning.q_table, 1)]
+end
+
+# 使用示例
+Random.seed!(42)
+
+# 线性回归示例
+println("=== 线性回归示例 ===")
+X_lr = [1.0 2.0; 2.0 3.0; 3.0 4.0; 4.0 5.0]
+y_lr = [5.0, 8.0, 11.0, 14.0]
+lr = LinearRegression(2, 0.01, 1000)
+fit!(lr, X_lr, y_lr)
+println("权重: ", lr.weights)
+println("偏置: ", lr.bias)
+println("R²分数: ", score(lr, X_lr, y_lr))
+
+# 逻辑回归示例
+println("\n=== 逻辑回归示例 ===")
+X_log = [1.0 2.0; 2.0 3.0; 3.0 4.0; 4.0 5.0]
+y_log = [0, 0, 1, 1]
+log_reg = LogisticRegression(2, 0.01, 1000)
+fit!(log_reg, X_log, Float64.(y_log))
+println("权重: ", log_reg.weights)
+println("偏置: ", log_reg.bias)
+println("准确率: ", accuracy(log_reg, X_log, y_log))
+
+# 神经网络示例
+println("\n=== 神经网络示例 ===")
+X_nn = [0.0 0.0; 0.0 1.0; 1.0 0.0; 1.0 1.0]
+y_nn = [0.0 1.0; 1.0 0.0; 1.0 0.0; 0.0 1.0]
+nn = NeuralNetwork([2, 3, 2], 0.1)
+train!(nn, X_nn, y_nn, 10000)
+predictions = predict_classes(nn, X_nn)
+println("预测结果: ", predictions)
+
+# Q-Learning示例
+println("\n=== Q-Learning示例 ===")
+q_learning = QLearning(4, 4)
+for episode in 1:100
+    state = 1
+    for step in 1:10
+        action = choose_action(q_learning, state)
+        next_state = min(state + 1, 4)
+        reward = state == 4 ? 1.0 : 0.0
+        update!(q_learning, state, action, reward, next_state)
+        state = next_state
+        if state == 4
+            break
+        end
+    end
+end
+policy = get_policy(q_learning)
+println("最优策略: ", policy)
+```
+
 ## 相关模型 / Related Models
 
 ### 计算机科学模型 / Computer Science Models
@@ -1277,5 +1574,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

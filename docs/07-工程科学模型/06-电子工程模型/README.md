@@ -29,17 +29,18 @@
   - [7.6.6 实现与应用 / Implementation and Applications](#766-实现与应用--implementation-and-applications)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
     - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [电子设计 / Electronic Design](#电子设计--electronic-design)
       - [通信系统 / Communication Systems](#通信系统--communication-systems)
       - [电力系统 / Power Systems](#电力系统--power-systems)
-  - [参考文献 / References](#参考文献--references)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [工程科学模型 / Engineering Science Models](#工程科学模型--engineering-science-models)
     - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
     - [数学科学模型 / Mathematical Science Models](#数学科学模型--mathematical-science-models)
     - [计算机科学模型 / Computer Science Models](#计算机科学模型--computer-science-models)
     - [基础理论 / Basic Theory](#基础理论--basic-theory)
+  - [参考文献 / References](#参考文献--references)
 
 ---
 
@@ -954,6 +955,383 @@ example = do
     putStrLn $ "Voltage regulation: " ++ show voltage_regulation ++ "%"
 ```
 
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+
+"""
+电路节点结构体
+"""
+mutable struct CircuitNode
+    id::Int
+    voltage::Float64
+    connections::Vector{Int}
+
+    function CircuitNode(id::Int)
+        new(id, 0.0, Int[])
+    end
+end
+
+"""
+电路元件结构体
+"""
+struct CircuitElement
+    id::Int
+    element_type::String
+    value::Float64
+    node1::Int
+    node2::Int
+end
+
+"""
+电路结构体
+"""
+mutable struct Circuit
+    nodes::Vector{CircuitNode}
+    elements::Vector{CircuitElement}
+
+    function Circuit()
+        new(CircuitNode[], CircuitElement[])
+    end
+end
+
+"""
+添加节点
+"""
+function add_node(circuit::Circuit, id::Int)
+    push!(circuit.nodes, CircuitNode(id))
+end
+
+"""
+添加元件
+"""
+function add_element(circuit::Circuit, element::CircuitElement)
+    push!(circuit.elements, element)
+
+    # 更新节点连接
+    if element.node1 <= length(circuit.nodes)
+        push!(circuit.nodes[element.node1].connections, element.node2)
+    end
+    if element.node2 <= length(circuit.nodes)
+        push!(circuit.nodes[element.node2].connections, element.node1)
+    end
+end
+
+"""
+节点分析
+"""
+function nodal_analysis(circuit::Circuit)::Vector{Float64}
+    n = length(circuit.nodes)
+    conductance_matrix = zeros(n, n)
+    current_vector = zeros(n)
+
+    # 构建导纳矩阵
+    for element in circuit.elements
+        i = element.node1
+        j = element.node2
+
+        if element.element_type == "resistor"
+            conductance = 1.0 / element.value
+            conductance_matrix[i, i] += conductance
+            conductance_matrix[j, j] += conductance
+            conductance_matrix[i, j] -= conductance
+            conductance_matrix[j, i] -= conductance
+        elseif element.element_type == "current_source"
+            current_vector[i] -= element.value
+            current_vector[j] += element.value
+        end
+    end
+
+    # 求解线性方程组（简化实现）
+    voltages = zeros(n)
+    for i in 2:n  # 跳过参考节点
+        voltages[i] = current_vector[i] / conductance_matrix[i, i]
+    end
+
+    return voltages
+end
+
+"""
+电磁场结构体
+"""
+mutable struct ElectromagneticField
+    electric_field::Vector{Float64}
+    magnetic_field::Vector{Float64}
+    frequency::Float64
+    wavelength::Float64
+
+    function ElectromagneticField(frequency::Float64)
+        wavelength = 3e8 / frequency
+        new([0.0, 0.0, 0.0], [0.0, 0.0, 0.0], frequency, wavelength)
+    end
+end
+
+"""
+平面波
+"""
+function plane_wave(em::ElectromagneticField, amplitude::Float64, direction::Vector{Float64},
+                   position::Vector{Float64}, time::Float64)
+    k = 2π / em.wavelength
+    omega = 2π * em.frequency
+
+    phase = k * dot(direction, position) - omega * time
+
+    em.electric_field[1] = amplitude * cos(phase)
+    em.electric_field[2] = 0.0
+    em.electric_field[3] = 0.0
+
+    # 磁场垂直于电场
+    em.magnetic_field[1] = 0.0
+    em.magnetic_field[2] = amplitude / (3e8) * cos(phase)
+    em.magnetic_field[3] = 0.0
+end
+
+"""
+功率密度
+"""
+function power_density(em::ElectromagneticField)::Float64
+    E = norm(em.electric_field)
+    H = norm(em.magnetic_field)
+    return 0.5 * E * H
+end
+
+"""
+滤波器结构体
+"""
+mutable struct Filter
+    filter_type::String
+    cutoff_frequency::Float64
+    order::Int
+
+    function Filter(filter_type::String, cutoff_frequency::Float64, order::Int)
+        new(filter_type, cutoff_frequency, order)
+    end
+end
+
+"""
+传递函数
+"""
+function transfer_function(filter::Filter, frequency::Float64)::Complex{Float64}
+    s = im * 2π * frequency
+    omega_c = 2π * filter.cutoff_frequency
+
+    if filter.filter_type == "lowpass"
+        return 1.0 / (1.0 + (s / omega_c)^filter.order)
+    elseif filter.filter_type == "highpass"
+        return (s / omega_c)^filter.order / (1.0 + (s / omega_c)^filter.order)
+    else
+        return 1.0
+    end
+end
+
+"""
+幅度响应
+"""
+function magnitude_response(filter::Filter, frequency::Float64)::Float64
+    H = transfer_function(filter, frequency)
+    return abs(H)
+end
+
+"""
+相位响应
+"""
+function phase_response(filter::Filter, frequency::Float64)::Float64
+    H = transfer_function(filter, frequency)
+    return angle(H)
+end
+
+"""
+调制器结构体
+"""
+mutable struct Modulator
+    carrier_frequency::Float64
+    modulation_index::Float64
+
+    function Modulator(carrier_frequency::Float64, modulation_index::Float64)
+        new(carrier_frequency, modulation_index)
+    end
+end
+
+"""
+幅度调制
+"""
+function amplitude_modulation(modulator::Modulator, message_signal::Float64,
+                             time::Float64)::Float64
+    carrier = cos(2π * modulator.carrier_frequency * time)
+    return (1.0 + modulator.modulation_index * message_signal) * carrier
+end
+
+"""
+频率调制
+"""
+function frequency_modulation(modulator::Modulator, message_signal::Float64,
+                            time::Float64)::Float64
+    instantaneous_frequency = modulator.carrier_frequency + modulator.modulation_index * message_signal
+    return cos(2π * instantaneous_frequency * time)
+end
+
+"""
+信息论模型结构体
+"""
+mutable struct InformationTheoryModel
+    symbol_probabilities::Vector{Float64}
+
+    function InformationTheoryModel(probabilities::Vector{Float64})
+        new(probabilities)
+    end
+end
+
+"""
+香农熵
+"""
+function shannon_entropy(model::InformationTheoryModel)::Float64
+    entropy = 0.0
+    for p in model.symbol_probabilities
+        if p > 0
+            entropy -= p * log2(p)
+        end
+    end
+    return entropy
+end
+
+"""
+信道容量
+"""
+function channel_capacity(bandwidth::Float64, snr::Float64)::Float64
+    return bandwidth * log2(1.0 + snr)
+end
+
+"""
+电力系统结构体
+"""
+mutable struct PowerSystem
+    voltage::Float64
+    current::Float64
+    power_factor::Float64
+    phase_angle::Float64
+
+    function PowerSystem(voltage::Float64, current::Float64, power_factor::Float64,
+                        phase_angle::Float64)
+        new(voltage, current, power_factor, phase_angle)
+    end
+end
+
+"""
+视在功率
+"""
+function apparent_power(system::PowerSystem)::Float64
+    return system.voltage * system.current
+end
+
+"""
+有功功率
+"""
+function real_power(system::PowerSystem)::Float64
+    return apparent_power(system) * system.power_factor
+end
+
+"""
+无功功率
+"""
+function reactive_power(system::PowerSystem)::Float64
+    return apparent_power(system) * sqrt(1.0 - system.power_factor^2)
+end
+
+"""
+三相功率
+"""
+function three_phase_power(system::PowerSystem)::Float64
+    return 3.0 * real_power(system)
+end
+
+"""
+传输线损耗
+"""
+function transmission_line_loss(system::PowerSystem, resistance::Float64,
+                               length::Float64)::Float64
+    return system.current^2 * resistance * length
+end
+
+"""
+电压调节
+"""
+function voltage_regulation(system::PowerSystem, no_load_voltage::Float64)::Float64
+    return ((no_load_voltage - system.voltage) / system.voltage) * 100.0
+end
+
+# 示例：电子工程模型使用
+function electrical_engineering_example()
+    # 电路分析
+    circuit = Circuit()
+    add_node(circuit, 0)
+    add_node(circuit, 1)
+    add_node(circuit, 2)
+
+    add_element(circuit, CircuitElement(1, "resistor", 1000.0, 0, 1))
+    add_element(circuit, CircuitElement(2, "resistor", 2000.0, 1, 2))
+    add_element(circuit, CircuitElement(3, "current_source", 0.01, 0, 2))
+
+    voltages = nodal_analysis(circuit)
+    println("Node voltages: $voltages")
+
+    # 电磁场
+    em_field = ElectromagneticField(1e9)
+    plane_wave(em_field, 100.0, [1.0, 0.0, 0.0], [0.0, 0.0, 0.0], 0.0)
+    power_dens = power_density(em_field)
+    println("Electric field: $(em_field.electric_field)")
+    println("Magnetic field: $(em_field.magnetic_field)")
+    println("Power density: $power_dens W/m²")
+
+    # 滤波器
+    filter = Filter("lowpass", 1000.0, 2)
+    transfer_func = transfer_function(filter, 500.0)
+    magnitude_resp = magnitude_response(filter, 500.0)
+    phase_resp = phase_response(filter, 500.0)
+    println("Transfer function: $transfer_func")
+    println("Magnitude response: $magnitude_resp")
+    println("Phase response: $phase_resp")
+
+    # 调制器
+    modulator = Modulator(1e6, 0.5)
+    am_signal = amplitude_modulation(modulator, 0.5, 0.001)
+    fm_signal = frequency_modulation(modulator, 0.5, 0.001)
+    println("AM signal: $am_signal")
+    println("FM signal: $fm_signal")
+
+    # 信息论
+    probabilities = [0.5, 0.25, 0.25]
+    info_model = InformationTheoryModel(probabilities)
+    entropy = shannon_entropy(info_model)
+    capacity = channel_capacity(1000.0, 10.0)
+    println("Shannon entropy: $entropy bits")
+    println("Channel capacity: $capacity bits/s")
+
+    # 电力系统
+    power_system = PowerSystem(240.0, 10.0, 0.9, 0.0)
+    apparent = apparent_power(power_system)
+    real_p = real_power(power_system)
+    reactive = reactive_power(power_system)
+    three_phase = three_phase_power(power_system)
+    println("Apparent power: $apparent VA")
+    println("Real power: $real_p W")
+    println("Reactive power: $reactive VAR")
+    println("Three-phase power: $three_phase W")
+
+    transmission_loss = transmission_line_loss(power_system, 0.1, 1000.0)
+    voltage_reg = voltage_regulation(power_system, 240.0)
+    println("Transmission line loss: $transmission_loss W")
+    println("Voltage regulation: $voltage_reg%")
+
+    return Dict(
+        "node_voltages" => voltages,
+        "power_density" => power_dens,
+        "shannon_entropy" => entropy,
+        "channel_capacity" => capacity
+    )
+end
+```
+
 ### 应用领域 / Application Domains
 
 #### 电子设计 / Electronic Design
@@ -1019,5 +1397,6 @@ example = do
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

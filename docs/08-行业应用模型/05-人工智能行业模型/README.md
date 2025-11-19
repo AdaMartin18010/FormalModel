@@ -33,6 +33,7 @@
   - [8.5.6 实现与应用 / Implementation and Applications](#856-实现与应用--implementation-and-applications)
     - [Python实现示例 / Python Implementation Example](#python实现示例--python-implementation-example)
     - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
     - [应用领域 / Application Domains](#应用领域--application-domains)
       - [智能推荐系统 / Intelligent Recommendation Systems](#智能推荐系统--intelligent-recommendation-systems)
       - [智能客服 / Intelligent Customer Service](#智能客服--intelligent-customer-service)
@@ -615,6 +616,339 @@ fn main() {
 
     println!("AI模型训练完成");
 }
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+using LinearAlgebra
+using Statistics
+using Random
+
+"""
+简单神经网络结构体
+"""
+mutable struct SimpleNeuralNetwork
+    weights1::Matrix{Float64}
+    weights2::Matrix{Float64}
+    bias1::Vector{Float64}
+    bias2::Float64
+    learning_rate::Float64
+
+    function SimpleNeuralNetwork(input_size::Int, hidden_size::Int, output_size::Int,
+                                learning_rate::Float64 = 0.01)
+        weights1 = randn(hidden_size, input_size) * 0.1
+        weights2 = randn(output_size, hidden_size) * 0.1
+        bias1 = zeros(hidden_size)
+        bias2 = 0.0
+        new(weights1, weights2, bias1, bias2, learning_rate)
+    end
+end
+
+"""
+Sigmoid激活函数
+"""
+function sigmoid(x::Float64)::Float64
+    return 1.0 / (1.0 + exp(-x))
+end
+
+"""
+Sigmoid导数
+"""
+function sigmoid_derivative(x::Float64)::Float64
+    s = sigmoid(x)
+    return s * (1.0 - s)
+end
+
+"""
+前向传播
+"""
+function forward(network::SimpleNeuralNetwork, input::Vector{Float64})::Vector{Float64}
+    hidden = sigmoid.(network.weights1 * input .+ network.bias1)
+    output = sigmoid.(network.weights2 * hidden .+ network.bias2)
+    return output
+end
+
+"""
+反向传播
+"""
+function backward(network::SimpleNeuralNetwork, input::Vector{Float64},
+                 target::Vector{Float64}, output::Vector{Float64})
+    # 计算输出层误差
+    output_error = target .- output
+    output_delta = output_error .* sigmoid_derivative.(output)
+
+    # 计算隐藏层误差
+    hidden_error = network.weights2' * output_delta
+    hidden_delta = hidden_error .* sigmoid_derivative.(network.weights1 * input .+ network.bias1)
+
+    # 更新权重
+    hidden = sigmoid.(network.weights1 * input .+ network.bias1)
+    network.weights2 += network.learning_rate * output_delta * hidden'
+    network.weights1 += network.learning_rate * hidden_delta * input'
+
+    # 更新偏置
+    network.bias2 += network.learning_rate * sum(output_delta)
+    network.bias1 += network.learning_rate * hidden_delta
+end
+
+"""
+训练神经网络
+"""
+function train(network::SimpleNeuralNetwork, inputs::Matrix{Float64},
+              targets::Matrix{Float64}, epochs::Int)
+    for epoch in 1:epochs
+        total_loss = 0.0
+        for i in 1:size(inputs, 2)
+            input = inputs[:, i]
+            target = targets[:, i]
+            output = forward(network, input)
+            backward(network, input, target, output)
+            total_loss += sum((target .- output).^2)
+        end
+        if epoch % 20 == 0
+            println("Epoch $epoch, Loss: $(total_loss / size(inputs, 2))")
+        end
+    end
+end
+
+"""
+Q学习智能体结构体
+"""
+mutable struct QLearningAgent
+    state_size::Int
+    action_size::Int
+    learning_rate::Float64
+    discount_factor::Float64
+    epsilon::Float64
+    q_table::Matrix{Float64}
+
+    function QLearningAgent(state_size::Int, action_size::Int, learning_rate::Float64 = 0.1,
+                           discount_factor::Float64 = 0.9, epsilon::Float64 = 0.1)
+        q_table = zeros(state_size, action_size)
+        new(state_size, action_size, learning_rate, discount_factor, epsilon, q_table)
+    end
+end
+
+"""
+选择动作
+"""
+function choose_action(agent::QLearningAgent, state::Int)::Int
+    if rand() < agent.epsilon
+        return rand(1:agent.action_size)
+    end
+    return argmax(agent.q_table[state, :])
+end
+
+"""
+学习
+"""
+function learn(agent::QLearningAgent, state::Int, action::Int, reward::Float64,
+              next_state::Int)
+    old_value = agent.q_table[state, action]
+    next_max = maximum(agent.q_table[next_state, :])
+    new_value = (1.0 - agent.learning_rate) * old_value +
+                agent.learning_rate * (reward + agent.discount_factor * next_max)
+    agent.q_table[state, action] = new_value
+end
+
+"""
+卷积神经网络（简化版）
+"""
+mutable struct SimpleCNN
+    conv_weights::Array{Float64, 4}
+    fc_weights::Matrix{Float64}
+    learning_rate::Float64
+
+    function SimpleCNN(input_size::Tuple{Int, Int, Int}, num_filters::Int,
+                     output_size::Int, learning_rate::Float64 = 0.01)
+        conv_weights = randn(num_filters, input_size[3], 3, 3) * 0.1
+        fc_weights = randn(output_size, num_filters * input_size[1] * input_size[2]) * 0.1
+        new(conv_weights, fc_weights, learning_rate)
+    end
+end
+
+"""
+卷积操作（简化版）
+"""
+function convolve(input::Array{Float64, 3}, kernel::Array{Float64, 3})::Array{Float64, 2}
+    h, w, c = size(input)
+    kh, kw = size(kernel)[1:2]
+    output = zeros(h - kh + 1, w - kw + 1)
+
+    for i in 1:h-kh+1
+        for j in 1:w-kw+1
+            output[i, j] = sum(input[i:i+kh-1, j:j+kw-1, :] .* kernel)
+        end
+    end
+
+    return output
+end
+
+"""
+ReLU激活函数
+"""
+function relu(x::Float64)::Float64
+    return max(0.0, x)
+end
+
+"""
+前向传播（CNN）
+"""
+function forward_cnn(cnn::SimpleCNN, input::Array{Float64, 3})::Vector{Float64}
+    # 卷积层
+    feature_maps = []
+    for i in 1:size(cnn.conv_weights, 1)
+        kernel = cnn.conv_weights[i, :, :, :]
+        feature_map = convolve(input, kernel)
+        push!(feature_maps, relu.(feature_map))
+    end
+
+    # 展平
+    flattened = vcat([vec(fm) for fm in feature_maps]...)
+
+    # 全连接层
+    output = sigmoid.(cnn.fc_weights * flattened)
+    return output
+end
+
+"""
+循环神经网络（简化版）
+"""
+mutable struct SimpleRNN
+    input_size::Int
+    hidden_size::Int
+    output_size::Int
+    Wxh::Matrix{Float64}
+    Whh::Matrix{Float64}
+    Why::Matrix{Float64}
+    hidden::Vector{Float64}
+
+    function SimpleRNN(input_size::Int, hidden_size::Int, output_size::Int)
+        Wxh = randn(hidden_size, input_size) * 0.1
+        Whh = randn(hidden_size, hidden_size) * 0.1
+        Why = randn(output_size, hidden_size) * 0.1
+        hidden = zeros(hidden_size)
+        new(input_size, hidden_size, output_size, Wxh, Whh, Why, hidden)
+    end
+end
+
+"""
+RNN前向传播
+"""
+function forward_rnn(rnn::SimpleRNN, input::Vector{Float64})::Vector{Float64}
+    rnn.hidden = tanh.(rnn.Wxh * input + rnn.Whh * rnn.hidden)
+    output = sigmoid.(rnn.Why * rnn.hidden)
+    return output
+end
+
+"""
+推荐系统（协同过滤简化版）
+"""
+mutable struct RecommenderSystem
+    user_item_matrix::Matrix{Float64}
+    user_similarity::Matrix{Float64}
+
+    function RecommenderSystem(user_item_matrix::Matrix{Float64})
+        n_users = size(user_item_matrix, 1)
+        user_similarity = zeros(n_users, n_users)
+        for i in 1:n_users
+            for j in 1:n_users
+                if i != j
+                    user_similarity[i, j] = cosine_similarity(user_item_matrix[i, :],
+                                                           user_item_matrix[j, :])
+                end
+            end
+        end
+        new(user_item_matrix, user_similarity)
+    end
+end
+
+"""
+余弦相似度
+"""
+function cosine_similarity(vec1::Vector{Float64}, vec2::Vector{Float64})::Float64
+    dot_product = dot(vec1, vec2)
+    norm1 = norm(vec1)
+    norm2 = norm(vec2)
+    return norm1 > 0 && norm2 > 0 ? dot_product / (norm1 * norm2) : 0.0
+end
+
+"""
+推荐
+"""
+function recommend(recommender::RecommenderSystem, user_id::Int, top_k::Int = 5)::Vector{Int}
+    user_ratings = recommender.user_item_matrix[user_id, :]
+    similar_users = sortperm(recommender.user_similarity[user_id, :], rev=true)[2:top_k+1]
+
+    recommendations = Float64[]
+    for item_id in 1:length(user_ratings)
+        if user_ratings[item_id] == 0.0  # 未评分
+            score = 0.0
+            for similar_user in similar_users
+                score += recommender.user_similarity[user_id, similar_user] *
+                        recommender.user_item_matrix[similar_user, item_id]
+            end
+            push!(recommendations, score)
+        else
+            push!(recommendations, -Inf)  # 已评分，不推荐
+        end
+    end
+
+    top_items = sortperm(recommendations, rev=true)[1:top_k]
+    return top_items
+end
+
+# 示例：人工智能行业模型使用
+function ai_industry_example()
+    # 神经网络
+    network = SimpleNeuralNetwork(10, 20, 1, 0.01)
+    inputs = randn(10, 100)
+    targets = randn(1, 100)
+    train(network, inputs, targets, 100)
+
+    test_input = randn(10)
+    test_output = forward(network, test_input)
+    println("Neural network output: $test_output")
+
+    # Q学习
+    agent = QLearningAgent(10, 4)
+    for episode in 1:1000
+        state = rand(1:10)
+        for step in 1:100
+            action = choose_action(agent, state)
+            next_state = rand(1:10)
+            reward = randn()
+            learn(agent, state, action, reward, next_state)
+            state = next_state
+        end
+    end
+    println("Q-learning training completed")
+
+    # CNN
+    cnn = SimpleCNN((28, 28, 1), 4, 10)
+    test_image = randn(28, 28, 1)
+    cnn_output = forward_cnn(cnn, test_image)
+    println("CNN output: $cnn_output")
+
+    # RNN
+    rnn = SimpleRNN(10, 20, 5)
+    test_input_rnn = randn(10)
+    rnn_output = forward_rnn(rnn, test_input_rnn)
+    println("RNN output: $rnn_output")
+
+    # 推荐系统
+    user_item_matrix = rand(0:5, 10, 20) .* 1.0
+    recommender = RecommenderSystem(user_item_matrix)
+    recommendations = recommend(recommender, 1, 5)
+    println("Recommendations for user 1: $recommendations")
+
+    return Dict(
+        "neural_network_output" => test_output,
+        "q_table_size" => size(agent.q_table),
+        "recommendations" => recommendations
+    )
+end
 ```
 
 ### 应用领域 / Application Domains
@@ -1550,5 +1884,6 @@ if __name__ == "__main__":
 
 ---
 
-*最后更新: 2025-08-26*
-*版本: 1.1.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*

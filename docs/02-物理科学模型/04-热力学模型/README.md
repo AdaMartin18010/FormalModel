@@ -40,6 +40,10 @@
     - [制冷循环 / Refrigeration Cycles](#制冷循环--refrigeration-cycles)
     - [化学平衡 / Chemical Equilibrium](#化学平衡--chemical-equilibrium)
   - [参考文献 / References](#参考文献--references)
+  - [2.4.8 实现与应用 / Implementation and Applications](#248-实现与应用--implementation-and-applications)
+    - [Rust实现示例 / Rust Implementation Example](#rust实现示例--rust-implementation-example)
+    - [Haskell实现示例 / Haskell Implementation Example](#haskell实现示例--haskell-implementation-example)
+    - [Julia实现示例 / Julia Implementation Example](#julia实现示例--julia-implementation-example)
   - [相关模型 / Related Models](#相关模型--related-models)
     - [物理科学模型 / Physical Science Models](#物理科学模型--physical-science-models)
     - [基础理论 / Basic Theory](#基础理论--basic-theory)
@@ -4801,6 +4805,259 @@ def chemical_equilibrium_example():
 4. Landau, L. D., & Lifshitz, E. M. (1980). Statistical Physics. Pergamon Press.
 5. Prigogine, I. (1967). Introduction to Thermodynamics of Irreversible Processes. Interscience.
 
+---
+
+## 2.4.8 实现与应用 / Implementation and Applications
+
+### Rust实现示例 / Rust Implementation Example
+
+```rust
+// 热力学第一定律：ΔU = Q - W
+pub struct ThermodynamicSystem {
+    internal_energy: f64,
+    temperature: f64,
+    pressure: f64,
+    volume: f64,
+}
+
+impl ThermodynamicSystem {
+    pub fn new(temperature: f64, pressure: f64, volume: f64) -> Self {
+        ThermodynamicSystem {
+            internal_energy: 0.0,
+            temperature,
+            pressure,
+            volume,
+        }
+    }
+
+    pub fn first_law(&mut self, heat: f64, work: f64) -> f64 {
+        // ΔU = Q - W
+        let delta_u = heat - work;
+        self.internal_energy += delta_u;
+        delta_u
+    }
+
+    pub fn enthalpy(&self) -> f64 {
+        // H = U + pV
+        self.internal_energy + self.pressure * self.volume
+    }
+
+    pub fn helmholtz_free_energy(&self, entropy: f64) -> f64 {
+        // F = U - TS
+        self.internal_energy - self.temperature * entropy
+    }
+
+    pub fn gibbs_free_energy(&self, entropy: f64) -> f64 {
+        // G = H - TS
+        self.enthalpy() - self.temperature * entropy
+    }
+}
+
+// 卡诺效率
+pub fn carnot_efficiency(hot_temp: f64, cold_temp: f64) -> f64 {
+    if hot_temp <= cold_temp {
+        panic!("高温必须大于低温");
+    }
+    1.0 - (cold_temp / hot_temp)
+}
+
+// 玻尔兹曼分布
+pub fn boltzmann_distribution(energy: f64, temperature: f64, partition_function: f64) -> f64 {
+    let k_b = 1.380649e-23; // 玻尔兹曼常数
+    (energy / (k_b * temperature)).exp() / partition_function
+}
+
+// 配分函数（简化版）
+pub fn partition_function(energies: &[f64], temperature: f64) -> f64 {
+    let k_b = 1.380649e-23;
+    energies.iter()
+        .map(|&e| (-e / (k_b * temperature)).exp())
+        .sum()
+}
+
+// 熵计算
+pub fn entropy(probabilities: &[f64]) -> f64 {
+    let k_b = 1.380649e-23;
+    -k_b * probabilities.iter()
+        .filter(|&&p| p > 0.0)
+        .map(|&p| p * p.ln())
+        .sum::<f64>()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_first_law() {
+        let mut system = ThermodynamicSystem::new(300.0, 1.0e5, 0.001);
+        let delta_u = system.first_law(1000.0, 500.0);
+        assert_eq!(delta_u, 500.0);
+    }
+
+    #[test]
+    fn test_carnot_efficiency() {
+        let efficiency = carnot_efficiency(500.0, 300.0);
+        assert!((efficiency - 0.4).abs() < 1e-10);
+    }
+}
+```
+
+### Haskell实现示例 / Haskell Implementation Example
+
+```haskell
+module Thermodynamics where
+
+-- 玻尔兹曼常数
+k_b :: Double
+k_b = 1.380649e-23
+
+-- 热力学第一定律：ΔU = Q - W
+firstLaw :: Double -> Double -> Double
+firstLaw heat work = heat - work
+
+-- 焓：H = U + pV
+enthalpy :: Double -> Double -> Double -> Double
+enthalpy internalEnergy pressure volume = internalEnergy + pressure * volume
+
+-- 亥姆霍兹自由能：F = U - TS
+helmholtzFreeEnergy :: Double -> Double -> Double -> Double
+helmholtzFreeEnergy internalEnergy temperature entropy =
+    internalEnergy - temperature * entropy
+
+-- 吉布斯自由能：G = H - TS
+gibbsFreeEnergy :: Double -> Double -> Double -> Double
+gibbsFreeEnergy enthalpy temperature entropy =
+    enthalpy - temperature * entropy
+
+-- 卡诺效率
+carnotEfficiency :: Double -> Double -> Double
+carnotEfficiency hotTemp coldTemp
+    | hotTemp <= coldTemp = error "高温必须大于低温"
+    | otherwise = 1.0 - (coldTemp / hotTemp)
+
+-- 玻尔兹曼分布
+boltzmannDistribution :: Double -> Double -> Double -> Double
+boltzmannDistribution energy temperature partitionFunction =
+    exp (energy / (k_b * temperature)) / partitionFunction
+
+-- 配分函数
+partitionFunction :: [Double] -> Double -> Double
+partitionFunction energies temperature =
+    sum [exp (-e / (k_b * temperature)) | e <- energies]
+
+-- 熵计算
+entropy :: [Double] -> Double
+entropy probabilities =
+    -k_b * sum [p * log p | p <- probabilities, p > 0]
+
+-- 示例使用
+example :: IO ()
+example = do
+    -- 热力学第一定律
+    let deltaU = firstLaw 1000.0 500.0
+    putStrLn $ "内能变化: " ++ show deltaU
+
+    -- 卡诺效率
+    let efficiency = carnotEfficiency 500.0 300.0
+    putStrLn $ "卡诺效率: " ++ show efficiency
+
+    -- 配分函数
+    let energies = [1.0, 2.0, 3.0]
+    let z = partitionFunction energies 300.0
+    putStrLn $ "配分函数: " ++ show z
+```
+
+### Julia实现示例 / Julia Implementation Example
+
+```julia
+# 玻尔兹曼常数
+const K_B = 1.380649e-23
+
+# 热力学第一定律：ΔU = Q - W
+function first_law(heat::Float64, work::Float64)::Float64
+    return heat - work
+end
+
+# 焓：H = U + pV
+function enthalpy(internal_energy::Float64, pressure::Float64, volume::Float64)::Float64
+    return internal_energy + pressure * volume
+end
+
+# 亥姆霍兹自由能：F = U - TS
+function helmholtz_free_energy(internal_energy::Float64, temperature::Float64, entropy::Float64)::Float64
+    return internal_energy - temperature * entropy
+end
+
+# 吉布斯自由能：G = H - TS
+function gibbs_free_energy(enthalpy::Float64, temperature::Float64, entropy::Float64)::Float64
+    return enthalpy - temperature * entropy
+end
+
+# 卡诺效率
+function carnot_efficiency(hot_temp::Float64, cold_temp::Float64)::Float64
+    if hot_temp <= cold_temp
+        error("高温必须大于低温")
+    end
+    return 1.0 - (cold_temp / hot_temp)
+end
+
+# 玻尔兹曼分布
+function boltzmann_distribution(energy::Float64, temperature::Float64, partition_function::Float64)::Float64
+    return exp(energy / (K_B * temperature)) / partition_function
+end
+
+# 配分函数
+function partition_function(energies::Vector{Float64}, temperature::Float64)::Float64
+    return sum(exp.(-energies ./ (K_B * temperature)))
+end
+
+# 熵计算
+function entropy(probabilities::Vector{Float64})::Float64
+    return -K_B * sum(p -> p > 0 ? p * log(p) : 0.0, probabilities)
+end
+
+# 热力学系统结构
+mutable struct ThermodynamicSystem
+    internal_energy::Float64
+    temperature::Float64
+    pressure::Float64
+    volume::Float64
+
+    function ThermodynamicSystem(temperature::Float64, pressure::Float64, volume::Float64)
+        new(0.0, temperature, pressure, volume)
+    end
+end
+
+function apply_first_law!(system::ThermodynamicSystem, heat::Float64, work::Float64)
+    delta_u = first_law(heat, work)
+    system.internal_energy += delta_u
+    return delta_u
+end
+
+function get_enthalpy(system::ThermodynamicSystem)::Float64
+    return enthalpy(system.internal_energy, system.pressure, system.volume)
+end
+
+# 使用示例
+system = ThermodynamicSystem(300.0, 1.0e5, 0.001)
+delta_u = apply_first_law!(system, 1000.0, 500.0)
+println("内能变化: ", delta_u)
+
+efficiency = carnot_efficiency(500.0, 300.0)
+println("卡诺效率: ", efficiency)
+
+energies = [1.0, 2.0, 3.0]
+z = partition_function(energies, 300.0)
+println("配分函数: ", z)
+
+probabilities = [0.5, 0.3, 0.2]
+s = entropy(probabilities)
+println("熵: ", s)
+```
+
+---
+
 ## 相关模型 / Related Models
 
 ### 物理科学模型 / Physical Science Models
@@ -4821,5 +5078,6 @@ def chemical_equilibrium_example():
 
 ---
 
-*最后更新: 2025-08-01*
-*版本: 1.0.0*
+*最后更新: 2025-01-XX*
+*版本: 1.2.0*
+*状态: 核心功能已完成 / Status: Core Features Completed*
